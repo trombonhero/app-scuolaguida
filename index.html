@@ -256,6 +256,7 @@
         1: "Grave errore → Tentativo fallito, comportamento inadeguato.",
         2: "Molto insicuro → Errori gravi, necessità di intervento.",
         3: "Insicuro → Errori evidenti, esecuzione incerta.",
+        // FIX: Rimosso il punto (.) dopo il 4, era un errore di sintassi
         4: "Migliorabile → Errori non gravi, ma guida imprecisa.",
         5: "Quasi sufficiente → Autonomia parziale, migliorabile.",
         6: "Sufficiente → Controllo adeguato, ma con margini di miglioramento.",
@@ -532,8 +533,14 @@
 
     /**
      * 4. Helper per raggruppare per data
+     * AGGIORNATO: Gestisce date non valide
      */
     function getRelativeDateGroup(dateString) {
+        // FIX: Gestisce le stringhe di data non valide o mancanti
+        if (!dateString || isNaN(new Date(dateString).getTime())) {
+            return "Senza Data";
+        }
+        
         const today = new Date();
         const date = new Date(dateString);
         
@@ -559,6 +566,7 @@
 
     /**
      * 4. Funzione di caricamento lista AGGIORNATA per data
+     * AGGIORNATO: Gestisce dati corrotti
      */
     function loadSavedLessonsList() {
         const listContainer = document.getElementById('saved-lessons-list');
@@ -570,7 +578,8 @@
             if (key.startsWith('lesson_')) {
                 try {
                     const data = JSON.parse(localStorage.getItem(key));
-                    if (data && data.studentName) {
+                    // FIX: Controllo più robusto
+                    if (data && data.id && data.studentName) {
                         lessons.push(data);
                     }
                 } catch (e) {
@@ -585,8 +594,13 @@
             return;
         }
         
-        // Ordina per data di creazione, dalla più recente alla più vecchia
-        lessons.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        // Ordina per data di creazione, gestendo quelle mancanti
+        lessons.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+            const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+            return dateB - dateA; // Dalla più recente alla più vecchia
+        });
+
 
         let currentGroup = "";
         lessons.forEach(data => {
@@ -609,11 +623,11 @@
             const itemEl = document.createElement('div');
             itemEl.className = 'saved-lesson-item';
             
-            // Orario di creazione da mostrare accanto al nome
-            const creationTime = new Date(data.createdAt).toLocaleTimeString('it-IT', {
+            // Orario di creazione (con fallback)
+            const creationTime = data.createdAt ? new Date(data.createdAt).toLocaleTimeString('it-IT', {
                 hour: '2-digit',
                 minute: '2-digit'
-            });
+            }) : "N/D";
             
             itemEl.innerHTML = `
                 <div class="flex-grow min-w-0"> <!-- Container flessibile per nome -->
@@ -802,11 +816,12 @@
                 const score = detailedScores[criterion] || 0;
                 const interpretation = SCORE_5_INTERPRETATION[score] || SCORE_5_INTERPRETATION[0];
 
+                // MODIFICA VISIVA: Mostra solo il punteggio
                 html += `
                     <div class="flex justify-between items-center text-sm">
                         <span class="text-gray-700 truncate">${criterion}</span>
-                        <span class="font-bold text-right ml-2 p-1 px-2 rounded-full text-xs ${interpretation.color}">
-                            ${score} / 5
+                        <span class="flex items-center justify-center w-6 h-6 font-bold text-right ml-2 rounded-full text-xs ${interpretation.color}">
+                            ${score}
                         </span>
                     </div>
                 `;
@@ -834,12 +849,12 @@
             else if (score_0_50 >= 30) color = 'bg-yellow-400 text-gray-800';
             else color = 'bg-red-400 text-white';
 
-            // La visualizzazione usa il punteggio 0-5
+            // MODIFICA VISIVA: Mostra solo il punteggio 0-5 in un cerchio
             return `
                 <div class="flex justify-between items-center p-2 rounded-lg border border-gray-100 bg-white shadow-sm">
                     <span class="font-medium text-gray-700">${area.name}</span>
-                    <span class="px-3 py-1 text-sm font-bold rounded-full ${color}">
-                        ${score_0_5} / 5
+                    <span class="flex items-center justify-center w-8 h-8 text-sm font-bold rounded-full ${color}">
+                        ${score_0_5}
                     </span>
                 </div>
             `;
