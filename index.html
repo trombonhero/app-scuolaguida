@@ -818,11 +818,13 @@
                 const score = detailedScores[criterion] || 0;
                 const interpretation = SCORE_5_INTERPRETATION[score] || SCORE_5_INTERPRETATION[0];
 
-                // MODIFICA VISIVA: Aggiunto min-w-0 al testo e flex-shrink-0 al punteggio
+                // MODIFICA VISIVA: Usiamo GRID per forzare il layout
+                // grid-cols-[1fr_auto] = 1 colonna flessibile (testo), 1 colonna fissa (punteggio)
+                // Il testo ha truncate, che ora funzionerà perché è in una cella grid.
                 html += `
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-gray-700 truncate min-w-0">${criterion}</span>
-                        <span class="flex-shrink-0 flex items-center justify-center w-6 h-6 font-bold ml-2 rounded-full text-xs ${interpretation.color}">
+                    <div class="grid grid-cols-[1fr_auto] items-center gap-2 text-sm">
+                        <span class="text-gray-700 truncate" title="${criterion}">${criterion}</span>
+                        <span class="flex items-center justify-center w-6 h-6 font-bold rounded-full text-xs ${interpretation.color}">
                             ${score}
                         </span>
                     </div>
