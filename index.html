@@ -116,6 +116,10 @@
 </head>
 <body>
 
+<!-- Tooltip personalizzato che verrà controllato da JS -->
+<div id="custom-tooltip" class="hidden absolute z-50 p-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg max-w-xs" style="pointer-events: none; transition: opacity 0.1s ease;">
+</div>
+
 <!-- 
     PAGINA DI AVVIO (LANDING PAGE)
 -->
@@ -255,6 +259,9 @@
     let currentLessonId = null;
     let quickScores = {}; 
     
+    // Tooltip personalizzato
+    const tooltip = document.getElementById('custom-tooltip');
+
     // Mappatura Emoticon (Richiesta 1 - INVERTITE 9 e 10)
     const EMOJI_INTERPRETATION = {
         0: "😶", 1: "😱", 2: "😨", 3: "😣", 4: "🤔",
@@ -798,14 +805,19 @@
             <div class="space-y-1 p-3 bg-gray-50 rounded-lg shadow-inner">
                 <label for="quick-slider-${index}" class="block text-sm font-semibold text-gray-700">${index + 1}. ${criterion}</label>
                 
-                <!-- 2. Testo descrizione nascosto (spostato nel 'title' dell'emoji) -->
+                <!-- 2. Testo descrizione nascosto -->
                 <p id="quick-desc-${index}" class="text-xs h-8 text-gray-500 overflow-hidden hidden">${description}</p>
                 
                 <div class="flex items-center space-x-3">
-                    <!-- 1. Emoji ingrandita (text-4xl), spostata prima e con 'title' (tooltip) -->
+                    <!-- 1. Emoji con eventi mousedown/touchstart per il tooltip personalizzato -->
                     <span id="quick-value-${index}" 
                           class="text-4xl w-12 text-center cursor-default" 
-                          title="${description}">
+                          onmousedown="showTooltip(event, ${index})"
+                          onmouseup="hideTooltip()"
+                          ontouchstart="showTooltip(event, ${index})"
+                          ontouchend="hideTooltip()"
+                          oncontextmenu="event.preventDefault();" 
+                          >
                           ${EMOJI_INTERPRETATION[value]}
                     </span>
                     <input type="range" min="0" max="10" value="${value}" id="quick-slider-${index}" data-name="${criterion}" data-index="${index}" class="score-slider flex-grow" oninput="updateQuickScore(event)" onchange="saveLessonData(false)">
@@ -829,10 +841,7 @@
         // 1. Aggiorna l'emoji
         emojiEl.textContent = EMOJI_INTERPRETATION[value];
         
-        // 2. Aggiorna il tooltip (title) dell'emoji
-        emojiEl.setAttribute('title', description);
-        
-        // Aggiorna anche il testo nel <p> nascosto (per coerenza)
+        // 2. Aggiorna il testo nel <p> nascosto (per coerenza)
         document.getElementById(`quick-desc-${index}`).textContent = description;
         
         quickScores[name] = value;
@@ -914,6 +923,36 @@
         document.getElementById('total-score-500').textContent = `${totalScore} / 500`;
     }
 
+    // --- Funzioni Tooltip Personalizzate ---
+    function showTooltip(event, index) {
+        // Previene il comportamento di default (come la selezione/copia)
+        event.preventDefault(); 
+        
+        // 1. Trova il valore corrente dallo slider
+        const slider = document.getElementById(`quick-slider-${index}`);
+        if (!slider) return;
+        const value = slider.value;
+        
+        // 2. Prendi la descrizione
+        const text = SCORE_10_INTERPRETATION[value];
+        
+        // 3. Popola e posiziona il tooltip
+        tooltip.textContent = text;
+        tooltip.classList.remove('hidden');
+
+        // Determina le coordinate (touch o mouse)
+        const x = event.touches ? event.touches[0].pageX : event.pageX;
+        const y = event.touches ? event.touches[0].pageY : event.pageY;
+
+        // Posiziona il tooltip 15px sotto e a destra del dito/mouse
+        tooltip.style.left = (x + 15) + 'px'; 
+        tooltip.style.top = (y + 15) + 'px'; 
+    }
+
+    function hideTooltip() {
+        tooltip.classList.add('hidden');
+    }
+
     // Esponi le funzioni necessarie all'ambito globale per gli onclick HTML
     window.updateQuickScore = updateQuickScore;
     window.startNewLesson = startNewLesson;
@@ -922,6 +961,9 @@
     window.saveLessonData = saveLessonData;
     window.goBackToList = goBackToList;
     window.openLesson = openLesson;
+    // Aggiungi le nuove funzioni tooltip all'ambito globale
+    window.showTooltip = showTooltip;
+    window.hideTooltip = hideTooltip;
     
     // Avvia l'applicazione
     initPage();
