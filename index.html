@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Valutazioni Guida</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 1. Libreria per la firma NON più qui -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
@@ -134,6 +135,17 @@
             border: 1px solid #fecaca;
         }
         .delete-group-btn:hover { background-color: #fee2e2; }
+        
+        /* Stili per il riquadro firma */
+        .signature-pad-canvas {
+            border: 2px dashed #d1d5db; /* Bordo tratteggiato */
+            border-radius: 0.75rem;
+            width: 100%;
+            height: 200px;
+            cursor: crosshair;
+            /* FIX TABLET: Impedisce lo scorrimento della pagina durante la firma */
+            touch-action: none;
+        }
         
         /* Nasconde l'input file, ma lo lascia cliccabile */
         #import-file-input {
@@ -287,43 +299,29 @@
         </div>
     </div>
 
-    <!-- Box Conferma e Salvataggio (con Iniziali) -->
+    <!-- Box Firma e Salvataggio (Reinserito) -->
     <div id="save-section" class="card">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">4. Conferma e Salva</h2>
+        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">4. Firma e Salva</h2>
         
-        <div id="confirmation-container">
-            <p class="text-sm text-gray-600 mb-4">
-                Per archiviare la lezione, l'allievo/a deve confermare la presa visione inserendo le sue iniziali.
-            </p>
-            
-            <div class="space-y-4">
-                <div class="flex items-center">
-                    <input id="confirm-checkbox" name="confirm-checkbox" type="checkbox" class="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500" oninput="checkSaveButtonStatus()">
-                    <label for="confirm-checkbox" class="ml-3 block text-sm font-medium text-gray-700">
-                        L'allievo/a conferma la presa visione della valutazione.
-                    </label>
-                </div>
-                <div>
-                    <label for="confirm-initials" class="block text-sm font-medium text-gray-700">Iniziali Allievo/a (es. MR)</label>
-                    <input type="text" name="confirm-initials" id="confirm-initials" maxlength="5" class="mt-1 block w-full sm:w-1/2 p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 uppercase" placeholder="MR" oninput="checkSaveButtonStatus()">
-                </div>
+        <!-- Contenitore per la firma (Canvas) -->
+        <div id="signature-canvas-container">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Firma Allievo/a (per conferma):</label>
+            <canvas id="signature-pad" class="signature-pad-canvas"></canvas>
+            <div class="flex justify-end gap-2 mt-2">
+                <button id="sig-clear-btn" class="btn btn-outline text-sm py-2 px-3">Pulisci Firma</button>
             </div>
-            <p id="save-error" class="text-red-600 text-sm mt-3 hidden"></p>
+            <p id="signature-error" class="text-red-600 text-sm mt-2 hidden"></p>
         </div>
         
-        <!-- Contenitore per la conferma salvata -->
-        <div id="confirmation-display" class="hidden">
-            <p class="text-sm text-gray-700">
-                <span class="font-medium text-green-700">Lezione confermata</span>
-                <br>
-                <span id="confirmation-details" class="text-gray-500"></span>
-            </p>
+        <!-- Contenitore per la firma salvata (Immagine) -->
+        <div id="signature-image-container" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Firma Archiviata:</label>
+            <img id="saved-signature-image" class="border border-gray-300 rounded-lg" alt="Firma salvata">
         </div>
-
 
         <!-- Pulsanti di azione -->
         <div class="flex flex-col sm:flex-row gap-4 mt-6">
-            <button id="lock-lesson-btn" onclick="saveAndLockLesson()" class="btn btn-danger flex-1" disabled>
+            <button id="lock-lesson-btn" onclick="saveAndLockLesson()" class="btn btn-danger flex-1">
                 Salva
             </button>
             <button onclick="goBackToList()" class="btn btn-secondary flex-1">
@@ -336,8 +334,12 @@
 <!-- LOGICA JAVASCRIPT E STORAGE -->
 <script type="module">
 
+    // Importa la libreria della firma dal CDN come modulo MJS
+    import SignaturePad from 'https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.mjs';
+
     let currentLessonId = null;
     let quickScores = {}; 
+    let signaturePad = null; // Variabile globale per la firma
     
     // Tooltip personalizzato
     const tooltip = document.getElementById('custom-tooltip');
@@ -354,7 +356,7 @@
         1: "Grave errore → Tentativo fallito, comportamento inadeguato.",
         2: "Molto insicuro → Errori gravi, necessità di intervento.",
         3: "Insicuro → Errori evidenti, esecuzione incerta.",
-        4: "Migliorabile → Errori non gravi, ma guida imprecisa.",
+        4. : "Migliorabile → Errori non gravi, ma guida imprecisa.",
         5: "Quasi sufficiente → Autonomia parziale, migliorabile.",
         6: "Sufficiente → Controllo adeguato, ma con margini di miglioramento.",
         7: "Discreto → Guida sicura con qualche imprecisione.",
@@ -576,8 +578,51 @@
         document.getElementById('home-view').classList.add('hidden');
         document.getElementById('calculator-page').classList.remove('hidden');
         
+        // Inizializza il canvas della firma
+        const canvas = document.getElementById('signature-pad');
+        // Pulisce la variabile globale se era già stata usata
+        if (signaturePad) {
+            signaturePad.clear();
+        }
+        
+        // CORREZIONE: Usa 'SignaturePad' direttamente (ora che è importato)
+        signaturePad = new SignaturePad(canvas, {
+            backgroundColor: 'rgb(255, 255, 255)'
+        });
+        
+        // Collega il pulsante Pulisci
+        document.getElementById('sig-clear-btn').onclick = () => {
+            signaturePad.clear();
+        };
+
+        // Adatta il canvas alla dimensione del contenitore
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+        
         loadLesson(lessonId); // Carica i dati dell'allievo specifico
     }
+    
+    // Funzione per ridimensionare il canvas
+    function resizeCanvas() {
+        const canvas = document.getElementById('signature-pad');
+        if (!canvas) return;
+        
+        const ratio =  Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        
+        // Ridisegna la firma se era già presente
+        if (signaturePad) {
+            const lessonData = JSON.parse(localStorage.getItem(currentLessonId));
+            if (lessonData && lessonData.signatureData && !lessonData.isLocked) {
+                 signaturePad.fromDataURL(lessonData.signatureData);
+            } else {
+                 signaturePad.clear();
+            }
+        }
+    }
+
 
     function startNewLesson() {
         const studentNameInput = document.getElementById('student-name-input');
@@ -606,9 +651,7 @@
             quickScores: defaultQuickScores,
             isLocked: false,
             finalScore: null,
-            // Campi per la conferma con Iniziali
-            confermaPresaVisione: false,
-            inizialiAllievo: ""
+            signatureData: null // Aggiunto campo per la firma
         };
 
         localStorage.setItem(lessonId, JSON.stringify(lessonData));
@@ -814,22 +857,30 @@
         renderDetailedSummary(scores.calculatedScores);
         renderCompetencyAreas(scores.competencyAreas_0_50, scores.competencyAreas_0_5, scores.totalScore_0_500);
 
-        // Gestione conferma
-        const confirmationContainer = document.getElementById('confirmation-container');
-        const confirmationDisplay = document.getElementById('confirmation-display');
+        // Gestisci la firma
+        const sigCanvasContainer = document.getElementById('signature-canvas-container');
+        const sigImageContainer = document.getElementById('signature-image-container');
+        const sigImage = document.getElementById('saved-signature-image');
+
+        if (lessonData.signatureData) {
+            // Mostra l'immagine della firma, nascondi il canvas
+            sigImage.src = lessonData.signatureData;
+            sigImageContainer.classList.remove('hidden');
+            sigCanvasContainer.classList.add('hidden');
+        } else {
+            // Mostra il canvas, nascondi l'immagine
+            sigImageContainer.classList.add('hidden');
+            sigCanvasContainer.classList.remove('hidden');
+            if (signaturePad) {
+                signaturePad.clear();
+            }
+        }
         
         // Gestisci lo stato bloccato
         if (lessonData.isLocked) {
             lockPage();
-            // Mostra i dati di conferma
-            confirmationContainer.classList.add('hidden');
-            confirmationDisplay.classList.remove('hidden');
-            document.getElementById('confirmation-details').textContent = `Confermato con iniziali: ${lessonData.inizialiAllievo || 'N/D'}`;
         } else {
             unlockPage();
-            // Mostra i campi per la conferma
-            confirmationContainer.classList.remove('hidden');
-            confirmationDisplay.classList.add('hidden');
         }
     }
 
@@ -858,24 +909,18 @@
     
     /**
      * Funzione dedicata per il salvataggio finale (Blocco)
-     * Controlla la checkbox e le iniziali.
+     * Ora controlla la firma.
      */
     function saveAndLockLesson() {
-        const confirmCheckbox = document.getElementById('confirm-checkbox');
-        const confirmInitials = document.getElementById('confirm-initials');
-        const errorEl = document.getElementById('save-error');
+        const errorEl = document.getElementById('signature-error');
         
-        // Controlla se i campi di conferma sono compilati
-        if (!confirmCheckbox.checked) {
-            errorEl.textContent = "L'allievo/a deve spuntare la casella di presa visione.";
+        // Controlla se la firma è vuota
+        if (signaturePad.isEmpty()) {
+            errorEl.textContent = "Firma dell'allievo/a mancante per la conferma.";
             errorEl.classList.remove('hidden');
-            return;
+            return; // Interrompe il salvataggio
         }
-        if (confirmInitials.value.length < 2) {
-            errorEl.textContent = "Devi inserire almeno 2 iniziali.";
-            errorEl.classList.remove('hidden');
-            return;
-        }
+        
         errorEl.classList.add('hidden');
         
         if (!currentLessonId) return;
@@ -896,9 +941,8 @@
             const { totalScore_0_500 } = calculateScores(lessonData.quickScores);
             lessonData.finalScore = totalScore_0_500;
             
-            // Salva i dati di conferma
-            lessonData.confermaPresaVisione = confirmCheckbox.checked;
-            lessonData.inizialiAllievo = confirmInitials.value;
+            // Salva la firma come immagine Base64
+            lessonData.signatureData = signaturePad.toDataURL();
             
             lessonData.isLocked = true;
             localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
@@ -908,6 +952,7 @@
     
     // Torna alla lista
     function goBackToList() {
+        window.removeEventListener("resize", resizeCanvas); // Rimuovi il listener
         showHomeView();
     }
     
@@ -923,14 +968,17 @@
             radio.disabled = true;
         });
         
-        // Nascondi i campi di input della conferma
-        document.getElementById('confirmation-container').classList.add('hidden');
+        // Nascondi il canvas e mostra l'immagine della firma
+        const sigCanvasContainer = document.getElementById('signature-canvas-container');
+        const sigImageContainer = document.getElementById('signature-image-container');
+        const sigImage = document.getElementById('saved-signature-image');
         
-        // Mostra il riepilogo della conferma
+        sigCanvasContainer.classList.add('hidden');
+        
         const lessonData = JSON.parse(localStorage.getItem(currentLessonId));
-        if (lessonData && lessonData.confermaPresaVisione) {
-            document.getElementById('confirmation-display').classList.remove('hidden');
-            document.getElementById('confirmation-details').textContent = `Confermato con iniziali: ${lessonData.inizialiAllievo}`;
+        if (lessonData && lessonData.signatureData) {
+            sigImage.src = lessonData.signatureData;
+            sigImageContainer.classList.remove('hidden');
         }
     }
     
@@ -946,13 +994,12 @@
             radio.disabled = false;
         });
         
-        // Mostra i campi di conferma e resetta lo stato
-        document.getElementById('confirmation-container').classList.remove('hidden');
-        document.getElementById('confirmation-display').classList.add('hidden');
-        document.getElementById('confirm-checkbox').checked = false;
-        document.getElementById('confirm-initials').value = "";
-        document.getElementById('save-error').classList.add('hidden');
-        document.getElementById('lock-lesson-btn').disabled = true; // Disabilitato di default
+        // Mostra il canvas e nascondi l'immagine
+        document.getElementById('signature-canvas-container').classList.remove('hidden');
+        document.getElementById('signature-image-container').classList.add('hidden');
+        if (signaturePad) {
+            signaturePad.clear();
+        }
     }
 
     // --- FUNZIONI DI RENDERIZZAZIONE UI ---
@@ -1194,18 +1241,8 @@
     }
 
     // Funzione per abilitare/disabilitare il tasto Salva
-    function checkSaveButtonStatus() {
-        const confirmCheckbox = document.getElementById('confirm-checkbox');
-        const confirmInitials = document.getElementById('confirm-initials');
-        const saveButton = document.getElementById('lock-lesson-btn');
-        
-        // Abilita solo se la checkbox è spuntata E le iniziali sono almeno 2
-        if (confirmCheckbox.checked && confirmInitials.value.length >= 2) {
-            saveButton.disabled = false;
-        } else {
-            saveButton.disabled = true;
-        }
-    }
+    // RIMOSSA - non più necessaria con la firma
+    // function checkSaveButtonStatus() { ... }
 
 
     // Esponi le funzioni necessarie all'ambito globale per gli onclick HTML
@@ -1223,7 +1260,7 @@
     window.hideTooltip = hideTooltip;
     window.exportData = exportData;
     window.importData = importData;
-    window.checkSaveButtonStatus = checkSaveButtonStatus;
+    // window.checkSaveButtonStatus = checkSaveButtonStatus; // RIMOSSO
     
     // Avvia l'applicazione
     initPage();
