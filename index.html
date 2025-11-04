@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Valutazioni Guida</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 1. Libreria per la firma NON più qui -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
@@ -135,17 +134,6 @@
             border: 1px solid #fecaca;
         }
         .delete-group-btn:hover { background-color: #fee2e2; }
-        
-        /* Stili per il riquadro firma */
-        .signature-pad-canvas {
-            border: 2px dashed #d1d5db; /* Bordo tratteggiato */
-            border-radius: 0.75rem;
-            width: 100%;
-            height: 200px;
-            cursor: crosshair;
-            /* FIX TABLET: Impedisce lo scorrimento della pagina durante la firma */
-            touch-action: none;
-        }
         
         /* Nasconde l'input file, ma lo lascia cliccabile */
         #import-file-input {
@@ -299,24 +287,19 @@
         </div>
     </div>
 
-    <!-- Box Firma e Salvataggio (Reinserito) -->
+    <!-- Box Conferma e Salvataggio (Senza conferma) -->
     <div id="save-section" class="card">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">4. Firma e Salva</h2>
+        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">4. Salva e Completa</h2>
         
-        <!-- Contenitore per la firma (Canvas) -->
-        <div id="signature-canvas-container">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Firma Allievo/a (per conferma):</label>
-            <canvas id="signature-pad" class="signature-pad-canvas"></canvas>
-            <div class="flex justify-end gap-2 mt-2">
-                <button id="sig-clear-btn" class="btn btn-outline text-sm py-2 px-3">Pulisci Firma</button>
-            </div>
-            <p id="signature-error" class="text-red-600 text-sm mt-2 hidden"></p>
+        <!-- Contenitore conferma RIMOSSO -->
+        <div id="confirmation-container">
+            <p class="text-sm text-gray-600 mb-4">
+                Clicca "Salva" per archiviare la valutazione. Non potrai più modificarla.
+            </p>
         </div>
         
-        <!-- Contenitore per la firma salvata (Immagine) -->
-        <div id="signature-image-container" class="hidden">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Firma Archiviata:</label>
-            <img id="saved-signature-image" class="border border-gray-300 rounded-lg" alt="Firma salvata">
+        <!-- Contenitore display conferma RIMOSSO -->
+        <div id="confirmation-display" class="hidden">
         </div>
 
         <!-- Pulsanti di azione -->
@@ -334,12 +317,8 @@
 <!-- LOGICA JAVASCRIPT E STORAGE -->
 <script type="module">
 
-    // Importa la libreria della firma dal CDN come modulo MJS
-    import SignaturePad from 'https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.mjs';
-
     let currentLessonId = null;
     let quickScores = {}; 
-    let signaturePad = null; // Variabile globale per la firma
     
     // Tooltip personalizzato
     const tooltip = document.getElementById('custom-tooltip');
@@ -356,7 +335,7 @@
         1: "Grave errore → Tentativo fallito, comportamento inadeguato.",
         2: "Molto insicuro → Errori gravi, necessità di intervento.",
         3: "Insicuro → Errori evidenti, esecuzione incerta.",
-        4. : "Migliorabile → Errori non gravi, ma guida imprecisa.",
+        4: "Migliorabile → Errori non gravi, ma guida imprecisa.",
         5: "Quasi sufficiente → Autonomia parziale, migliorabile.",
         6: "Sufficiente → Controllo adeguato, ma con margini di miglioramento.",
         7: "Discreto → Guida sicura con qualche imprecisione.",
@@ -578,51 +557,8 @@
         document.getElementById('home-view').classList.add('hidden');
         document.getElementById('calculator-page').classList.remove('hidden');
         
-        // Inizializza il canvas della firma
-        const canvas = document.getElementById('signature-pad');
-        // Pulisce la variabile globale se era già stata usata
-        if (signaturePad) {
-            signaturePad.clear();
-        }
-        
-        // CORREZIONE: Usa 'SignaturePad' direttamente (ora che è importato)
-        signaturePad = new SignaturePad(canvas, {
-            backgroundColor: 'rgb(255, 255, 255)'
-        });
-        
-        // Collega il pulsante Pulisci
-        document.getElementById('sig-clear-btn').onclick = () => {
-            signaturePad.clear();
-        };
-
-        // Adatta il canvas alla dimensione del contenitore
-        resizeCanvas();
-        window.addEventListener("resize", resizeCanvas);
-        
         loadLesson(lessonId); // Carica i dati dell'allievo specifico
     }
-    
-    // Funzione per ridimensionare il canvas
-    function resizeCanvas() {
-        const canvas = document.getElementById('signature-pad');
-        if (!canvas) return;
-        
-        const ratio =  Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        canvas.getContext("2d").scale(ratio, ratio);
-        
-        // Ridisegna la firma se era già presente
-        if (signaturePad) {
-            const lessonData = JSON.parse(localStorage.getItem(currentLessonId));
-            if (lessonData && lessonData.signatureData && !lessonData.isLocked) {
-                 signaturePad.fromDataURL(lessonData.signatureData);
-            } else {
-                 signaturePad.clear();
-            }
-        }
-    }
-
 
     function startNewLesson() {
         const studentNameInput = document.getElementById('student-name-input');
@@ -650,8 +586,8 @@
             moduloSvolto: "nessuno",
             quickScores: defaultQuickScores,
             isLocked: false,
-            finalScore: null,
-            signatureData: null // Aggiunto campo per la firma
+            finalScore: null
+            // Campi conferma rimossi
         };
 
         localStorage.setItem(lessonId, JSON.stringify(lessonData));
@@ -857,24 +793,7 @@
         renderDetailedSummary(scores.calculatedScores);
         renderCompetencyAreas(scores.competencyAreas_0_50, scores.competencyAreas_0_5, scores.totalScore_0_500);
 
-        // Gestisci la firma
-        const sigCanvasContainer = document.getElementById('signature-canvas-container');
-        const sigImageContainer = document.getElementById('signature-image-container');
-        const sigImage = document.getElementById('saved-signature-image');
-
-        if (lessonData.signatureData) {
-            // Mostra l'immagine della firma, nascondi il canvas
-            sigImage.src = lessonData.signatureData;
-            sigImageContainer.classList.remove('hidden');
-            sigCanvasContainer.classList.add('hidden');
-        } else {
-            // Mostra il canvas, nascondi l'immagine
-            sigImageContainer.classList.add('hidden');
-            sigCanvasContainer.classList.remove('hidden');
-            if (signaturePad) {
-                signaturePad.clear();
-            }
-        }
+        // Gestione conferma RIMOSSA
         
         // Gestisci lo stato bloccato
         if (lessonData.isLocked) {
@@ -909,19 +828,10 @@
     
     /**
      * Funzione dedicata per il salvataggio finale (Blocco)
-     * Ora controlla la firma.
+     * Senza conferma
      */
     function saveAndLockLesson() {
-        const errorEl = document.getElementById('signature-error');
-        
-        // Controlla se la firma è vuota
-        if (signaturePad.isEmpty()) {
-            errorEl.textContent = "Firma dell'allievo/a mancante per la conferma.";
-            errorEl.classList.remove('hidden');
-            return; // Interrompe il salvataggio
-        }
-        
-        errorEl.classList.add('hidden');
+        // Controlli conferma RIMOSSI
         
         if (!currentLessonId) return;
         const currentDataString = localStorage.getItem(currentLessonId);
@@ -941,8 +851,7 @@
             const { totalScore_0_500 } = calculateScores(lessonData.quickScores);
             lessonData.finalScore = totalScore_0_500;
             
-            // Salva la firma come immagine Base64
-            lessonData.signatureData = signaturePad.toDataURL();
+            // Salva i dati di conferma RIMOSSI
             
             lessonData.isLocked = true;
             localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
@@ -952,7 +861,6 @@
     
     // Torna alla lista
     function goBackToList() {
-        window.removeEventListener("resize", resizeCanvas); // Rimuovi il listener
         showHomeView();
     }
     
@@ -968,18 +876,9 @@
             radio.disabled = true;
         });
         
-        // Nascondi il canvas e mostra l'immagine della firma
-        const sigCanvasContainer = document.getElementById('signature-canvas-container');
-        const sigImageContainer = document.getElementById('signature-image-container');
-        const sigImage = document.getElementById('saved-signature-image');
-        
-        sigCanvasContainer.classList.add('hidden');
-        
-        const lessonData = JSON.parse(localStorage.getItem(currentLessonId));
-        if (lessonData && lessonData.signatureData) {
-            sigImage.src = lessonData.signatureData;
-            sigImageContainer.classList.remove('hidden');
-        }
+        // Nascondi i campi di input della conferma
+        document.getElementById('confirmation-container').classList.add('hidden');
+        document.getElementById('confirmation-display').classList.add('hidden');
     }
     
     function unlockPage() {
@@ -994,12 +893,10 @@
             radio.disabled = false;
         });
         
-        // Mostra il canvas e nascondi l'immagine
-        document.getElementById('signature-canvas-container').classList.remove('hidden');
-        document.getElementById('signature-image-container').classList.add('hidden');
-        if (signaturePad) {
-            signaturePad.clear();
-        }
+        // Mostra i campi di conferma e resetta lo stato
+        document.getElementById('confirmation-container').classList.remove('hidden');
+        document.getElementById('confirmation-display').classList.add('hidden');
+        document.getElementById('lock-lesson-btn').disabled = false; // Ri-abilitato
     }
 
     // --- FUNZIONI DI RENDERIZZAZIONE UI ---
@@ -1241,7 +1138,7 @@
     }
 
     // Funzione per abilitare/disabilitare il tasto Salva
-    // RIMOSSA - non più necessaria con la firma
+    // RIMOSSA
     // function checkSaveButtonStatus() { ... }
 
 
@@ -1260,7 +1157,7 @@
     window.hideTooltip = hideTooltip;
     window.exportData = exportData;
     window.importData = importData;
-    // window.checkSaveButtonStatus = checkSaveButtonStatus; // RIMOSSO
+    // checkSaveButtonStatus RIMOSSO
     
     // Avvia l'applicazione
     initPage();
