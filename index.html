@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Valutazioni Guida</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 1. Libreria per la firma RIMOSSA -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7f7ff; /* Leggermente più blu */
+            background-color: #f7f7ff; 
         }
         .container {
             max-width: 1200px;
@@ -29,7 +28,7 @@
             appearance: none;
             width: 100%;
             height: 10px;
-            background: #e5e7eb; /* Grigio più chiaro */
+            background: #e5e7eb; 
             outline: none;
             opacity: 0.9;
             transition: opacity .2s;
@@ -52,6 +51,11 @@
             background: #007bff;
             cursor: pointer;
             border-radius: 50%;
+        }
+        
+        /* FIX TABLET: Impedisce lo scorrimento della pagina quando si interagisce con gli input */
+        input[type="text"], textarea {
+             touch-action: manipulation;
         }
         
         /* Stili Pulsanti */
@@ -105,6 +109,10 @@
             margin-bottom: 0.5rem;
             padding-bottom: 0.5rem;
             border-bottom: 2px solid #e5e7eb; /* border-gray-200 */
+            /* Aggiunto per il pulsante Elimina Gruppo */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .date-group-header:first-child {
             margin-top: 0;
@@ -119,8 +127,13 @@
             flex-shrink: 0;
         }
         .delete-btn:hover { background-color: #fee2e2; }
-        
-        /* 2. Stili per la firma RIMOSSI */
+
+        .delete-group-btn {
+            background-color: #fef2f2; color: #ef4444; font-size: 0.75rem;
+            font-weight: 600; border-radius: 0.5rem; padding: 0.25rem 0.75rem;
+            border: 1px solid #fecaca;
+        }
+        .delete-group-btn:hover { background-color: #fee2e2; }
         
         /* Nasconde l'input file, ma lo lascia cliccabile */
         #import-file-input {
@@ -161,20 +174,23 @@
         </div>
     </div>
     
-    <!-- 1. Box Backup e Ripristino -->
+    <!-- Box Backup e Ripristino -->
     <div class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Backup e Ripristino</h2>
         <p class="text-sm text-gray-600 mb-4">
             Salva tutti i tuoi dati in un file, o ricarica un file di backup.
-            (Utile per spostare i dati tra dispositivi o per sicurezza).
         </p>
-        <div class="flex flex-col sm:flex-row gap-4">
-            <button id="export-btn" class="btn btn-primary flex-1">
-                Esporta Dati (Download)
+        <div class="grid grid-cols-2 gap-4">
+            <button id="export-btn" class="btn btn-primary">
+                Esporta Dati
             </button>
             <input type="file" id="import-file-input" accept=".json" onchange="importData(event)">
-            <button id="import-btn" class="btn btn-outline flex-1">
+            <button id="import-btn" class="btn btn-outline">
                 Importa Dati
+            </button>
+            <!-- Pulsante Resetta Dati Aggiunto -->
+            <button id="reset-all-btn" onclick="deleteAllData()" class="btn btn-danger col-span-2">
+                Resetta Tutti i Dati
             </button>
         </div>
         <p id="import-status" class="text-sm mt-3"></p>
@@ -271,19 +287,43 @@
         </div>
     </div>
 
-    <!-- 2. Box Salvataggio (ex-Firma) -->
+    <!-- Box Conferma e Salvataggio (con Iniziali) -->
     <div id="save-section" class="card">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">4. Salva e Completa</h2>
+        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">4. Conferma e Salva</h2>
         
-        <!-- Contenitore per la firma RIMOSSO -->
+        <div id="confirmation-container">
+            <p class="text-sm text-gray-600 mb-4">
+                Per archiviare la lezione, l'allievo/a deve confermare la presa visione inserendo le sue iniziali.
+            </p>
+            
+            <div class="space-y-4">
+                <div class="flex items-center">
+                    <input id="confirm-checkbox" name="confirm-checkbox" type="checkbox" class="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500" oninput="checkSaveButtonStatus()">
+                    <label for="confirm-checkbox" class="ml-3 block text-sm font-medium text-gray-700">
+                        L'allievo/a conferma la presa visione della valutazione.
+                    </label>
+                </div>
+                <div>
+                    <label for="confirm-initials" class="block text-sm font-medium text-gray-700">Iniziali Allievo/a (es. MR)</label>
+                    <input type="text" name="confirm-initials" id="confirm-initials" maxlength="5" class="mt-1 block w-full sm:w-1/2 p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 uppercase" placeholder="MR" oninput="checkSaveButtonStatus()">
+                </div>
+            </div>
+            <p id="save-error" class="text-red-600 text-sm mt-3 hidden"></p>
+        </div>
         
-        <p class="text-sm text-gray-600 mb-4">
-            Clicca "Salva" per archiviare la valutazione. Non potrai più modificarla.
-        </p>
+        <!-- Contenitore per la conferma salvata -->
+        <div id="confirmation-display" class="hidden">
+            <p class="text-sm text-gray-700">
+                <span class="font-medium text-green-700">Lezione confermata</span>
+                <br>
+                <span id="confirmation-details" class="text-gray-500"></span>
+            </p>
+        </div>
+
 
         <!-- Pulsanti di azione -->
         <div class="flex flex-col sm:flex-row gap-4 mt-6">
-            <button id="lock-lesson-btn" onclick="saveAndLockLesson()" class="btn btn-danger flex-1">
+            <button id="lock-lesson-btn" onclick="saveAndLockLesson()" class="btn btn-danger flex-1" disabled>
                 Salva
             </button>
             <button onclick="goBackToList()" class="btn btn-secondary flex-1">
@@ -298,7 +338,6 @@
 
     let currentLessonId = null;
     let quickScores = {}; 
-    // let signaturePad = null; // 2. RIMOSSA
     
     // Tooltip personalizzato
     const tooltip = document.getElementById('custom-tooltip');
@@ -528,7 +567,7 @@
         document.getElementById('student-name-input').value = ""; // Pulisce l'input
         loadSavedLessonsList(); // Ricarica la lista
         
-        // 1. Collega i pulsanti Import/Export
+        // Collega i pulsanti Import/Export
         document.getElementById('export-btn').onclick = exportData;
         document.getElementById('import-btn').onclick = () => document.getElementById('import-file-input').click();
     }
@@ -537,12 +576,8 @@
         document.getElementById('home-view').classList.add('hidden');
         document.getElementById('calculator-page').classList.remove('hidden');
         
-        // 2. Inizializzazione firma RIMOSSA
-        
         loadLesson(lessonId); // Carica i dati dell'allievo specifico
     }
-    
-    // 2. Funzione per ridimensionare il canvas RIMOSSA
 
     function startNewLesson() {
         const studentNameInput = document.getElementById('student-name-input');
@@ -570,8 +605,10 @@
             moduloSvolto: "nessuno",
             quickScores: defaultQuickScores,
             isLocked: false,
-            finalScore: null
-            // 2. signatureData RIMOSSO
+            finalScore: null,
+            // Campi per la conferma con Iniziali
+            confermaPresaVisione: false,
+            inizialiAllievo: ""
         };
 
         localStorage.setItem(lessonId, JSON.stringify(lessonData));
@@ -630,56 +667,81 @@
             return;
         }
         
-        lessons.sort((a, b) => {
-            const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
-            const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
-            return dateB - dateA; // Dalla più recente alla più vecchia
+        // Raggruppa le lezioni per data
+        const groupedLessons = {};
+        lessons.forEach(lesson => {
+            const dateGroup = getRelativeDateGroup(lesson.createdAt);
+            if (!groupedLessons[dateGroup]) {
+                groupedLessons[dateGroup] = [];
+            }
+            groupedLessons[dateGroup].push(lesson);
         });
 
+        // Ordina i gruppi di date
+        const sortedGroups = Object.keys(groupedLessons).sort((a, b) => {
+            if (a === "Oggi") return -1;
+            if (b === "Oggi") return 1;
+            if (a === "Ieri") return -1;
+            if (b === "Ieri") return 1;
+            if (a === "Senza Data") return 1;
+            if (b === "Senza Data") return -1;
+            // Ordina le altre date (es. 01/11/2025) dalla più recente
+            const dateA = new Date(a.split('/').reverse().join('-'));
+            const dateB = new Date(b.split('/').reverse().join('-'));
+            return dateB - dateA;
+        });
 
-        let currentGroup = "";
-        lessons.forEach(data => {
-            const key = data.id;
-            const dateGroup = getRelativeDateGroup(data.createdAt);
-
-            if (dateGroup !== currentGroup) {
-                currentGroup = dateGroup;
-                const groupHeader = document.createElement('h3');
-                groupHeader.className = 'date-group-header';
-                groupHeader.textContent = currentGroup;
-                listContainer.appendChild(groupHeader);
-            }
+        // Itera sui gruppi ordinati e mostra
+        sortedGroups.forEach(dateGroup => {
+            const lessonsInGroup = groupedLessons[dateGroup];
+            const lessonIdsInGroup = lessonsInGroup.map(l => l.id).join(',');
             
-            const status = data.isLocked 
-                ? '<span class="text-red-600 font-medium">Archiviata</span>' 
-                : '<span class="text-green-600">In corso</span>';
-            
-            let scoreDisplay = '';
-            if (data.isLocked && data.finalScore != null) {
-                scoreDisplay = `<span class="text-sm text-indigo-700 font-bold ml-2">(${data.finalScore}/500)</span>`;
-            }
-                
-            const itemEl = document.createElement('div');
-            itemEl.className = 'saved-lesson-item';
-            
-            const creationTime = data.createdAt ? new Date(data.createdAt).toLocaleTimeString('it-IT', {
-                hour: '2-digit',
-                minute: '2-digit'
-            }) : "N/D";
-            
-            itemEl.innerHTML = `
-                <div class="flex-grow min-w-0"> <!-- Container flessibile per nome -->
-                    <div class="flex items-center">
-                        <a href="#" class="font-medium text-blue-600 hover:underline truncate" onclick="openLesson('${key}'); return false;" title="${data.studentName}">
-                            ${data.studentName}
-                        </a>
-                        ${scoreDisplay}
-                    </div>
-                    <span class="text-sm text-gray-500">${creationTime} - (${status})</span>
-                </div>
-                <button class="delete-btn ml-2" title="Elimina" onclick="deleteLesson('${key}')">&times;</button>
+            const groupHeader = document.createElement('div');
+            groupHeader.className = 'date-group-header';
+            groupHeader.innerHTML = `
+                <span>${dateGroup} (${lessonsInGroup.length})</span>
+                <button class="delete-group-btn" onclick="deleteLessonsByGroup('${lessonIdsInGroup}')">
+                    Elimina Gruppo
+                </button>
             `;
-            listContainer.appendChild(itemEl);
+            listContainer.appendChild(groupHeader);
+            
+            // Ordina le lezioni all'interno del gruppo (per ora di creazione)
+            lessonsInGroup.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            lessonsInGroup.forEach(data => {
+                const key = data.id;
+                const status = data.isLocked 
+                    ? '<span class="text-red-600 font-medium">Archiviata</span>' 
+                    : '<span class="text-green-600">In corso</span>';
+                
+                let scoreDisplay = '';
+                if (data.isLocked && data.finalScore != null) {
+                    scoreDisplay = `<span class="text-sm text-indigo-700 font-bold ml-2">(${data.finalScore}/500)</span>`;
+                }
+                    
+                const itemEl = document.createElement('div');
+                itemEl.className = 'saved-lesson-item';
+                
+                const creationTime = data.createdAt ? new Date(data.createdAt).toLocaleTimeString('it-IT', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) : "N/D";
+                
+                itemEl.innerHTML = `
+                    <div class="flex-grow min-w-0"> <!-- Container flessibile per nome -->
+                        <div class="flex items-center">
+                            <a href="#" class="font-medium text-blue-600 hover:underline truncate" onclick="openLesson('${key}'); return false;" title="${data.studentName}">
+                                ${data.studentName}
+                            </a>
+                            ${scoreDisplay}
+                        </div>
+                        <span class="text-sm text-gray-500">${creationTime} - (${status})</span>
+                    </div>
+                    <button class="delete-btn ml-2" title="Elimina" onclick="deleteLesson('${key}')">&times;</button>
+                `;
+                listContainer.appendChild(itemEl);
+            });
         });
     }
 
@@ -689,6 +751,31 @@
             loadSavedLessonsList(); // Ricarica la lista dopo l'eliminazione
         }
     }
+    
+    // Funzione per eliminare un intero gruppo di lezioni
+    function deleteLessonsByGroup(lessonIdsString) {
+        const lessonIds = lessonIdsString.split(',');
+        if (confirm(`Sei sicuro di voler eliminare tutte le ${lessonIds.length} valutazioni di questo gruppo? L'azione è irreversibile.`)) {
+            lessonIds.forEach(id => {
+                localStorage.removeItem(id);
+            });
+            loadSavedLessonsList();
+        }
+    }
+    
+    // Funzione per eliminare TUTTI i dati
+    function deleteAllData() {
+        if (confirm("ATTENZIONE!\nStai per eliminare TUTTE le valutazioni salvate su questo dispositivo.\n\nAssicurati di aver esportato un backup se vuoi conservare i dati.\n\nVuoi continuare?")) {
+            localStorage.clear();
+            loadSavedLessonsList();
+            document.getElementById('import-status').textContent = "Tutti i dati sono stati resettati.";
+            document.getElementById('import-status').className = "text-sm mt-3 text-green-600";
+        } else {
+            document.getElementById('import-status').textContent = "Reset annullato.";
+            document.getElementById('import-status').className = "text-sm mt-3 text-gray-600";
+        }
+    }
+
 
     function openLesson(lessonId) {
         showCalculatorPage(lessonId);
@@ -727,32 +814,38 @@
         renderDetailedSummary(scores.calculatedScores);
         renderCompetencyAreas(scores.competencyAreas_0_50, scores.competencyAreas_0_5, scores.totalScore_0_500);
 
-        // 2. Gestione firma RIMOSSA
+        // Gestione conferma
+        const confirmationContainer = document.getElementById('confirmation-container');
+        const confirmationDisplay = document.getElementById('confirmation-display');
         
         // Gestisci lo stato bloccato
         if (lessonData.isLocked) {
             lockPage();
+            // Mostra i dati di conferma
+            confirmationContainer.classList.add('hidden');
+            confirmationDisplay.classList.remove('hidden');
+            document.getElementById('confirmation-details').textContent = `Confermato con iniziali: ${lessonData.inizialiAllievo || 'N/D'}`;
         } else {
             unlockPage();
+            // Mostra i campi per la conferma
+            confirmationContainer.classList.remove('hidden');
+            confirmationDisplay.classList.add('hidden');
         }
     }
 
     /**
      * Salva i dati temporaneamente (su input) senza bloccare.
-     * La funzione per il blocco è stata separata in saveAndLockLesson()
      */
     function saveLessonData(isLocking = false) {
         if (!currentLessonId) return;
         
-        // Se isLocking è true, questa funzione non fa nulla,
-        // perché il salvataggio avverrà in saveAndLockLesson()
-        if (isLocking) return; 
+        if (isLocking) return; // Il salvataggio bloccato è gestito da saveAndLockLesson
 
         const currentDataString = localStorage.getItem(currentLessonId);
         if (!currentDataString) return;
         
         const lessonData = JSON.parse(currentDataString);
-        if (lessonData.isLocked) return; // Non salvare se già bloccato
+        if (lessonData.isLocked) return; 
         
         lessonData.notes = document.getElementById('lesson-notes').value;
         lessonData.quickScores = quickScores;
@@ -760,16 +853,30 @@
         const selectedModulo = document.querySelector('input[name="modulo_obbligatorio"]:checked')?.value || "nessuno";
         lessonData.moduloSvolto = selectedModulo;
         
-        // Salva senza bloccare (salvataggio automatico)
         localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
     }
     
     /**
-     * 2. Funzione dedicata per il salvataggio finale (Blocco)
-     * Ora non controlla più la firma.
+     * Funzione dedicata per il salvataggio finale (Blocco)
+     * Controlla la checkbox e le iniziali.
      */
     function saveAndLockLesson() {
-        // 2. Controllo firma RIMOSSO
+        const confirmCheckbox = document.getElementById('confirm-checkbox');
+        const confirmInitials = document.getElementById('confirm-initials');
+        const errorEl = document.getElementById('save-error');
+        
+        // Controlla se i campi di conferma sono compilati
+        if (!confirmCheckbox.checked) {
+            errorEl.textContent = "L'allievo/a deve spuntare la casella di presa visione.";
+            errorEl.classList.remove('hidden');
+            return;
+        }
+        if (confirmInitials.value.length < 2) {
+            errorEl.textContent = "Devi inserire almeno 2 iniziali.";
+            errorEl.classList.remove('hidden');
+            return;
+        }
+        errorEl.classList.add('hidden');
         
         if (!currentLessonId) return;
         const currentDataString = localStorage.getItem(currentLessonId);
@@ -789,8 +896,9 @@
             const { totalScore_0_500 } = calculateScores(lessonData.quickScores);
             lessonData.finalScore = totalScore_0_500;
             
-            // 2. Salva la firma RIMOSSO
-            // lessonData.signatureData = signaturePad.toDataURL();
+            // Salva i dati di conferma
+            lessonData.confermaPresaVisione = confirmCheckbox.checked;
+            lessonData.inizialiAllievo = confirmInitials.value;
             
             lessonData.isLocked = true;
             localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
@@ -800,7 +908,6 @@
     
     // Torna alla lista
     function goBackToList() {
-        // window.removeEventListener("resize", resizeCanvas); // 2. RIMOSSO
         showHomeView();
     }
     
@@ -816,7 +923,15 @@
             radio.disabled = true;
         });
         
-        // 2. Gestione canvas/immagine firma RIMOSSA
+        // Nascondi i campi di input della conferma
+        document.getElementById('confirmation-container').classList.add('hidden');
+        
+        // Mostra il riepilogo della conferma
+        const lessonData = JSON.parse(localStorage.getItem(currentLessonId));
+        if (lessonData && lessonData.confermaPresaVisione) {
+            document.getElementById('confirmation-display').classList.remove('hidden');
+            document.getElementById('confirmation-details').textContent = `Confermato con iniziali: ${lessonData.inizialiAllievo}`;
+        }
     }
     
     function unlockPage() {
@@ -831,7 +946,13 @@
             radio.disabled = false;
         });
         
-        // 2. Gestione canvas/immagine firma RIMOSSA
+        // Mostra i campi di conferma e resetta lo stato
+        document.getElementById('confirmation-container').classList.remove('hidden');
+        document.getElementById('confirmation-display').classList.add('hidden');
+        document.getElementById('confirm-checkbox').checked = false;
+        document.getElementById('confirm-initials').value = "";
+        document.getElementById('save-error').classList.add('hidden');
+        document.getElementById('lock-lesson-btn').disabled = true; // Disabilitato di default
     }
 
     // --- FUNZIONI DI RENDERIZZAZIONE UI ---
@@ -978,7 +1099,7 @@
         tooltip.classList.add('hidden');
     }
     
-    // --- 1. Funzioni Import/Export ---
+    // --- Funzioni Import/Export ---
     
     function exportData() {
         const statusEl = document.getElementById('import-status');
@@ -1072,20 +1193,37 @@
         reader.readAsText(file);
     }
 
+    // Funzione per abilitare/disabilitare il tasto Salva
+    function checkSaveButtonStatus() {
+        const confirmCheckbox = document.getElementById('confirm-checkbox');
+        const confirmInitials = document.getElementById('confirm-initials');
+        const saveButton = document.getElementById('lock-lesson-btn');
+        
+        // Abilita solo se la checkbox è spuntata E le iniziali sono almeno 2
+        if (confirmCheckbox.checked && confirmInitials.value.length >= 2) {
+            saveButton.disabled = false;
+        } else {
+            saveButton.disabled = true;
+        }
+    }
+
 
     // Esponi le funzioni necessarie all'ambito globale per gli onclick HTML
     window.updateQuickScore = updateQuickScore;
     window.startNewLesson = startNewLesson;
     window.loadSavedLessonsList = loadSavedLessonsList;
     window.deleteLesson = deleteLesson;
+    window.deleteLessonsByGroup = deleteLessonsByGroup;
+    window.deleteAllData = deleteAllData;
     window.saveLessonData = saveLessonData;
-    window.saveAndLockLesson = saveAndLockLesson; // 2. Esponi la nuova funzione
+    window.saveAndLockLesson = saveAndLockLesson;
     window.goBackToList = goBackToList;
     window.openLesson = openLesson;
     window.showTooltip = showTooltip;
     window.hideTooltip = hideTooltip;
-    window.exportData = exportData; // 1. Esponi export
-    window.importData = importData; // 1. Esponi import
+    window.exportData = exportData;
+    window.importData = importData;
+    window.checkSaveButtonStatus = checkSaveButtonStatus;
     
     // Avvia l'applicazione
     initPage();
