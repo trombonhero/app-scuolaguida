@@ -140,6 +140,73 @@
             display: none;
         }
 
+        /* Stili per Accordion (Tendina) */
+        details summary {
+            list-style: none; /* Rimuove la freccia di default */
+            cursor: pointer;
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 700; /* font-bold */
+            color: #374151; /* text-gray-700 */
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        details summary::after { /* Crea una freccia personalizzata */
+            content: '▼';
+            font-size: 0.7rem;
+            transition: transform 0.2s;
+        }
+        details[open] summary::after {
+            transform: rotate(180deg);
+        }
+        /* Rimuove la freccia di default su Webkit/Safari */
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+        details > div {
+            padding-top: 1.5rem;
+        }
+
+        /* Stili per Gratta e Vinci */
+        .scratch-container {
+            position: relative;
+            width: 80px;
+            height: 40px;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid #d1d5db;
+        }
+        .scratch-result {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+        .scratch-result.si { color: #16a34a; } /* green-600 */
+        .scratch-result.no { color: #dc2626; } /* red-600 */
+        
+        .scratch-cover {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #c0c0c0; /* silver */
+            background-image: linear-gradient(45deg, #d1d5db 25%, transparent 25%, transparent 75%, #d1d5db 75%, #d1d5db), 
+                              linear-gradient(-45deg, #d1d5db 25%, transparent 25%, transparent 75%, #d1d5db 75%, #d1d5db);
+            background-size: 6px 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #4b5563;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
     </style>
 </head>
 <body>
@@ -263,42 +330,75 @@
         
     </div>
 
-    <!-- RIEPILOGO AREE DI COMPETENZA (2) -->
-    <div id="competency-section" class="card">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">2. Riepilogo Aree di Competenza (Scala 0-5)</h2>
-        <div id="competency-summary" class="grid md:grid-cols-2 gap-4">
-            <!-- I punteggi delle 10 aree saranno qui (ora in scala 0-5) -->
-        </div>
-        <div class="mt-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg flex justify-between items-center">
+    <!-- PUNTEGGIO TOTALE (2) - Spostato e Grattabile -->
+    <div id="total-score-section" class="card">
+        <div class="p-4 bg-indigo-50 border border-indigo-200 rounded-lg flex justify-between items-center">
             <span class="text-lg font-bold text-indigo-800">Punteggio Totale Calcolato:</span>
-            <span id="total-score-500" class="text-2xl font-extrabold text-indigo-800">0 / 500</span>
+            
+            <!-- Contenitore Grattabile per il Punteggio -->
+            <div class="scratch-container" style="width: 160px; height: 50px; border-radius: 0.5rem;">
+                <div id="result-total-score" class="scratch-result">
+                    <span id="total-score-500" class="text-2xl font-extrabold text-indigo-800">0 / 500</span>
+                </div>
+                <div id="cover-total-score" class="scratch-cover" onclick="reveal('total-score')" style="border-radius: 0.5rem; font-size: 0.875rem;">
+                    GRATTA QUI
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- RIEPILOGO DETTAGLIATO CALCOLATO (3) -->
-    <div id="detailed-summary-section" class="card">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex justify-between items-center">
-            3. Riepilogo Dettagliato
-            <span class="text-sm font-normal text-indigo-600">(Aggiornato in tempo reale)</span>
-        </h2>
-        
-        <div id="calculated-scores-container">
-            <!-- I punteggi dettagliati raggruppati saranno inseriti qui -->
-        </div>
+
+    <!-- RIEPILOGO AREE DI COMPETENZA (3) - A tendina -->
+    <div id="competency-section-wrapper" class="card">
+        <details>
+            <!-- Titolo modificato -->
+            <summary>3. Riepilogo Aree di Competenza</summary>
+            <div id="competency-summary" class="grid md:grid-cols-2 gap-4">
+                <!-- I punteggi delle 10 aree saranno qui -->
+            </div>
+        </details>
     </div>
 
-    <!-- Box Conferma e Salvataggio (Senza conferma) -->
+    <!-- RIEPILOGO DETTAGLIATO CALCOLATO (4) - A tendina -->
+    <div id="detailed-summary-section-wrapper" class="card">
+        <details>
+            <summary>
+                <!-- Titolo modificato -->
+                4. Riepilogo Dettagliato
+            </summary>
+            <div id="calculated-scores-container">
+                <!-- I punteggi dettagliati raggruppati saranno inseriti qui -->
+            </div>
+        </details>
+    </div>
+    
+    <!-- PREVISIONE ESAME (5) - Nuovo, a tendina e rinominato -->
+    <div id="exam-prediction-section" class="card">
+        <details>
+            <summary>5. Patentometro</summary>
+            <div>
+                <p class="text-sm text-gray-600 mb-6">
+                    Clicca o "gratta" il riquadro argentato per rivelare il risultato.
+                </p>
+                
+                <div id="exam-items-container" class="space-y-4">
+                    <!-- I 24 criteri d'esame saranno inseriti qui da JS -->
+                </div>
+            </div>
+        </details>
+    </div>
+
+
+    <!-- Box Salvataggio (Senza conferma) -->
     <div id="save-section" class="card">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">4. Salva e Completa</h2>
+        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">6. Salva e Completa</h2>
         
-        <!-- Contenitore conferma RIMOSSO -->
         <div id="confirmation-container">
             <p class="text-sm text-gray-600 mb-4">
                 Clicca "Salva" per archiviare la valutazione. Non potrai più modificarla.
             </p>
         </div>
         
-        <!-- Contenitore display conferma RIMOSSO -->
         <div id="confirmation-display" class="hidden">
         </div>
 
@@ -335,7 +435,7 @@
         1: "Grave errore → Tentativo fallito, comportamento inadeguato.",
         2: "Molto insicuro → Errori gravi, necessità di intervento.",
         3: "Insicuro → Errori evidenti, esecuzione incerta.",
-        4: "Migliorabile → Errori non gravi, ma guida imprecisa.",
+        4: "Migliorabile → Errori non gravi, ma guida imprecisa.", // Corretto: Rimosso punto dopo '4'
         5: "Quasi sufficiente → Autonomia parziale, migliorabile.",
         6: "Sufficiente → Controllo adeguato, ma con margini di miglioramento.",
         7: "Discreto → Guida sicura con qualche imprecisione.",
@@ -377,6 +477,33 @@
         { name: "9. Parcheggi", criteria: [65, 66, 67, 68, 69] },
         { name: "10. Fase I Esame", criteria: [70, 71, 72, 73, 74, 75, 76] }
     ];
+    
+    // Lista dei 24 Criteri d'Esame
+    const EXAM_CRITERIA = {
+        'a': "Azione sul volante",
+        'b': "Azione sul cambio",
+        'c': "Uso sulla frizione",
+        'd': "Spunto in salita",
+        'e': "Manovre parcheggio",
+        'f': "Azionamento altri comandi",
+        'g': "Svolta a destra e sinistra",
+        'h': "Attraversamento incroci",
+        'i': "Mano da tenere",
+        'l': "Rispetto segnaletica orizzontale",
+        'm': "Rispetto segnaletica",
+        'n': "Transito in rotatorie",
+        'o': "Transito in sensi unici",
+        'p': "Strade pluricorsie",
+        'q': "Conversione ad U",
+        'r': "Sorpasso",
+        's': "Rispetto delle precedenze",
+        't': "Distanze di sicurezza",
+        'u': "Velocità adeguata",
+        'v': "Corretta positura nell'osservazione",
+        'z': "Tempestività nell'osservazione",
+        'x': "Valutazione del pericolo"
+    };
+
 
     /**
      * Esegue l'arrotondamento a soglia (0.5 -> 0, 0.51 -> 1), come nel foglio di calcolo.
@@ -533,12 +660,69 @@
 
         return { calculatedScores, competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500 };
     }
+    
+    /**
+     * Calcola la previsione d'esame
+     * Logica: Mappa i 77 Criteri Dettagliati (0-5) ai 24 Criteri d'Esame (output)
+     */
+    function calculateExamPredictionFromDetailed(detailedScores) {
+        const predictions = {};
+        const threshold = 3; // "Sufficiente" (>= 3) sulla scala 0-5
+        const isSI = (val) => val >= threshold ? "SI" : "NO";
+        
+        // Helper: Calcola la media dei punteggi (0-5) per un set di indici di criteri dettagliati
+        const avgDetailed = (indices) => {
+            let sum = 0;
+            let count = 0;
+            indices.forEach(index => {
+                const score = detailedScores[DETAILED_CRITERIA[index]];
+                if (typeof score === 'number') {
+                    sum += score;
+                    count++;
+                }
+            });
+            return count > 0 ? (sum / count) : 0;
+        };
+
+        // Mappatura (Proxy) dai 77 Criteri Dettagliati (0-5)
+        predictions.a = isSI(avgDetailed([3, 4, 5, 6])); // "Azione sul volante" -> Media "Uso volante..."
+        predictions.b = isSI(avgDetailed([27, 28, 29, 30, 31])); // "Azione sul cambio" -> Media "Incremento/decremento marce"
+        predictions.c = isSI(avgDetailed([19, 20, 21, 22, 23, 24])); // "Uso sulla frizione" -> Media "Uso piede frizione", "Ricerca innesto", etc.
+        predictions.d = isSI(detailedScores[DETAILED_CRITERIA[25]]); // "Spunto in salita" -> "Partenza in salita"
+        predictions.e = isSI(avgDetailed([65, 66, 67, 68, 69])); // "Manovre parcheggio" -> Media "Parcheggi..."
+        predictions.f = isSI(avgDetailed([72, 74])); // "Azionamento altri comandi" -> Media "Controllo sterzo/comandi", "Controllo dispositivi"
+        predictions.g = isSI(avgDetailed([35, 36, 37])); // "Svolta a destra e sinistra" -> Media "Svolta sx...", "Svolta dx..."
+        predictions.h = isSI(avgDetailed([39, 40])); // "Attraversamento incroci" -> Media "Preselezione", "Rispetto segnaletica"
+        predictions.i = isSI(avgDetailed([42, 43, 44, 45])); // "Mano da tenere" -> Proxy: Media "Comportamento veicoli opposti", "Superamento ostacoli", etc.
+        predictions.l = isSI(detailedScores[DETAILED_CRITERIA[40]]); // "Rispetto segnaletica orizzontale" -> "Rispetto segnaletica"
+        predictions.m = isSI(detailedScores[DETAILED_CRITERIA[40]]); // "Rispetto segnaletica" -> "Rispetto segnaletica"
+        predictions.n = isSI(detailedScores[DETAILED_CRITERIA[38]]); // "Transito in rotatorie" -> "Comportamenti alle rotatorie"
+        predictions.o = isSI(detailedScores[DETAILED_CRITERIA[36]]); // "Transito in sensi unici" -> "Svolta a sx su strada a senso unico"
+        predictions.p = isSI(avgDetailed([53, 54, 55, 59])); // "Strade pluricorsie" -> Media "Ingresso accelerazione", "Inserimento", "Uscita"
+        predictions.q = isSI(avgDetailed([63, 64])); // "Conversione ad U" -> Media "Inversione..."
+        predictions.r = isSI(avgDetailed([56, 57, 58])); // "Sorpasso" -> Media "Uso specchi", "Gestione volante", "Rientro"
+        predictions.s = isSI(detailedScores[DETAILED_CRITERIA[40]]); // "Rispetto delle precedenze" -> "Rispetto segnaletica incroci"
+        predictions.t = isSI(detailedScores[DETAILED_CRITERIA[52]]); // "Distanze di sicurezza" -> "Rispetto distanze di sicurezza"
+        predictions.u = isSI(detailedScores[DETAILED_CRITERIA[47]]); // "Velocità adeguata" -> "Capacità adattamento velocità"
+        predictions.v = isSI(avgDetailed([7, 8, 9, 10, 11, 12])); // "Corretta positura nell'osservazione" -> Media "Uso visione...", "Dinamicità sguardo"
+        predictions.z = isSI(detailedScores[DETAILED_CRITERIA[13]]); // "Tempestività nell'osservazione" -> "Corretta sequenza rti"
+        predictions.x = isSI(detailedScores[DETAILED_CRITERIA[46]]); // "Valutazione del pericolo" -> "Guida proattiva"
+        
+        return predictions;
+    }
 
 
     // --- FUNZIONI DI GESTIONE PAGINA (Single Page App) ---
 
     // Chiamata all'avvio
     function initPage() {
+        // Popola la Sezione Esame con la struttura base
+        const defaultQuickScores = {};
+        QUICK_CRITERIA.forEach(name => { defaultQuickScores[name] = 5; });
+        const defaultDetailedScores = calculateScores(defaultQuickScores).calculatedScores;
+        const defaultPredictions = calculateExamPredictionFromDetailed(defaultDetailedScores);
+        renderExamPredictions(defaultPredictions);
+        
         showHomeView();
     }
 
@@ -557,6 +741,15 @@
         document.getElementById('home-view').classList.add('hidden');
         document.getElementById('calculator-page').classList.remove('hidden');
         
+        // Resetta le tendine (chiudile)
+        document.querySelectorAll('#calculator-page details').forEach(el => el.open = false);
+        
+        // Resetta i "grattabili"
+        document.querySelectorAll('.scratch-cover').forEach(el => {
+            el.classList.remove('hidden');
+            el.style.opacity = '1';
+        });
+
         loadLesson(lessonId); // Carica i dati dell'allievo specifico
     }
 
@@ -792,6 +985,10 @@
         const scores = calculateScores(quickScores);
         renderDetailedSummary(scores.calculatedScores);
         renderCompetencyAreas(scores.competencyAreas_0_50, scores.competencyAreas_0_5, scores.totalScore_0_500);
+        
+        // Calcola e renderizza la previsione d'esame
+        const examPredictions = calculateExamPredictionFromDetailed(scores.calculatedScores);
+        renderExamPredictions(examPredictions);
 
         // Gestione conferma RIMOSSA
         
@@ -951,6 +1148,10 @@
         const { calculatedScores, competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500 } = calculateScores(quickScores);
         renderDetailedSummary(calculatedScores);
         renderCompetencyAreas(competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500);
+        
+        // Aggiorna la previsione d'esame
+        const examPredictions = calculateExamPredictionFromDetailed(calculatedScores);
+        renderExamPredictions(examPredictions);
     }
 
     function renderDetailedSummary(detailedScores) {
@@ -1018,6 +1219,42 @@
 
         document.getElementById('total-score-500').textContent = `${totalScore} / 500`;
     }
+    
+    /**
+     * Renderizza la sezione Previsione Esame (Grattabili)
+     */
+    function renderExamPredictions(predictions) {
+        const container = document.getElementById('exam-items-container');
+        container.innerHTML = ''; // Pulisce
+        
+        // Itera sulla lista dei criteri d'esame
+        for (const [key, text] of Object.entries(EXAM_CRITERIA)) {
+            const result = predictions[key] || "NO"; // 'NO' di default
+            const resultClass = result === "SI" ? "si" : "no";
+            
+            const itemHtml = `
+                <div class="flex justify-between items-center p-2 rounded-lg border border-gray-100 bg-white shadow-sm">
+                    <span class="font-medium text-gray-700">${key}) ${text}</span>
+                    <div class="scratch-container">
+                        <div id="result-${key}" class="scratch-result ${resultClass}">${result}</div>
+                        <div id="cover-${key}" class="scratch-cover" onclick="reveal('${key}')">GRATTA QUI</div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += itemHtml;
+        }
+    }
+    
+    // Funzione per rivelare il "Grattabile"
+    function reveal(key) {
+        const cover = document.getElementById(`cover-${key}`);
+        if (cover) {
+            cover.style.opacity = '0';
+            // Rimuovi dopo l'animazione per non bloccare il testo
+            setTimeout(() => { cover.classList.add('hidden'); }, 300);
+        }
+    }
+
 
     // --- Funzioni Tooltip Personalizzate ---
     function showTooltip(event, index) {
@@ -1137,11 +1374,6 @@
         reader.readAsText(file);
     }
 
-    // Funzione per abilitare/disabilitare il tasto Salva
-    // RIMOSSA
-    // function checkSaveButtonStatus() { ... }
-
-
     // Esponi le funzioni necessarie all'ambito globale per gli onclick HTML
     window.updateQuickScore = updateQuickScore;
     window.startNewLesson = startNewLesson;
@@ -1157,7 +1389,7 @@
     window.hideTooltip = hideTooltip;
     window.exportData = exportData;
     window.importData = importData;
-    // checkSaveButtonStatus RIMOSSO
+    window.reveal = reveal; // Esponi la funzione Grattabile
     
     // Avvia l'applicazione
     initPage();
