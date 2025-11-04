@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Valutazioni Guida</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 1. Libreria per la firma digitale -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/4.0.0/signature_pad.umd.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7f7f7;
+            background-color: #f7f7ff; /* Leggermente più blu */
         }
         .container {
             max-width: 1200px;
@@ -20,7 +22,7 @@
             background-color: white;
             padding: 1.5rem;
             border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
             margin-bottom: 1.5rem;
         }
         .score-slider {
@@ -28,14 +30,11 @@
             appearance: none;
             width: 100%;
             height: 10px;
-            background: #d3d3d3;
+            background: #e5e7eb; /* Grigio più chiaro */
             outline: none;
             opacity: 0.9;
             transition: opacity .2s;
             border-radius: 5px;
-            /* FIX MOBILE: Questa riga impedisce al browser di scorrere la pagina 
-              quando si trascina lo slider verticalmente su smartphone.
-            */
             touch-action: none;
         }
         .score-slider:hover { opacity: 1; }
@@ -57,26 +56,36 @@
         }
         
         /* Stili Pulsanti */
+        .btn {
+            font-weight: 600;
+            padding: 0.75rem 1.5rem; 
+            border-radius: 0.75rem; 
+            transition: all 0.2s;
+            text-align: center;
+        }
         .btn-primary {
-            background-color: #007bff; color: white; font-weight: 600;
-            padding: 0.75rem 1.5rem; border-radius: 0.75rem; transition: background-color 0.2s;
+            background-color: #007bff; color: white;
         }
         .btn-primary:hover { background-color: #0069d9; }
         
         .btn-secondary {
-            background-color: #6c757d; color: white; font-weight: 600;
-            padding: 0.75rem 1.5rem; border-radius: 0.75rem; transition: background-color 0.2s;
+            background-color: #6c757d; color: white;
         }
         .btn-secondary:hover { background-color: #5a6268; }
 
         .btn-danger {
-            background-color: #dc3545; color: white; font-weight: 600;
-            padding: 0.75rem 1.5rem; border-radius: 0.75rem; transition: background-color 0.2s;
+            background-color: #dc3545; color: white;
         }
         .btn-danger:hover { background-color: #c82333; }
+        
+        .btn-outline {
+            background-color: #f8f9fa; color: #495057; border: 1px solid #dee2e6;
+        }
+        .btn-outline:hover { background-color: #e9ecef; }
 
-        .btn-primary:disabled, .btn-secondary:disabled, .btn-danger:disabled {
+        .btn:disabled {
             background-color: #e9ecef; color: #6c757d; cursor: not-allowed;
+            opacity: 0.7;
         }
         
         /* Stili per la Home Page */
@@ -108,9 +117,23 @@
             display: flex; align-items: center; justify-content: center;
             border: 1px solid #fecaca;
             line-height: 1;
-            flex-shrink: 0; /* Impedisce al pulsante di rimpicciolirsi */
+            flex-shrink: 0;
         }
         .delete-btn:hover { background-color: #fee2e2; }
+        
+        /* 2. Stili per il riquadro firma */
+        .signature-pad-canvas {
+            border: 2px dashed #d1d5db; /* Bordo tratteggiato */
+            border-radius: 0.75rem;
+            width: 100%;
+            height: 200px;
+            cursor: crosshair;
+        }
+        
+        /* Nasconde l'input file, ma lo lascia cliccabile */
+        #import-file-input {
+            display: none;
+        }
 
     </style>
 </head>
@@ -124,7 +147,6 @@
     PAGINA DI AVVIO (LANDING PAGE)
 -->
 <div id="home-view" class="container">
-    <!-- 1. Titolo aggiornato -->
     <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-6 text-center">
         Registro Valutazioni Guida
     </h1>
@@ -132,9 +154,8 @@
     <div class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Crea Nuova Valutazione</h2>
         <div class="flex flex-col sm:flex-row gap-4">
-            <!-- 2. Testo placeholder aggiornato -->
             <input type="text" id="student-name-input" placeholder="Nome e Cognome Allievo/a" class="flex-grow w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-            <button id="start-lesson-btn" onclick="startNewLesson()" class="btn-primary">
+            <button id="start-lesson-btn" onclick="startNewLesson()" class="btn btn-primary">
                 Inizia Valutazione
             </button>
         </div>
@@ -143,10 +164,28 @@
     
     <div class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Valutazioni Salvate</h2>
-        <!-- 4. Lista valutazioni (ora raggruppata per data) -->
         <div id="saved-lessons-list" class="space-y-2">
             <!-- Elenco caricato da JS -->
         </div>
+    </div>
+    
+    <!-- 1. Box Backup e Ripristino -->
+    <div class="card">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Backup e Ripristino</h2>
+        <p class="text-sm text-gray-600 mb-4">
+            Salva tutti i tuoi dati in un file, o ricarica un file di backup.
+            (Utile per spostare i dati tra dispositivi o per sicurezza).
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+            <button id="export-btn" class="btn btn-primary flex-1">
+                Esporta Dati (Download)
+            </button>
+            <input type="file" id="import-file-input" accept=".json" onchange="importData(event)">
+            <button id="import-btn" class="btn btn-outline flex-1">
+                Importa Dati
+            </button>
+        </div>
+        <p id="import-status" class="text-sm mt-3"></p>
     </div>
 </div>
 
@@ -159,31 +198,19 @@
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-xl sm:text-2xl font-bold text-gray-900">
-                    <!-- 1. Rimosso "Allievo/a:" -->
                     <span id="student-name-display" class="text-blue-600">...</span>
                 </h1>
                 <p id="lock-status" class="text-sm font-medium text-gray-500">
                     Stato: <span class="text-green-600">In corso...</span>
                 </p>
             </div>
-            <div class="flex gap-4">
-                <button id="lock-lesson-btn" onclick="saveLessonData(true)" class="btn-danger">
-                    <!-- 2. Testo pulsante cambiato -->
-                    Salva
-                </button>
-                <button onclick="goBackToList()" class="btn-secondary">
-                    <!-- 3. Testo pulsante cambiato -->
-                    Indietro
-                </button>
-            </div>
+            <!-- Pulsanti Salva/Indietro spostati in fondo -->
         </div>
     </div>
 
     <!-- VALUTAZIONE RAPIDA (1) -->
     <div id="valuation-section" class="card">
-        <!-- 4. Titolo Sezione 1 aggiornato -->
         <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">1. Valutazione Guida</h2>
-        <!-- 5. Descrizione Sezione 1 aggiornata -->
         <p class="text-sm text-gray-600 mb-4">
             Assegna una valutazione. La descrizione di supporto appare tenendo premuta l'emoticon.
         </p>
@@ -197,9 +224,7 @@
             <textarea id="lesson-notes" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" oninput="saveLessonData(false)"></textarea>
         </div>
         
-        <!-- 6. Moduli Obbligatori (Radio buttons) -->
         <div class="mt-8">
-            <!-- 6. Rimosso "(seleziona uno)" -->
             <label class="block text-sm font-medium text-gray-700 mb-3">Moduli Obbligatori Svolti:</label>
             <div id="moduli-container" class="space-y-3">
                 <!-- Opzione 1: Nessuno -->
@@ -237,7 +262,6 @@
             <!-- I punteggi delle 10 aree saranno qui (ora in scala 0-5) -->
         </div>
         <div class="mt-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg flex justify-between items-center">
-            <!-- 7. Rimosso testo in parentesi -->
             <span class="text-lg font-bold text-indigo-800">Punteggio Totale Calcolato:</span>
             <span id="total-score-500" class="text-2xl font-extrabold text-indigo-800">0 / 500</span>
         </div>
@@ -245,15 +269,44 @@
 
     <!-- RIEPILOGO DETTAGLIATO CALCOLATO (3) -->
     <div id="detailed-summary-section" class="card">
-        <!-- 8. Titolo aggiornato -->
         <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex justify-between items-center">
             3. Riepilogo Dettagliato
             <span class="text-sm font-normal text-indigo-600">(Aggiornato in tempo reale)</span>
         </h2>
         
-        <!-- Contenuto Raggruppato dalle 10 Aree di Competenza -->
         <div id="calculated-scores-container">
             <!-- I punteggi dettagliati raggruppati saranno inseriti qui -->
+        </div>
+    </div>
+
+    <!-- 2. Box Firma e Salvataggio -->
+    <div id="signature-and-save-section" class="card">
+        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">4. Conferma Lezione</h2>
+        
+        <!-- Contenitore per la firma (Canvas) -->
+        <div id="signature-canvas-container">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Firma Allievo/a:</label>
+            <canvas id="signature-pad" class="signature-pad-canvas"></canvas>
+            <div class="flex justify-end gap-2 mt-2">
+                <button id="sig-clear-btn" class="btn btn-outline text-sm py-2 px-3">Pulisci Firma</button>
+            </div>
+            <p id="signature-error" class="text-red-600 text-sm mt-2 hidden"></p>
+        </div>
+        
+        <!-- Contenitore per la firma salvata (Immagine) -->
+        <div id="signature-image-container" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Firma Archiviata:</label>
+            <img id="saved-signature-image" class="border border-gray-300 rounded-lg" alt="Firma salvata">
+        </div>
+
+        <!-- Pulsanti di azione -->
+        <div class="flex flex-col sm:flex-row gap-4 mt-6">
+            <button id="lock-lesson-btn" onclick="saveAndLockLesson()" class="btn btn-danger flex-1">
+                Salva
+            </button>
+            <button onclick="goBackToList()" class="btn btn-secondary flex-1">
+                Indietro
+            </button>
         </div>
     </div>
 </div>
@@ -263,6 +316,7 @@
 
     let currentLessonId = null;
     let quickScores = {}; 
+    let signaturePad = null; // 2. Variabile globale per la firma
     
     // Tooltip personalizzato
     const tooltip = document.getElementById('custom-tooltip');
@@ -279,7 +333,7 @@
         1: "Grave errore → Tentativo fallito, comportamento inadeguato.",
         2: "Molto insicuro → Errori gravi, necessità di intervento.",
         3: "Insicuro → Errori evidenti, esecuzione incerta.",
-        4: "Migliorabile → Errori non gravi, ma guida imprecisa.",
+        4. : "Migliorabile → Errori non gravi, ma guida imprecisa.",
         5: "Quasi sufficiente → Autonomia parziale, migliorabile.",
         6: "Sufficiente → Controllo adeguato, ma con margini di miglioramento.",
         7: "Discreto → Guida sicura con qualche imprecisione.",
@@ -289,28 +343,8 @@
     };
 
     // 2. Lista dei 20 criteri rapidi (Scala 0-10)
-    // L'indice dell'array è (B-numero - 2). Es: B2 è indice 0, B21 è indice 19.
     const QUICK_CRITERIA = [
-        "Sguardo", // B2 -> indice 0
-        "Fluidità nel volante", // B3 -> indice 1
-        "Accelerazione in partenza", // B4 -> indice 2
-        "Modulazione della frenata", // B5 -> indice 3
-        "Fluidità nel cambio", // B6 -> indice 4
-        "Utilizzo della frizione", // B7 -> indice 5
-        "Partenza in salita", // B8 -> indice 6
-        "Posizione del veicolo su strada", // B9 -> indice 7
-        "Svolta a destra", // B10 -> indice 8
-        "Svolta a sinistra", // B11 -> indice 9
-        "Comportamento negli incroci", // B12 -> indice 10
-        "Punto morto", // B13 -> indice 11
-        "Voltarsi nelle retromarce", // B14 -> indice 12
-        "Inversione di marcia", // B15 -> indice 13
-        "Parcheggi in retromarcia", // B16 -> indice 14
-        "Accostare il veicolo", // B17 -> indice 15
-        "Padronanza delle situazioni", // B18 -> indice 16
-        "Postura di guida", // B19 -> indice 17
-        "Regolazione e uso degli specchi retrovisori", // B20 -> indice 18
-        "Uso e conoscenza dei dispositivi e teoria motore" // B21 -> indice 19
+        "Sguardo", "Fluidità nel volante", "Accelerazione in partenza", "Modulazione della frenata", "Fluidità nel cambio", "Utilizzo della frizione", "Partenza in salita", "Posizione del veicolo su strada", "Svolta a destra", "Svolta a sinistra", "Comportamento negli incroci", "Punto morto", "Voltarsi nelle retromarce", "Inversione di marcia", "Parcheggi in retromarcia", "Accostare il veicolo", "Padronanza delle situazioni", "Postura di guida", "Regolazione e uso degli specchi retrovisori", "Uso e conoscenza dei dispositivi e teoria motore"
     ];
 
     // 3. Lista dei 77 criteri dettagliati (Scala 0-5)
@@ -511,13 +545,60 @@
         document.getElementById('calculator-page').classList.add('hidden');
         document.getElementById('student-name-input').value = ""; // Pulisce l'input
         loadSavedLessonsList(); // Ricarica la lista
+        
+        // 1. Collega i pulsanti Import/Export
+        document.getElementById('export-btn').onclick = exportData;
+        document.getElementById('import-btn').onclick = () => document.getElementById('import-file-input').click();
     }
 
     function showCalculatorPage(lessonId) {
         document.getElementById('home-view').classList.add('hidden');
         document.getElementById('calculator-page').classList.remove('hidden');
+        
+        // 2. Inizializza il canvas della firma
+        const canvas = document.getElementById('signature-pad');
+        // Pulisce la variabile globale se era già stata usata
+        if (signaturePad) {
+            signaturePad.clear();
+        }
+        signaturePad = new SignaturePad(canvas, {
+            backgroundColor: 'rgb(255, 255, 255)'
+        });
+        
+        // Collega il pulsante Pulisci
+        document.getElementById('sig-clear-btn').onclick = () => {
+            signaturePad.clear();
+        };
+
+        // Adatta il canvas alla dimensione del contenitore
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+        
         loadLesson(lessonId); // Carica i dati dell'allievo specifico
     }
+    
+    // 2. Funzione per ridimensionare il canvas
+    function resizeCanvas() {
+        const canvas = document.getElementById('signature-pad');
+        if (!canvas) return;
+        
+        const ratio =  Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        
+        // Ridisegna la firma se era già presente
+        if (signaturePad) {
+            // Se avevamo una firma salvata (in caso di rotazione schermo), la ridisegniamo
+            const lessonData = JSON.parse(localStorage.getItem(currentLessonId));
+            if (lessonData && lessonData.signatureData && !lessonData.isLocked) {
+                 signaturePad.fromDataURL(lessonData.signatureData);
+            } else {
+                 signaturePad.clear();
+            }
+        }
+    }
+
 
     function startNewLesson() {
         const studentNameInput = document.getElementById('student-name-input');
@@ -540,26 +621,21 @@
         const lessonData = {
             id: lessonId,
             studentName: studentName,
-            createdAt: new Date().toISOString(), // 4. Aggiunta data creazione
+            createdAt: new Date().toISOString(),
             notes: "",
-            moduloSvolto: "nessuno", // 6. Aggiunta default modulo
+            moduloSvolto: "nessuno",
             quickScores: defaultQuickScores,
             isLocked: false,
-            finalScore: null // 5. Aggiunto campo per punteggio finale
+            finalScore: null,
+            signatureData: null // 2. Aggiunto campo per la firma
         };
 
         localStorage.setItem(lessonId, JSON.stringify(lessonData));
         
-        // Mostra la vista calcolatore per la nuova lezione
         showCalculatorPage(lessonId);
     }
 
-    /**
-     * 4. Helper per raggruppare per data
-     * AGGIORNATO: Gestisce date non valide
-     */
     function getRelativeDateGroup(dateString) {
-        // FIX: Gestisce le stringhe di data non valide o mancanti
         if (!dateString || isNaN(new Date(dateString).getTime())) {
             return "Senza Data";
         }
@@ -578,7 +654,6 @@
         } else if (diffDays === 1) {
             return "Ieri";
         } else {
-            // Formato data standard (es: 31/10/2025)
             return date.toLocaleDateString('it-IT', {
                 day: '2-digit',
                 month: '2-digit',
@@ -587,10 +662,6 @@
         }
     }
 
-    /**
-     * 4. Funzione di caricamento lista AGGIORNATA per data
-     * AGGIORNATO: Gestisce dati corrotti
-     */
     function loadSavedLessonsList() {
         const listContainer = document.getElementById('saved-lessons-list');
         listContainer.innerHTML = '';
@@ -601,12 +672,10 @@
             if (key.startsWith('lesson_')) {
                 try {
                     const data = JSON.parse(localStorage.getItem(key));
-                    // FIX: Controllo più robusto
                     if (data && data.id && data.studentName) {
                         lessons.push(data);
                     }
                 } catch (e) {
-                    // Se ci sono dati corrotti, li ignora
                     console.warn(`Impossibile parsare i dati per ${key}`);
                 }
             }
@@ -617,7 +686,6 @@
             return;
         }
         
-        // Ordina per data di creazione, gestendo quelle mancanti
         lessons.sort((a, b) => {
             const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
             const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
@@ -630,7 +698,6 @@
             const key = data.id;
             const dateGroup = getRelativeDateGroup(data.createdAt);
 
-            // Se il gruppo data è cambiato, stampa un nuovo titolo
             if (dateGroup !== currentGroup) {
                 currentGroup = dateGroup;
                 const groupHeader = document.createElement('h3');
@@ -643,7 +710,6 @@
                 ? '<span class="text-red-600 font-medium">Archiviata</span>' 
                 : '<span class="text-green-600">In corso</span>';
             
-            // 5. Mostra il punteggio finale se bloccato
             let scoreDisplay = '';
             if (data.isLocked && data.finalScore != null) {
                 scoreDisplay = `<span class="text-sm text-indigo-700 font-bold ml-2">(${data.finalScore}/500)</span>`;
@@ -652,13 +718,11 @@
             const itemEl = document.createElement('div');
             itemEl.className = 'saved-lesson-item';
             
-            // Orario di creazione (con fallback)
             const creationTime = data.createdAt ? new Date(data.createdAt).toLocaleTimeString('it-IT', {
                 hour: '2-digit',
                 minute: '2-digit'
             }) : "N/D";
             
-            // 5. Aggiunto scoreDisplay
             itemEl.innerHTML = `
                 <div class="flex-grow min-w-0"> <!-- Container flessibile per nome -->
                     <div class="flex items-center">
@@ -675,18 +739,13 @@
         });
     }
 
-    /**
-     * 3. Funzione di eliminazione AGGIORNATA con confirm()
-     */
     function deleteLesson(lessonId) {
-        // Sostituisce prompt() con confirm()
         if (confirm("Sei sicuro di voler eliminare questa valutazione? L'azione è irreversibile.")) {
             localStorage.removeItem(lessonId);
             loadSavedLessonsList(); // Ricarica la lista dopo l'eliminazione
         }
     }
 
-    // Apre la vista calcolatore per una lezione esistente
     function openLesson(lessonId) {
         showCalculatorPage(lessonId);
     }
@@ -696,7 +755,7 @@
         
         const dataString = localStorage.getItem(lessonId);
         if (!dataString) {
-            alert("Errore: Dati lezione non trovati.");
+            // Errore: Dati non trovati
             showHomeView();
             return;
         }
@@ -708,7 +767,7 @@
         document.getElementById('student-name-display').textContent = lessonData.studentName;
         document.getElementById('lesson-notes').value = lessonData.notes || "";
         
-        // 6. Carica il modulo salvato
+        // Carica il modulo salvato
         const modulo = lessonData.moduloSvolto || "nessuno";
         const radioToCheck = document.querySelector(`input[name="modulo_obbligatorio"][value="${modulo}"]`);
         if (radioToCheck) {
@@ -724,6 +783,25 @@
         renderDetailedSummary(scores.calculatedScores);
         renderCompetencyAreas(scores.competencyAreas_0_50, scores.competencyAreas_0_5, scores.totalScore_0_500);
 
+        // 2. Gestisci la firma
+        const sigCanvasContainer = document.getElementById('signature-canvas-container');
+        const sigImageContainer = document.getElementById('signature-image-container');
+        const sigImage = document.getElementById('saved-signature-image');
+
+        if (lessonData.signatureData) {
+            // Mostra l'immagine della firma, nascondi il canvas
+            sigImage.src = lessonData.signatureData;
+            sigImageContainer.classList.remove('hidden');
+            sigCanvasContainer.classList.add('hidden');
+        } else {
+            // Mostra il canvas, nascondi l'immagine
+            sigImageContainer.classList.add('hidden');
+            sigCanvasContainer.classList.remove('hidden');
+            if (signaturePad) {
+                signaturePad.clear();
+            }
+        }
+        
         // Gestisci lo stato bloccato
         if (lessonData.isLocked) {
             lockPage();
@@ -732,42 +810,78 @@
         }
     }
 
+    /**
+     * Salva i dati temporaneamente (su input) senza bloccare.
+     * La funzione per il blocco è stata separata in saveAndLockLesson()
+     */
     function saveLessonData(isLocking = false) {
         if (!currentLessonId) return;
+        
+        // Se isLocking è true, questa funzione non fa nulla,
+        // perché il salvataggio avverrà in saveAndLockLesson()
+        if (isLocking) return; 
 
         const currentDataString = localStorage.getItem(currentLessonId);
         if (!currentDataString) return;
         
         const lessonData = JSON.parse(currentDataString);
-
         if (lessonData.isLocked) return; // Non salvare se già bloccato
         
         lessonData.notes = document.getElementById('lesson-notes').value;
         lessonData.quickScores = quickScores;
         
-        // 6. Salva il modulo selezionato
         const selectedModulo = document.querySelector('input[name="modulo_obbligatorio"]:checked')?.value || "nessuno";
         lessonData.moduloSvolto = selectedModulo;
         
-        if (isLocking) {
-            if (confirm("Sei sicuro di voler bloccare e archiviare questa valutazione? Non potrai più modificarla.")) {
-                
-                // 5. Calcola e salva il punteggio finale solo al momento del blocco
-                const { totalScore_0_500 } = calculateScores(lessonData.quickScores);
-                lessonData.finalScore = totalScore_0_500;
-                
-                lessonData.isLocked = true;
-                localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
-                lockPage();
-            }
-        } else {
-            // Salva senza bloccare (salvataggio automatico)
+        // Salva senza bloccare (salvataggio automatico)
+        localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
+    }
+    
+    /**
+     * 2. Funzione dedicata per il salvataggio finale (Blocco)
+     */
+    function saveAndLockLesson() {
+        const errorEl = document.getElementById('signature-error');
+        
+        // 2. Controlla se la firma è vuota
+        if (signaturePad.isEmpty()) {
+            errorEl.textContent = "Firma dell'allievo/a mancante.";
+            errorEl.classList.remove('hidden');
+            return; // Interrompe il salvataggio
+        }
+        
+        errorEl.classList.add('hidden');
+        
+        if (!currentLessonId) return;
+        const currentDataString = localStorage.getItem(currentLessonId);
+        if (!currentDataString) return;
+        const lessonData = JSON.parse(currentDataString);
+        if (lessonData.isLocked) return;
+
+        if (confirm("Sei sicuro di voler salvare e archiviare questa valutazione? Non potrai più modificarla.")) {
+            
+            // Salva tutti i dati (slider, note, moduli)
+            lessonData.notes = document.getElementById('lesson-notes').value;
+            lessonData.quickScores = quickScores;
+            const selectedModulo = document.querySelector('input[name="modulo_obbligatorio"]:checked')?.value || "nessuno";
+            lessonData.moduloSvolto = selectedModulo;
+
+            // Calcola e salva il punteggio finale
+            const { totalScore_0_500 } = calculateScores(lessonData.quickScores);
+            lessonData.finalScore = totalScore_0_500;
+            
+            // 2. Salva la firma come immagine Base64
+            lessonData.signatureData = signaturePad.toDataURL();
+            
+            lessonData.isLocked = true;
             localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
+            lockPage();
         }
     }
     
     // Torna alla lista
     function goBackToList() {
+        window.removeEventListener("resize", resizeCanvas); // Rimuovi il listener
         showHomeView();
     }
     
@@ -779,10 +893,22 @@
         document.querySelectorAll('.score-slider').forEach(slider => {
             slider.disabled = true;
         });
-        // 6. Blocca i radio button
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(radio => {
             radio.disabled = true;
         });
+        
+        // 2. Nascondi il canvas e mostra l'immagine della firma
+        const sigCanvasContainer = document.getElementById('signature-canvas-container');
+        const sigImageContainer = document.getElementById('signature-image-container');
+        const sigImage = document.getElementById('saved-signature-image');
+        
+        sigCanvasContainer.classList.add('hidden');
+        
+        const lessonData = JSON.parse(localStorage.getItem(currentLessonId));
+        if (lessonData && lessonData.signatureData) {
+            sigImage.src = lessonData.signatureData;
+            sigImageContainer.classList.remove('hidden');
+        }
     }
     
     function unlockPage() {
@@ -793,10 +919,16 @@
         document.querySelectorAll('.score-slider').forEach(slider => {
             slider.disabled = false;
         });
-        // 6. Sblocca i radio button
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(radio => {
             radio.disabled = false;
         });
+        
+        // 2. Mostra il canvas e nascondi l'immagine
+        document.getElementById('signature-canvas-container').classList.remove('hidden');
+        document.getElementById('signature-image-container').classList.add('hidden');
+        if (signaturePad) {
+            signaturePad.clear();
+        }
     }
 
     // --- FUNZIONI DI RENDERIZZAZIONE UI ---
@@ -810,11 +942,11 @@
             <div class="space-y-1 p-3 bg-gray-50 rounded-lg shadow-inner">
                 <label for="quick-slider-${index}" class="block text-sm font-semibold text-gray-700">${index + 1}. ${criterion}</label>
                 
-                <!-- 2. Testo descrizione nascosto -->
+                <!-- Testo descrizione nascosto -->
                 <p id="quick-desc-${index}" class="text-xs h-8 text-gray-500 overflow-hidden hidden">${description}</p>
                 
                 <div class="flex items-center space-x-3">
-                    <!-- 1. Emoji con eventi mousedown/touchstart per il tooltip personalizzato -->
+                    <!-- Emoji con eventi mousedown/touchstart per il tooltip personalizzato -->
                     <span id="quick-value-${index}" 
                           class="text-4xl w-12 text-center cursor-default" 
                           onmousedown="showTooltip(event, ${index})"
@@ -840,13 +972,10 @@
         const index = slider.getAttribute('data-index');
         const value = parseInt(slider.value, 10);
         
-        const description = SCORE_10_INTERPRETATION[value]; // Ottieni la nuova descrizione
+        const description = SCORE_10_INTERPRETATION[value];
         const emojiEl = document.getElementById(`quick-value-${index}`);
         
-        // 1. Aggiorna l'emoji
         emojiEl.textContent = EMOJI_INTERPRETATION[value];
-        
-        // 2. Aggiorna il testo nel <p> nascosto (per coerenza)
         document.getElementById(`quick-desc-${index}`).textContent = description;
         
         quickScores[name] = value;
@@ -874,9 +1003,6 @@
                 const score = detailedScores[criterion] || 0;
                 const interpretation = SCORE_5_INTERPRETATION[score] || SCORE_5_INTERPRETATION[0];
 
-                // MODIFICA VISIVA: Usiamo GRID per forzare il layout
-                // grid-cols-[1fr_auto] = 1 colonna flessibile (testo), 1 colonna fissa (punteggio)
-                // Il testo ha truncate, che ora funzionerà perché è in una cella grid.
                 html += `
                     <div class="grid grid-cols-[1fr_auto] items-center gap-2 text-sm">
                         <span class="text-gray-700 truncate" title="${criterion}">${criterion}</span>
@@ -903,17 +1029,15 @@
             const score_0_50 = competencyAreas_0_50[area.name] || 0;
             const score_0_5 = competencyAreas_0_5[area.name] || 0;
             
-            // 4. Logica colori AGGIORNATA per scala 0-5 (come Sezione 3)
             let color;
             if (score_0_5 >= 3) {
-                color = 'bg-green-200 text-green-800'; // Verde (3, 4, 5)
+                color = 'bg-green-200 text-green-800'; // Verde
             } else if (score_0_5 >= 2) {
-                color = 'bg-yellow-200 text-yellow-800'; // Giallo (2, 2.x)
+                color = 'bg-yellow-200 text-yellow-800'; // Giallo
             } else {
-                color = 'bg-red-200 text-red-800'; // Rosso (0, 1, 1.x)
+                color = 'bg-red-200 text-red-800'; // Rosso
             }
 
-            // MODIFICA VISIVA: Mostra solo il punteggio 0-5 in un cerchio
             return `
                 <div class="flex justify-between items-center p-2 rounded-lg border border-gray-100 bg-white shadow-sm">
                     <span class="font-medium text-gray-700">${area.name}</span>
@@ -924,32 +1048,25 @@
             `;
         }).join('');
 
-        // Il totale è ancora basato sulla somma dei 0-50
         document.getElementById('total-score-500').textContent = `${totalScore} / 500`;
     }
 
     // --- Funzioni Tooltip Personalizzate ---
     function showTooltip(event, index) {
-        // Previene il comportamento di default (come la selezione/copia)
         event.preventDefault(); 
         
-        // 1. Trova il valore corrente dallo slider
         const slider = document.getElementById(`quick-slider-${index}`);
         if (!slider) return;
         const value = slider.value;
         
-        // 2. Prendi la descrizione
         const text = SCORE_10_INTERPRETATION[value];
         
-        // 3. Popola e posiziona il tooltip
         tooltip.textContent = text;
         tooltip.classList.remove('hidden');
 
-        // Determina le coordinate (touch o mouse)
         const x = event.touches ? event.touches[0].pageX : event.pageX;
         const y = event.touches ? event.touches[0].pageY : event.pageY;
 
-        // Posiziona il tooltip 15px sotto e a destra del dito/mouse
         tooltip.style.left = (x + 15) + 'px'; 
         tooltip.style.top = (y + 15) + 'px'; 
     }
@@ -957,6 +1074,101 @@
     function hideTooltip() {
         tooltip.classList.add('hidden');
     }
+    
+    // --- 1. Funzioni Import/Export ---
+    
+    function exportData() {
+        const statusEl = document.getElementById('import-status');
+        try {
+            const exportObj = {
+                appName: "RegistroValutazioniGuida",
+                exportDate: new Date().toISOString(),
+                lessons: []
+            };
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('lesson_')) {
+                    exportObj.lessons.push(JSON.parse(localStorage.getItem(key)));
+                }
+            }
+            
+            if (exportObj.lessons.length === 0) {
+                 statusEl.textContent = "Nessun dato da esportare.";
+                 statusEl.className = "text-sm mt-3 text-yellow-600";
+                 return;
+            }
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            const date = new Date().toISOString().split('T')[0];
+            downloadAnchorNode.setAttribute("download", `backup_registro_valutazioni_${date}.json`);
+            document.body.appendChild(downloadAnchorNode); // Richiesto per Firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            
+            statusEl.textContent = `Esportate ${exportObj.lessons.length} valutazioni con successo.`;
+            statusEl.className = "text-sm mt-3 text-green-600";
+
+        } catch (error) {
+            console.error("Errore durante l'esportazione:", error);
+            statusEl.textContent = `Errore durante l'esportazione: ${error.message}`;
+            statusEl.className = "text-sm mt-3 text-red-600";
+        }
+    }
+    
+    function importData(event) {
+        const file = event.target.files[0];
+        const statusEl = document.getElementById('import-status');
+        
+        if (!file) {
+            statusEl.textContent = "Nessun file selezionato.";
+            statusEl.className = "text-sm mt-3 text-yellow-600";
+            return;
+        }
+
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                
+                if (!data || data.appName !== "RegistroValutazioniGuida" || !Array.isArray(data.lessons)) {
+                    throw new Error("File non valido o formato non corretto.");
+                }
+                
+                if (confirm(`Attenzione! Stai per importare ${data.lessons.length} valutazioni. Questo SOVRASCRIVERÀ tutti i dati attualmente salvati. Continuare?`)) {
+                    localStorage.clear();
+                    
+                    data.lessons.forEach(lesson => {
+                        // Assicura che i dati importati siano validi
+                        if (lesson.id && lesson.studentName) {
+                            localStorage.setItem(lesson.id, JSON.stringify(lesson));
+                        }
+                    });
+                    
+                    statusEl.textContent = `Importate ${data.lessons.length} valutazioni con successo.`;
+                    statusEl.className = "text-sm mt-3 text-green-600";
+                    loadSavedLessonsList(); // Aggiorna la lista
+                } else {
+                    statusEl.textContent = "Importazione annullata.";
+                    statusEl.className = "text-sm mt-3 text-gray-600";
+                }
+
+            } catch (error) {
+                console.error("Errore durante l'importazione:", error);
+                statusEl.textContent = `Errore durante l'importazione: ${error.message}`;
+                statusEl.className = "text-sm mt-3 text-red-600";
+            } finally {
+                // Resetta l'input file per permettere di ricaricare lo stesso file
+                event.target.value = null;
+            }
+        };
+        
+        reader.readAsText(file);
+    }
+
 
     // Esponi le funzioni necessarie all'ambito globale per gli onclick HTML
     window.updateQuickScore = updateQuickScore;
@@ -964,11 +1176,13 @@
     window.loadSavedLessonsList = loadSavedLessonsList;
     window.deleteLesson = deleteLesson;
     window.saveLessonData = saveLessonData;
+    window.saveAndLockLesson = saveAndLockLesson; // 2. Esponi la nuova funzione
     window.goBackToList = goBackToList;
     window.openLesson = openLesson;
-    // Aggiungi le nuove funzioni tooltip all'ambito globale
     window.showTooltip = showTooltip;
     window.hideTooltip = hideTooltip;
+    window.exportData = exportData; // 1. Esponi export
+    window.importData = importData; // 1. Esponi import
     
     // Avvia l'applicazione
     initPage();
@@ -976,5 +1190,4 @@
 </script>
 </body>
 </html>
-
 
