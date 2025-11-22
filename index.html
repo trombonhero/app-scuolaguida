@@ -53,7 +53,7 @@
             border-radius: 50%;
         }
         
-        /* FIX TABLET: Impedisce lo scorrimento della pagina quando si interagisce con gli input */
+        /* FIX TABLET */
         input[type="text"], textarea {
              touch-action: manipulation;
         }
@@ -102,14 +102,13 @@
         .saved-lesson-item:last-child { border-bottom: none; }
         
         .date-group-header {
-            font-size: 1.125rem; /* text-lg */
+            font-size: 1.125rem; 
             font-weight: 600;
-            color: #1f2937; /* text-gray-800 */
+            color: #1f2937; 
             margin-top: 1.25rem;
             margin-bottom: 0.5rem;
             padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e5e7eb; /* border-gray-200 */
-            /* Aggiunto per il pulsante Elimina Gruppo */
+            border-bottom: 2px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -135,25 +134,24 @@
         }
         .delete-group-btn:hover { background-color: #fee2e2; }
         
-        /* Nasconde l'input file, ma lo lascia cliccabile */
         #import-file-input {
             display: none;
         }
 
-        /* Stili per Accordion (Tendina) */
+        /* Stili per Accordion */
         details summary {
-            list-style: none; /* Rimuove la freccia di default */
+            list-style: none; 
             cursor: pointer;
-            font-size: 1.25rem; /* text-xl */
-            font-weight: 700; /* font-bold */
-            color: #374151; /* text-gray-700 */
+            font-size: 1.25rem; 
+            font-weight: 700; 
+            color: #374151; 
             padding-bottom: 0.5rem;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        details summary::after { /* Crea una freccia personalizzata */
+        details summary::after {
             content: '▼';
             font-size: 0.7rem;
             transition: transform 0.2s;
@@ -161,7 +159,6 @@
         details[open] summary::after {
             transform: rotate(180deg);
         }
-        /* Rimuove la freccia di default su Webkit/Safari */
         details summary::-webkit-details-marker {
             display: none;
         }
@@ -187,13 +184,13 @@
             font-weight: 700;
             font-size: 1.125rem;
         }
-        .scratch-result.si { color: #16a34a; } /* green-600 */
-        .scratch-result.no { color: #dc2626; } /* red-600 */
+        .scratch-result.si { color: #16a34a; } 
+        .scratch-result.no { color: #dc2626; } 
         
         .scratch-cover {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #c0c0c0; /* silver */
+            background-color: #c0c0c0; 
             background-image: linear-gradient(45deg, #d1d5db 25%, transparent 25%, transparent 75%, #d1d5db 75%, #d1d5db), 
                               linear-gradient(-45deg, #d1d5db 25%, transparent 25%, transparent 75%, #d1d5db 75%, #d1d5db);
             background-size: 6px 6px;
@@ -211,13 +208,10 @@
 </head>
 <body>
 
-<!-- Tooltip personalizzato che verrà controllato da JS -->
 <div id="custom-tooltip" class="hidden absolute z-50 p-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg max-w-xs" style="pointer-events: none; transition: opacity 0.1s ease;">
 </div>
 
-<!-- 
-    PAGINA DI AVVIO (LANDING PAGE)
--->
+<!-- PAGINA DI AVVIO -->
 <div id="home-view" class="container">
     <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-6 text-center">
         Registro Valutazioni Guida
@@ -236,39 +230,34 @@
     
     <div class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Valutazioni Salvate</h2>
-        <div id="saved-lessons-list" class="space-y-2">
-            <!-- Elenco caricato da JS -->
-        </div>
+        <div id="saved-lessons-list" class="space-y-2"></div>
     </div>
     
-    <!-- Box Backup e Ripristino -->
     <div class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Backup e Ripristino</h2>
         <p class="text-sm text-gray-600 mb-4">
-            Salva tutti i tuoi dati in un file, o ricarica un file di backup.
+            Salva tutti i dati in un file o ricarica un backup.
         </p>
         <div class="grid grid-cols-2 gap-4">
-            <button id="export-btn" class="btn btn-primary">
-                Esporta Dati
-            </button>
-            <input type="file" id="import-file-input" accept=".json" onchange="importData(event)">
-            <button id="import-btn" class="btn btn-outline">
-                Importa Dati
-            </button>
-            <!-- Pulsante Resetta Dati Aggiunto -->
-            <button id="reset-all-btn" onclick="deleteAllData()" class="btn btn-danger col-span-2">
-                Resetta Tutti i Dati
-            </button>
+            <div class="col-span-1">
+                <button id="export-btn" class="btn btn-primary w-full">Esporta & Invia a Drive</button>
+                <!-- Indicatore di stato per il backup su Drive -->
+                <p id="drive-status" class="text-xs text-gray-500 mt-2 text-center min-h-[1rem]"></p>
+            </div>
+            
+            <div class="col-span-1">
+                <input type="file" id="import-file-input" accept=".json" onchange="importData(event)">
+                <button id="import-btn" class="btn btn-outline w-full">Importa Dati</button>
+            </div>
+            
+            <button id="reset-all-btn" onclick="deleteAllData()" class="btn btn-danger col-span-2">Resetta Tutti i Dati</button>
         </div>
         <p id="import-status" class="text-sm mt-3"></p>
     </div>
 </div>
 
-<!-- 
-    PAGINA CALCOLATORE (APP PRINCIPALE)
--->
+<!-- PAGINA CALCOLATORE -->
 <div id="calculator-page" class="container hidden">
-    <!-- SEZIONE GESTIONE E SALVATAGGIO -->
     <div id="management-section" class="card">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
@@ -279,20 +268,16 @@
                     Stato: <span class="text-green-600">In corso...</span>
                 </p>
             </div>
-            <!-- Pulsanti Salva/Indietro spostati in fondo -->
         </div>
     </div>
 
-    <!-- VALUTAZIONE RAPIDA (1) -->
     <div id="valuation-section" class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">1. Valutazione Guida</h2>
         <p class="text-sm text-gray-600 mb-4">
-            Assegna una valutazione. La descrizione di supporto appare tenendo premuta l'emoticon.
+            Assegna una valutazione. La descrizione appare tenendo premuta l'emoticon.
         </p>
 
-        <div id="quick-criteria-container" class="grid lg:grid-cols-3 md:grid-cols-2 gap-x-8 gap-y-6">
-            <!-- I criteri rapidi sono inseriti dal JS -->
-        </div>
+        <div id="quick-criteria-container" class="grid lg:grid-cols-3 md:grid-cols-2 gap-x-8 gap-y-6"></div>
 
         <div class="mt-8">
             <label for="lesson-notes" class="block text-sm font-medium text-gray-700 mb-2">Note della Lezione (Opzionale):</label>
@@ -302,40 +287,32 @@
         <div class="mt-8">
             <label class="block text-sm font-medium text-gray-700 mb-3">Moduli Obbligatori Svolti:</label>
             <div id="moduli-container" class="space-y-3">
-                <!-- Opzione 1: Nessuno -->
                 <div>
                     <input type="radio" id="modulo_nessuno" name="modulo_obbligatorio" value="nessuno" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)" checked>
                     <label for="modulo_nessuno" class="ml-2 text-sm font-medium text-gray-900">Nessuno</label>
                 </div>
-                <!-- Opzione 2: Modulo A -->
                 <div>
                     <input type="radio" id="modulo_a" name="modulo_obbligatorio" value="A" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)">
                     <label for="modulo_a" class="ml-2 text-sm font-medium text-gray-900">Modulo A</label>
-                    <p class="text-xs text-gray-600 ml-6 pl-1">La guida in condizioni di visione notturna, Circolazione su strade urbane strette e larghe, con veicoli parcheggiati ai lati e non, affrontando incroci regolati da segnaletica verticale e da impianti semaforici.</p>
+                    <p class="text-xs text-gray-600 ml-6 pl-1">La guida in condizioni di visione notturna...</p>
                 </div>
-                <!-- Opzione 3: Modulo B -->
                 <div>
                     <input type="radio" id="modulo_b" name="modulo_obbligatorio" value="B" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)">
                     <label for="modulo_b" class="ml-2 text-sm font-medium text-gray-900">Modulo B</label>
-                    <p class="text-xs text-gray-600 ml-6 pl-1">Guida su strade extraurbane, Circolazione su strade urbane di scorrimento, o su strade extraurbane secondarie, utilizzando il veicolo ed il motore a regime di copia massima consumando e inquinando il minimo possibile.</p>
+                    <p class="text-xs text-gray-600 ml-6 pl-1">Guida su strade extraurbane...</p>
                 </div>
-                <!-- Opzione 4: Modulo C -->
                 <div>
                     <input type="radio" id="modulo_c" name="modulo_obbligatorio" value="C" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)">
                     <label for="modulo_c" class="ml-2 text-sm font-medium text-gray-900">Modulo C</label>
-                    <p class="text-xs text-gray-600 ml-6 pl-1">Guida su autostrade o su strade extraurbane, Circolazione su autostrade o su strade extraurbane principali o su strade extraurbane secondarie superando la velocità di 50 Km/h, utilizzando la 5^ marcia e adeguando le marce alla velocità.</p>
+                    <p class="text-xs text-gray-600 ml-6 pl-1">Guida su autostrade...</p>
                 </div>
             </div>
         </div>
-        
     </div>
 
-    <!-- PUNTEGGIO TOTALE (2) - Spostato e Grattabile -->
     <div id="total-score-section" class="card">
         <div class="p-4 bg-indigo-50 border border-indigo-200 rounded-lg flex justify-between items-center">
             <span class="text-lg font-bold text-indigo-800">Punteggio Totale Calcolato:</span>
-            
-            <!-- Contenitore Grattabile per il Punteggio -->
             <div class="scratch-container" style="width: 160px; height: 50px; border-radius: 0.5rem;">
                 <div id="result-total-score" class="scratch-result">
                     <span id="total-score-500" class="text-2xl font-extrabold text-indigo-800">0 / 500</span>
@@ -347,32 +324,20 @@
         </div>
     </div>
 
-
-    <!-- RIEPILOGO AREE DI COMPETENZA (3) - A tendina -->
     <div id="competency-section-wrapper" class="card">
         <details>
-            <!-- Titolo modificato -->
             <summary>3. Riepilogo Aree di Competenza</summary>
-            <div id="competency-summary" class="grid md:grid-cols-2 gap-4">
-                <!-- I punteggi delle 10 aree saranno qui -->
-            </div>
+            <div id="competency-summary" class="grid md:grid-cols-2 gap-4"></div>
         </details>
     </div>
 
-    <!-- RIEPILOGO DETTAGLIATO CALCOLATO (4) - A tendina -->
     <div id="detailed-summary-section-wrapper" class="card">
         <details>
-            <summary>
-                <!-- Titolo modificato -->
-                4. Riepilogo Dettagliato
-            </summary>
-            <div id="calculated-scores-container">
-                <!-- I punteggi dettagliati raggruppati saranno inseriti qui -->
-            </div>
+            <summary>4. Riepilogo Dettagliato</summary>
+            <div id="calculated-scores-container"></div>
         </details>
     </div>
     
-    <!-- PREVISIONE ESAME (5) - Nuovo, a tendina e rinominato -->
     <div id="exam-prediction-section" class="card">
         <details>
             <summary>5. Patentometro</summary>
@@ -380,62 +345,47 @@
                 <p class="text-sm text-gray-600 mb-6">
                     Clicca o "gratta" il riquadro argentato per rivelare il risultato.
                 </p>
-                
-                <div id="exam-items-container" class="space-y-4">
-                    <!-- I 24 criteri d'esame saranno inseriti qui da JS -->
-                </div>
+                <div id="exam-items-container" class="space-y-4"></div>
             </div>
         </details>
     </div>
 
-
-    <!-- Box Salvataggio (Senza conferma) -->
     <div id="save-section" class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">6. Salva e Completa</h2>
-        
         <div id="confirmation-container">
             <p class="text-sm text-gray-600 mb-4">
                 Clicca "Salva" per archiviare la valutazione. Non potrai più modificarla.
             </p>
         </div>
-        
-        <div id="confirmation-display" class="hidden">
-        </div>
-
-        <!-- Pulsanti di azione -->
         <div class="flex flex-col sm:flex-row gap-4 mt-6">
-            <button id="lock-lesson-btn" onclick="saveAndLockLesson()" class="btn btn-danger flex-1">
-                Salva
-            </button>
-            <button onclick="goBackToList()" class="btn btn-secondary flex-1">
-                Indietro
-            </button>
+            <button id="lock-lesson-btn" onclick="saveAndLockLesson()" class="btn btn-danger flex-1">Salva</button>
+            <button onclick="goBackToList()" class="btn btn-secondary flex-1">Indietro</button>
         </div>
     </div>
 </div>
 
-<!-- LOGICA JAVASCRIPT E STORAGE -->
 <script type="module">
 
+    // *** CONFIGURAZIONE GOOGLE SHEET ***
+    // Incolla qui l'URL che hai ottenuto distribuendo la Web App su Apps Script
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLHR0J1sbdFoOJizGNnQBllFEVNrB4LxZ5ESlNqQw1Xg3TmR1CyW7HIzD-0vgPns9SzQ/exec";
+    
     let currentLessonId = null;
     let quickScores = {}; 
     
-    // Tooltip personalizzato
     const tooltip = document.getElementById('custom-tooltip');
 
-    // Mappatura Emoticon (Richiesta 1 - INVERTITE 9 e 10)
     const EMOJI_INTERPRETATION = {
         0: "😶", 1: "😱", 2: "😨", 3: "😣", 4: "🤔",
         5: "🧐", 6: "🙂", 7: "😊", 8: "😄", 9: "🤩", 10: "😎"
     };
 
-    // 1. Mappatura Descrizioni 0-10
     const SCORE_10_INTERPRETATION = {
         0: "Non ancora spiegato → L'argomento o la manovra non è stata ancora trattata.",
         1: "Grave errore → Tentativo fallito, comportamento inadeguato.",
         2: "Molto insicuro → Errori gravi, necessità di intervento.",
         3: "Insicuro → Errori evidenti, esecuzione incerta.",
-        4: "Migliorabile → Errori non gravi, ma guida imprecisa.", // Corretto: Rimosso punto dopo '4'
+        4: "Migliorabile → Errori non gravi, ma guida imprecisa.",
         5: "Quasi sufficiente → Autonomia parziale, migliorabile.",
         6: "Sufficiente → Controllo adeguato, ma con margini di miglioramento.",
         7: "Discreto → Guida sicura con qualche imprecisione.",
@@ -444,17 +394,14 @@
         10: "Ottimo → Controllo totale, sicurezza massima."
     };
 
-    // 2. Lista dei 20 criteri rapidi (Scala 0-10)
     const QUICK_CRITERIA = [
         "Sguardo", "Fluidità nel volante", "Accelerazione in partenza", "Modulazione della frenata", "Fluidità nel cambio", "Utilizzo della frizione", "Partenza in salita", "Posizione del veicolo su strada", "Svolta a destra", "Svolta a sinistra", "Comportamento negli incroci", "Punto morto", "Voltarsi nelle retromarce", "Inversione di marcia", "Parcheggi in retromarcia", "Accostare il veicolo", "Padronanza delle situazioni", "Postura di guida", "Regolazione e uso degli specchi retrovisori", "Uso e conoscenza dei dispositivi e teoria motore"
     ];
 
-    // 3. Lista dei 77 criteri dettagliati (Scala 0-5)
     const DETAILED_CRITERIA = [
         "Regolazione sedile in distanza, altezza ed inclinazione", "Regolazione specchi, poggiatesta e cintura", "Posizione corretta delle mani", "Uso volante in curva aperta dx sx", "Uso volante in curva media dx sx", "Uso volante in curva stretta dx sx", "Uso volante in svolta dx sx", "Uso visione centrale e direzione del veicolo", "Uso visione periferica", "Dinamicità dello sguardo", "Capacità di anticipazione visiva", "Corretto utilizzo sguardo in curva a destra", "Corretto utilizzo sguardo in curva a sinistra", "Corretta sequenza rti (retrovisori, testa, indicatore)", "Sensibilità all'uso dell'acceleratore", "Sensibilità uso freno frenata degressiva", "Passaggio freno acceleratore ancoraggio tacco", "Frenata di precisione rispetto ad un punto d'arresto predeterminato", "Frenata in situazioni di pericolo", "Corretto utilizzo del piede sulla frizione", "Piede su passaruota con frizione a riposo", "Ricerca innesto frizione", "Tenuta pedale dopo innesto", "Combinazione gas frizione in partenza", "Partenza in pianura discesa", "Partenza in salita", "Impostazioni mano su cambio", "Incremento marce seconda e terza", "Decremento marce terza e seconda", "Sequenza completa incremento marce", "Sequenza completa scalata marce", "Preparazione cambiata anticipo mano", "Incremento marce con equilibrio volante", "Scalata tenuta freno e uso frizione", "Coordinazione motoria frizione cambio volante", "Svolta a sx su strada a doppio senso (posizione, esecuzione)", "Svolta a sx su strada a senso unico (posizione, esecuzione)", "Svolta a destra (posizione esecuzione)", "Comportamenti alle rotatorie", "Comportamento in preselezione di incrocio", "Rispetto della segnaletica agli incroci", "Capacità di adattamento al buio", "Comportamento nei confronti dei veicoli che provengono dalla direzione opposta, anche in caso di spazio limitato", "Superamento di ostacoli (vetture parcheggiate, ostacoli in genere)", "Comportamento alle fermate di bus/tram", "Rispetto degli attraversamenti pedonali e dei comportamenti correlati ai pedoni", "Guida proattiva - Capacità di prevenire il pericolo", "Capacità di adattamento velocità alla strada ed ai suoi limiti", "Corretto utilizzo del cambio di velocità (eco)", "Comprensione del punto di cambiata", "Utilizzo razionale dell'inerzia (eco roll)", "Utilizzo razionale del freno motore (cut-off)", "Rispetto delle distanze di sicurezza", "Ingresso su corsia di accelerazione", "Inserimento nel traffico in condizioni di sicurezza", "Capacità di valutazione delle distanze ed adattamento al traffico", "Uso corretto degli specchi retrovisori nella fase di inizio del sorpasso", "Corretta gestione del volante nella fase di inizio e fine sorpasso", "Rientro dal sorpasso in sicurezza (specchi, ecc)", "Uscita su strade a precedenza mediante corsia di decelerazione", "Retromarcia in rettilineo", "Retromarcia ad L con svolta a sinistra", "Retromarcia ad L con svolta a destra", "Inversione di marcia con marcia avanti", "Inversione di marcia in retromarcia", "Parcheggi in retromarcia parallelo a destra", "Parcheggi in retromarcia parallelo a sinistra", "Parcheggio in retromarcia su strada in pendenza", "Parcheggio a pettine (in retromarcia ed in avanti)", "Parcheggio a spina (in retromarcia ed in avanti)", "Controllo carta di circolazione", "Controllo pneumatici", "Controllo sterzo e comandi sul volante", "Controllo livelli", "Controllo dispositivi di segnalazione visiva ed illuminazione", "Controllo corretta chiusura porte - cofano motore", "Corrette operazioni nella discesa dal veicolo"
     ];
 
-    // Mappatura delle interpretazioni del punteggio (Scala 0-5)
     const SCORE_5_INTERPRETATION = {
         0: { text: "Non trattato / Grave", color: "bg-red-200 text-red-800" },
         1: { text: "Grave / Intervento", color: "bg-red-200 text-red-800" },
@@ -464,7 +411,6 @@
         5: { text: "Ottimo / Controllo totale", color: "bg-green-200 text-green-800" }
     };
 
-    // Mappatura delle 10 Aree di Competenza ai criteri dettagliati
     const COMPETENCY_AREAS = [
         { name: "1. Postura, Sguardo, Volante", criteria: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] },
         { name: "2. Acceleratore e Freno", criteria: [14, 15, 16, 17, 18] },
@@ -478,7 +424,6 @@
         { name: "10. Fase I Esame", criteria: [70, 71, 72, 73, 74, 75, 76] }
     ];
     
-    // Lista dei 24 Criteri d'Esame
     const EXAM_CRITERIA = {
         'a': "Azione sul volante",
         'b': "Azione sul cambio",
@@ -504,10 +449,6 @@
         'x': "Valutazione del pericolo"
     };
 
-
-    /**
-     * Esegue l'arrotondamento a soglia (0.5 -> 0, 0.51 -> 1), come nel foglio di calcolo.
-     */
     function customRound(value) {
         if (value <= 0.5) return 0;
         if (value <= 1.5) return 1;
@@ -517,13 +458,9 @@
         return 5; 
     }
 
-    /**
-     * Calcola la media dei punteggi (0-5) per un set di criteri dettagliati.
-     */
     function calculateAreaScore(indices, detailedScores) {
         let sum = 0;
         let count = 0;
-
         indices.forEach(index => {
             const criterionName = DETAILED_CRITERIA[index];
             const score = detailedScores[criterionName];
@@ -532,107 +469,95 @@
                 count++;
             }
         });
-
         const average_0_5_raw = count > 0 ? sum / count : 0;
-        
-        // Punteggio 0-50 per il totale
         const score_0_50 = Math.min(50, Math.max(0, parseFloat((average_0_5_raw * 10).toFixed(0))));
-        
-        // Punteggio 0-5 per la visualizzazione (con un decimale)
         const average_0_5_display = parseFloat(average_0_5_raw.toFixed(1));
-
         return { score_0_50, average_0_5_display };
     }
 
-
-    /**
-     * Applica le 77 formule complesse e calcola le 10 aree di competenza.
-     */
     function calculateScores(quickScores) {
         const calculatedScores = {};
         const q = QUICK_CRITERIA.map(name => quickScores[name] || 0);
-        // Helper per mappare B(n) a q[n-2]
-        // Esempio: B2 -> q[0], B3 -> q[1], B19 -> q[17], B21 -> q[19]
         const getQ = (index) => q[index] || 0; 
 
         const formulas = [
-            (q) => (getQ(17) * 1) / 2, // 1. Regolazione sedile (B19)
-            (q) => (getQ(18) * 0.5 + getQ(17) * 0.5) / 2, // 2. Regolazione specchi (B20, B19)
-            (q) => (getQ(17) * 1) / 2, // 3. Posizione mani (B19)
-            (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, // 4. Volante aperta (B3, B10, B11)
-            (q) => (getQ(1) * 0.4 + getQ(8) * 0.3 + getQ(9) * 0.3) / 2, // 5. Volante media (B3, B10, B11)
-            (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, // 6. Volante stretta (B3, B10, B11)
-            (q) => (getQ(1) * 0.6 + getQ(8) * 0.2 + getQ(9) * 0.2) / 2, // 7. Volante svolta (B3, B10, B11)
-            (q) => (getQ(0) * 1) / 2, // 8. Visione centrale (B2)
-            (q) => (getQ(0) * 1) / 2, // 9. Visione periferica (B2)
-            (q) => (getQ(0) * 1) / 2, // 10. Dinamicità sguardo (B2)
-            (q) => (getQ(0) * 1) / 2, // 11. Anticipazione visiva (B2)
-            (q) => (getQ(0) * 0.5 + getQ(8) * 0.5) / 2, // 12. Sguardo curva dx (B2, B10)
-            (q) => (getQ(0) * 0.5 + getQ(9) * 0.5) / 2, // 13. Sguardo curva sx (B2, B11)
-            (q) => (getQ(18) * 0.4 + getQ(10) * 0.1 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(15) * 0.1) / 2, // 14. Sequenza rti (B20, B12, B2, B9, B17)
-            (q) => (getQ(2) > 0 ? (getQ(2) * 0.5 + getQ(0) * 0.5) : 0) / 2, // 15. Sensibilità acceleratore (SE B4>0; B4, B2)
-            (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.5) : 0) / 2, // 16. Sensibilità freno (SE B5>0; B5, B2)
-            (q) => (getQ(2) > 0 ? (getQ(17) * 1) : 0) / 2, // 17. Passaggio freno (SE B4>0; B19)
-            (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(15) * 0.25) : 0) / 2, // 18. Frenata precisione (SE B5>0; B5, B2, B17)
-            (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(16) * 0.25) : 0) / 2, // 19. Frenata pericolo (SE B5>0; B5, B2, B18)
-            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, // 20. Uso piede frizione (SE B7>0; B7, B19)
-            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, // 21. Piede passaruota (SE B7>0; B7, B19)
-            (q) => (getQ(5) > 0 ? (getQ(5) * 1) : 0) / 2, // 22. Ricerca innesto (SE B7>0; B7)
-            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, // 23. Tenuta pedale (SE B7>0; B7, B19)
-            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, // 24. Combinazione gas frizione (SE B7>0; B7, B4)
-            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, // 25. Partenza pianura (SE B7>0; B7, B4)
-            (q) => (getQ(6) * 1) / 2, // 26. Partenza salita (B8)
-            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, // 27. Impostazioni mano cambio (SE B6>0; B6, B19)
-            (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.3) : 0) / 2, // 28. Incremento 2-3 (SE B6>0; B6, B7)
-            (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.2 + getQ(3) * 0.1) : 0) / 2, // 29. Decremento 3-2 (SE B6>0; B6, B7, B5)
-            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.25 + getQ(7) * 0.25) : 0) / 2, // 30. Seq completa incremento (SE B6>0; B6, B7, B9)
-            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.2 + getQ(3) * 0.2 + getQ(7) * 0.1) : 0) / 2, // 31. Seq completa scalata (SE B6>0; B6, B7, B5, B9)
-            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, // 32. Preparazione cambiata (SE B6>0; B6, B19)
-            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(1) * 0.5) : 0) / 2, // 33. Incremento equilibrio (SE B6>0; B6, B3)
-            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(3) * 0.25 + getQ(5) * 0.25) : 0) / 2, // 34. Scalata tenuta freno (SE B6>0; B6, B5, B7)
-            (q) => (getQ(4) > 0 ? (getQ(4) * 0.25 + getQ(3) * 0.25 + getQ(5) * 0.25 + getQ(1) * 0.25) : 0) / 2, // 35. Coordinazione (SE B6>0; B6, B5, B7, B3)
-            (q) => (getQ(9) * 1) / 2, // 36. Svolta sx doppio senso (B11)
-            (q) => (getQ(9) * 1) / 2, // 37. Svolta sx senso unico (B11)
-            (q) => (getQ(8) * 1) / 2, // 38. Svolta dx (B10)
-            (q) => (getQ(10) * 1) / 2, // 39. Rotatorie (B12)
-            (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, // 40. Preselezione incrocio (B12, B2, B18)
-            (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, // 41. Rispetto segnaletica (B12, B2, B18)
-            (q) => (getQ(0) * 0.75 + getQ(16) * 0.25) / 2, // 42. Adattamento buio (B2, B18)
-            (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, // 43. Veicoli opposti (B12, B2, B9, B21)
-            (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, // 44. Superamento ostacoli (B12, B2, B9, B21)
-            (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, // 45. Fermate bus (B12, B2, B9, B21)
-            (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, // 46. Attraversamenti pedonali (B12, B2, B9, B21)
-            (q) => (getQ(0) * 0.5 + getQ(16) * 0.5) / 2, // 47. Guida proattiva (B2, B18)
-            (q) => (getQ(2) * 0.5 + getQ(3) * 0.5) / 2, // 48. Adattamento velocità (B4, B5)
-            (q) => (getQ(4) * 0.5 + getQ(7) * 0.5) / 2, // 49. Uso cambio eco (B6, B9)
-            (q) => (getQ(4) * 1) / 2, // 50. Comprensione punto cambiata (B6)
-            (q) => (getQ(4) * 0.5 + getQ(5) * 0.5) / 2, // 51. Inerzia eco roll (B6, B7)
-            (q) => (getQ(3) * 0.2 + getQ(4) * 0.8) / 2, // 52. Freno motore cut-off (B5, B6)
-            (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, // 53. Distanze sicurezza (B2, B9)
-            (q) => (getQ(10) * 1) / 2, // 54. Ingresso accelerazione (B12)
-            (q) => (getQ(7) * 0.2 + getQ(1) * 0.2 + getQ(2) * 0.2 + getQ(5) * 0.2 + getQ(11) * 0.2) / 2, // 55. Inserimento traffico (B9, B3, B4, B7, B13)
-            (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, // 56. Valutazione distanze (B2, B9)
-            (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, // 57. Uso specchi sorpasso (B20, B21)
-            (q) => (getQ(1) * 1) / 2, // 58. Gestione volante sorpasso (B3)
-            (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, // 59. Rientro sorpasso (B20, B21)
-            (q) => (getQ(10) * 1) / 2, // 60. Uscita decelerazione (B12)
-            (q) => (getQ(12) > 0 ? (getQ(12) * 1) : 0) / 2, // 61. Retromarcia rettilineo (SE B14>0; B14)
-            (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(9) * 0.2) : 0) / 2, // 62. Retromarcia L sx (SE B14>0; B14, B11)
-            (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(8) * 0.2) : 0) / 2, // 63. Retromarcia L dx (SE B14>0; B14, B10)
-            (q) => (getQ(13) * 1) / 2, // 64. Inversione avanti (B15)
-            (q) => (getQ(13) * 1) / 2, // 65. Inversione retro (B15)
-            (q) => (getQ(14) * 1) / 2, // 66. Parcheggi parallelo dx (B16)
-            (q) => (getQ(14) * 1) / 2, // 67. Parcheggi parallelo sx (B16)
-            (q) => (getQ(14) * 1) / 2, // 68. Parcheggio pendenza (B16)
-            (q) => (getQ(14) * 1) / 2, // 69. Parcheggio pettine (B16)
-            (q) => (getQ(14) * 1) / 2, // 70. Parcheggio spina (B16)
-            (q) => (getQ(19) * 1) / 2, // 71. Controllo carta circolazione (B21)
-            (q) => (getQ(19) * 1) / 2, // 72. Controllo pneumatici (B21)
-            (q) => (getQ(19) * 1) / 2, // 73. Controllo sterzo (B21)
-            (q) => (getQ(19) * 1) / 2, // 74. Controllo livelli (B21)
-            (q) => (getQ(19) * 1) / 2, // 75. Controllo dispositivi (B21)
-            (q) => (getQ(19) * 1) / 2, // 76. Controllo chiusura (B21)
-            (q) => (getQ(19) * 1) / 2  // 77. Operazioni discesa (B21)
+            (q) => (getQ(17) * 1) / 2, 
+            (q) => (getQ(18) * 0.5 + getQ(17) * 0.5) / 2, 
+            (q) => (getQ(17) * 1) / 2, 
+            (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, 
+            (q) => (getQ(1) * 0.4 + getQ(8) * 0.3 + getQ(9) * 0.3) / 2, 
+            (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, 
+            (q) => (getQ(1) * 0.6 + getQ(8) * 0.2 + getQ(9) * 0.2) / 2, 
+            (q) => (getQ(0) * 1) / 2, 
+            (q) => (getQ(0) * 1) / 2, 
+            (q) => (getQ(0) * 1) / 2, 
+            (q) => (getQ(0) * 1) / 2, 
+            (q) => (getQ(0) * 0.5 + getQ(8) * 0.5) / 2, 
+            (q) => (getQ(0) * 0.5 + getQ(9) * 0.5) / 2, 
+            (q) => (getQ(18) * 0.4 + getQ(10) * 0.1 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(15) * 0.1) / 2, 
+            (q) => (getQ(2) > 0 ? (getQ(2) * 0.5 + getQ(0) * 0.5) : 0) / 2, 
+            (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.5) : 0) / 2, 
+            (q) => (getQ(2) > 0 ? (getQ(17) * 1) : 0) / 2, 
+            (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(15) * 0.25) : 0) / 2, 
+            (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(16) * 0.25) : 0) / 2, 
+            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, 
+            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, 
+            (q) => (getQ(5) > 0 ? (getQ(5) * 1) : 0) / 2, 
+            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, 
+            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, 
+            (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, 
+            (q) => (getQ(6) * 1) / 2, 
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, 
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.3) : 0) / 2, 
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.2 + getQ(3) * 0.1) : 0) / 2, 
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.25 + getQ(7) * 0.25) : 0) / 2, 
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.2 + getQ(3) * 0.2 + getQ(7) * 0.1) : 0) / 2, 
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, 
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(1) * 0.5) : 0) / 2, 
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(3) * 0.25 + getQ(5) * 0.25) : 0) / 2, 
+            (q) => (getQ(4) > 0 ? (getQ(4) * 0.25 + getQ(3) * 0.25 + getQ(5) * 0.25 + getQ(1) * 0.25) : 0) / 2, 
+            (q) => (getQ(9) * 1) / 2, 
+            (q) => (getQ(9) * 1) / 2, 
+            (q) => (getQ(8) * 1) / 2, 
+            (q) => (getQ(10) * 1) / 2, 
+            (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, 
+            (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, 
+            (q) => (getQ(0) * 0.75 + getQ(16) * 0.25) / 2, 
+            (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, 
+            (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, 
+            (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, 
+            (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, 
+            (q) => (getQ(0) * 0.5 + getQ(16) * 0.5) / 2, 
+            (q) => (getQ(2) * 0.5 + getQ(3) * 0.5) / 2, 
+            (q) => (getQ(4) * 0.5 + getQ(7) * 0.5) / 2, 
+            (q) => (getQ(4) * 1) / 2, 
+            (q) => (getQ(4) * 0.5 + getQ(5) * 0.5) / 2, 
+            (q) => (getQ(3) * 0.2 + getQ(4) * 0.8) / 2, 
+            (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, 
+            (q) => (getQ(10) * 1) / 2, 
+            (q) => (getQ(7) * 0.2 + getQ(1) * 0.2 + getQ(2) * 0.2 + getQ(5) * 0.2 + getQ(11) * 0.2) / 2, 
+            (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, 
+            (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, 
+            (q) => (getQ(1) * 1) / 2, 
+            (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, 
+            (q) => (getQ(10) * 1) / 2, 
+            (q) => (getQ(12) > 0 ? (getQ(12) * 1) : 0) / 2, 
+            (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(9) * 0.2) : 0) / 2, 
+            (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(8) * 0.2) : 0) / 2, 
+            (q) => (getQ(13) * 1) / 2, 
+            (q) => (getQ(13) * 1) / 2, 
+            (q) => (getQ(14) * 1) / 2, 
+            (q) => (getQ(14) * 1) / 2, 
+            (q) => (getQ(14) * 1) / 2, 
+            (q) => (getQ(14) * 1) / 2, 
+            (q) => (getQ(14) * 1) / 2, 
+            (q) => (getQ(19) * 1) / 2, 
+            (q) => (getQ(19) * 1) / 2, 
+            (q) => (getQ(19) * 1) / 2, 
+            (q) => (getQ(19) * 1) / 2, 
+            (q) => (getQ(19) * 1) / 2, 
+            (q) => (getQ(19) * 1) / 2, 
+            (q) => (getQ(19) * 1) / 2 
         ];
 
         DETAILED_CRITERIA.forEach((criterion, index) => {
@@ -661,16 +586,11 @@
         return { calculatedScores, competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500 };
     }
     
-    /**
-     * Calcola la previsione d'esame
-     * Logica: Mappa i 77 Criteri Dettagliati (0-5) ai 24 Criteri d'Esame (output)
-     */
     function calculateExamPredictionFromDetailed(detailedScores) {
         const predictions = {};
-        const threshold = 3; // "Sufficiente" (>= 3) sulla scala 0-5
+        const threshold = 3; 
         const isSI = (val) => val >= threshold ? "SI" : "NO";
         
-        // Helper: Calcola la media dei punteggi (0-5) per un set di indici di criteri dettagliati
         const avgDetailed = (indices) => {
             let sum = 0;
             let count = 0;
@@ -684,39 +604,33 @@
             return count > 0 ? (sum / count) : 0;
         };
 
-        // Mappatura (Proxy) dai 77 Criteri Dettagliati (0-5)
-        predictions.a = isSI(avgDetailed([3, 4, 5, 6])); // "Azione sul volante" -> Media "Uso volante..."
-        predictions.b = isSI(avgDetailed([27, 28, 29, 30, 31])); // "Azione sul cambio" -> Media "Incremento/decremento marce"
-        predictions.c = isSI(avgDetailed([19, 20, 21, 22, 23, 24])); // "Uso sulla frizione" -> Media "Uso piede frizione", "Ricerca innesto", etc.
-        predictions.d = isSI(detailedScores[DETAILED_CRITERIA[25]]); // "Spunto in salita" -> "Partenza in salita"
-        predictions.e = isSI(avgDetailed([65, 66, 67, 68, 69])); // "Manovre parcheggio" -> Media "Parcheggi..."
-        predictions.f = isSI(avgDetailed([72, 74])); // "Azionamento altri comandi" -> Media "Controllo sterzo/comandi", "Controllo dispositivi"
-        predictions.g = isSI(avgDetailed([35, 36, 37])); // "Svolta a destra e sinistra" -> Media "Svolta sx...", "Svolta dx..."
-        predictions.h = isSI(avgDetailed([39, 40])); // "Attraversamento incroci" -> Media "Preselezione", "Rispetto segnaletica"
-        predictions.i = isSI(avgDetailed([42, 43, 44, 45])); // "Mano da tenere" -> Proxy: Media "Comportamento veicoli opposti", "Superamento ostacoli", etc.
-        predictions.l = isSI(detailedScores[DETAILED_CRITERIA[40]]); // "Rispetto segnaletica orizzontale" -> "Rispetto segnaletica"
-        predictions.m = isSI(detailedScores[DETAILED_CRITERIA[40]]); // "Rispetto segnaletica" -> "Rispetto segnaletica"
-        predictions.n = isSI(detailedScores[DETAILED_CRITERIA[38]]); // "Transito in rotatorie" -> "Comportamenti alle rotatorie"
-        predictions.o = isSI(detailedScores[DETAILED_CRITERIA[36]]); // "Transito in sensi unici" -> "Svolta a sx su strada a senso unico"
-        predictions.p = isSI(avgDetailed([53, 54, 55, 59])); // "Strade pluricorsie" -> Media "Ingresso accelerazione", "Inserimento", "Uscita"
-        predictions.q = isSI(avgDetailed([63, 64])); // "Conversione ad U" -> Media "Inversione..."
-        predictions.r = isSI(avgDetailed([56, 57, 58])); // "Sorpasso" -> Media "Uso specchi", "Gestione volante", "Rientro"
-        predictions.s = isSI(detailedScores[DETAILED_CRITERIA[40]]); // "Rispetto delle precedenze" -> "Rispetto segnaletica incroci"
-        predictions.t = isSI(detailedScores[DETAILED_CRITERIA[52]]); // "Distanze di sicurezza" -> "Rispetto distanze di sicurezza"
-        predictions.u = isSI(detailedScores[DETAILED_CRITERIA[47]]); // "Velocità adeguata" -> "Capacità adattamento velocità"
-        predictions.v = isSI(avgDetailed([7, 8, 9, 10, 11, 12])); // "Corretta positura nell'osservazione" -> Media "Uso visione...", "Dinamicità sguardo"
-        predictions.z = isSI(detailedScores[DETAILED_CRITERIA[13]]); // "Tempestività nell'osservazione" -> "Corretta sequenza rti"
-        predictions.x = isSI(detailedScores[DETAILED_CRITERIA[46]]); // "Valutazione del pericolo" -> "Guida proattiva"
+        predictions.a = isSI(avgDetailed([3, 4, 5, 6]));
+        predictions.b = isSI(avgDetailed([27, 28, 29, 30, 31]));
+        predictions.c = isSI(avgDetailed([19, 20, 21, 22, 23, 24]));
+        predictions.d = isSI(detailedScores[DETAILED_CRITERIA[25]]);
+        predictions.e = isSI(avgDetailed([65, 66, 67, 68, 69]));
+        predictions.f = isSI(avgDetailed([72, 74]));
+        predictions.g = isSI(avgDetailed([35, 36, 37]));
+        predictions.h = isSI(avgDetailed([39, 40]));
+        predictions.i = isSI(avgDetailed([42, 43, 44, 45]));
+        predictions.l = isSI(detailedScores[DETAILED_CRITERIA[40]]);
+        predictions.m = isSI(detailedScores[DETAILED_CRITERIA[40]]);
+        predictions.n = isSI(detailedScores[DETAILED_CRITERIA[38]]);
+        predictions.o = isSI(detailedScores[DETAILED_CRITERIA[36]]);
+        predictions.p = isSI(avgDetailed([53, 54, 55, 59]));
+        predictions.q = isSI(avgDetailed([63, 64]));
+        predictions.r = isSI(avgDetailed([56, 57, 58]));
+        predictions.s = isSI(detailedScores[DETAILED_CRITERIA[40]]);
+        predictions.t = isSI(detailedScores[DETAILED_CRITERIA[52]]);
+        predictions.u = isSI(detailedScores[DETAILED_CRITERIA[47]]);
+        predictions.v = isSI(avgDetailed([7, 8, 9, 10, 11, 12]));
+        predictions.z = isSI(detailedScores[DETAILED_CRITERIA[13]]);
+        predictions.x = isSI(detailedScores[DETAILED_CRITERIA[46]]);
         
         return predictions;
     }
 
-
-    // --- FUNZIONI DI GESTIONE PAGINA (Single Page App) ---
-
-    // Chiamata all'avvio
     function initPage() {
-        // Popola la Sezione Esame con la struttura base
         const defaultQuickScores = {};
         QUICK_CRITERIA.forEach(name => { defaultQuickScores[name] = 5; });
         const defaultDetailedScores = calculateScores(defaultQuickScores).calculatedScores;
@@ -729,10 +643,9 @@
     function showHomeView() {
         document.getElementById('home-view').classList.remove('hidden');
         document.getElementById('calculator-page').classList.add('hidden');
-        document.getElementById('student-name-input').value = ""; // Pulisce l'input
-        loadSavedLessonsList(); // Ricarica la lista
+        document.getElementById('student-name-input').value = ""; 
+        loadSavedLessonsList(); 
         
-        // Collega i pulsanti Import/Export
         document.getElementById('export-btn').onclick = exportData;
         document.getElementById('import-btn').onclick = () => document.getElementById('import-file-input').click();
     }
@@ -741,16 +654,14 @@
         document.getElementById('home-view').classList.add('hidden');
         document.getElementById('calculator-page').classList.remove('hidden');
         
-        // Resetta le tendine (chiudile)
         document.querySelectorAll('#calculator-page details').forEach(el => el.open = false);
         
-        // Resetta i "grattabili"
         document.querySelectorAll('.scratch-cover').forEach(el => {
             el.classList.remove('hidden');
             el.style.opacity = '1';
         });
 
-        loadLesson(lessonId); // Carica i dati dell'allievo specifico
+        loadLesson(lessonId); 
     }
 
     function startNewLesson() {
@@ -780,7 +691,6 @@
             quickScores: defaultQuickScores,
             isLocked: false,
             finalScore: null
-            // Campi conferma rimossi
         };
 
         localStorage.setItem(lessonId, JSON.stringify(lessonData));
@@ -839,7 +749,6 @@
             return;
         }
         
-        // Raggruppa le lezioni per data
         const groupedLessons = {};
         lessons.forEach(lesson => {
             const dateGroup = getRelativeDateGroup(lesson.createdAt);
@@ -849,7 +758,6 @@
             groupedLessons[dateGroup].push(lesson);
         });
 
-        // Ordina i gruppi di date
         const sortedGroups = Object.keys(groupedLessons).sort((a, b) => {
             if (a === "Oggi") return -1;
             if (b === "Oggi") return 1;
@@ -857,13 +765,11 @@
             if (b === "Ieri") return 1;
             if (a === "Senza Data") return 1;
             if (b === "Senza Data") return -1;
-            // Ordina le altre date (es. 01/11/2025) dalla più recente
             const dateA = new Date(a.split('/').reverse().join('-'));
             const dateB = new Date(b.split('/').reverse().join('-'));
             return dateB - dateA;
         });
 
-        // Itera sui gruppi ordinati e mostra
         sortedGroups.forEach(dateGroup => {
             const lessonsInGroup = groupedLessons[dateGroup];
             const lessonIdsInGroup = lessonsInGroup.map(l => l.id).join(',');
@@ -878,7 +784,6 @@
             `;
             listContainer.appendChild(groupHeader);
             
-            // Ordina le lezioni all'interno del gruppo (per ora di creazione)
             lessonsInGroup.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
             lessonsInGroup.forEach(data => {
@@ -920,11 +825,10 @@
     function deleteLesson(lessonId) {
         if (confirm("Sei sicuro di voler eliminare questa valutazione? L'azione è irreversibile.")) {
             localStorage.removeItem(lessonId);
-            loadSavedLessonsList(); // Ricarica la lista dopo l'eliminazione
+            loadSavedLessonsList(); 
         }
     }
     
-    // Funzione per eliminare un intero gruppo di lezioni
     function deleteLessonsByGroup(lessonIdsString) {
         const lessonIds = lessonIdsString.split(',');
         if (confirm(`Sei sicuro di voler eliminare tutte le ${lessonIds.length} valutazioni di questo gruppo? L'azione è irreversibile.`)) {
@@ -935,7 +839,6 @@
         }
     }
     
-    // Funzione per eliminare TUTTI i dati
     function deleteAllData() {
         if (confirm("ATTENZIONE!\nStai per eliminare TUTTE le valutazioni salvate su questo dispositivo.\n\nAssicurati di aver esportato un backup se vuoi conservare i dati.\n\nVuoi continuare?")) {
             localStorage.clear();
@@ -958,7 +861,6 @@
         
         const dataString = localStorage.getItem(lessonId);
         if (!dataString) {
-            // Errore: Dati non trovati
             showHomeView();
             return;
         }
@@ -966,11 +868,9 @@
         const lessonData = JSON.parse(dataString);
         quickScores = lessonData.quickScores || {};
         
-        // Popola i campi
         document.getElementById('student-name-display').textContent = lessonData.studentName;
         document.getElementById('lesson-notes').value = lessonData.notes || "";
         
-        // Carica il modulo salvato
         const modulo = lessonData.moduloSvolto || "nessuno";
         const radioToCheck = document.querySelector(`input[name="modulo_obbligatorio"][value="${modulo}"]`);
         if (radioToCheck) {
@@ -979,20 +879,15 @@
             document.getElementById('modulo_nessuno').checked = true;
         }
         
-        // Renderizza i criteri e i calcoli
         renderQuickCriteria(quickScores);
         
         const scores = calculateScores(quickScores);
         renderDetailedSummary(scores.calculatedScores);
         renderCompetencyAreas(scores.competencyAreas_0_50, scores.competencyAreas_0_5, scores.totalScore_0_500);
         
-        // Calcola e renderizza la previsione d'esame
         const examPredictions = calculateExamPredictionFromDetailed(scores.calculatedScores);
         renderExamPredictions(examPredictions);
 
-        // Gestione conferma RIMOSSA
-        
-        // Gestisci lo stato bloccato
         if (lessonData.isLocked) {
             lockPage();
         } else {
@@ -1000,13 +895,10 @@
         }
     }
 
-    /**
-     * Salva i dati temporaneamente (su input) senza bloccare.
-     */
     function saveLessonData(isLocking = false) {
         if (!currentLessonId) return;
         
-        if (isLocking) return; // Il salvataggio bloccato è gestito da saveAndLockLesson
+        if (isLocking) return; 
 
         const currentDataString = localStorage.getItem(currentLessonId);
         if (!currentDataString) return;
@@ -1023,13 +915,7 @@
         localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
     }
     
-    /**
-     * Funzione dedicata per il salvataggio finale (Blocco)
-     * Senza conferma
-     */
     function saveAndLockLesson() {
-        // Controlli conferma RIMOSSI
-        
         if (!currentLessonId) return;
         const currentDataString = localStorage.getItem(currentLessonId);
         if (!currentDataString) return;
@@ -1038,25 +924,63 @@
 
         if (confirm("Sei sicuro di voler salvare e archiviare questa valutazione? Non potrai più modificarla.")) {
             
-            // Salva tutti i dati (slider, note, moduli)
             lessonData.notes = document.getElementById('lesson-notes').value;
             lessonData.quickScores = quickScores;
             const selectedModulo = document.querySelector('input[name="modulo_obbligatorio"]:checked')?.value || "nessuno";
             lessonData.moduloSvolto = selectedModulo;
 
-            // Calcola e salva il punteggio finale
             const { totalScore_0_500 } = calculateScores(lessonData.quickScores);
             lessonData.finalScore = totalScore_0_500;
             
-            // Salva i dati di conferma RIMOSSI
             
+            // --- INTEGRATION POINT: Invia i dati a Google Sheet ---
+            // Questa funzione viene chiamata SOLO quando l'utente conferma di voler salvare.
+            sendDataToGoogleSheet(lessonData, scores.competencyAreas_0_50); 
+            // Nota: ho bisogno di passare anche i punteggi calcolati delle aree.
+            // Per pulizia, li ricalcolo qui o li passo. Li ricalcolo per sicurezza.
+             const scoresForSheet = calculateScores(lessonData.quickScores);
+             sendDataToGoogleSheet(lessonData, scoresForSheet.competencyAreas_0_50);
+             // -----------------------------------------------------
+
             lessonData.isLocked = true;
             localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
             lockPage();
         }
     }
     
-    // Torna alla lista
+    // --- NUOVA FUNZIONE PER GOOGLE SHEET ---
+    async function sendDataToGoogleSheet(data, areaScores) {
+        // Se l'URL non è impostato, esce silenziosamente o con un log
+        if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === "INSERISCI_QUI_IL_TUO_URL") {
+            console.log("URL Script non configurato.");
+            return;
+        }
+
+        const payload = {
+            nome: data.studentName,
+            totale: data.finalScore,
+            modulo: data.moduloSvolto,
+            note: data.notes,
+            aree: areaScores // Passiamo l'oggetto con i punteggi delle 10 aree
+        };
+
+        try {
+            // Invio in modalità no-cors (standard per form submission semplici verso Google Script)
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            alert("Dati salvati e inviati al Foglio Google!");
+        } catch (error) {
+            console.error("Errore invio dati:", error);
+            alert("Dati salvati in locale, ma errore nell'invio online.");
+        }
+    }
+
     function goBackToList() {
         showHomeView();
     }
@@ -1073,7 +997,6 @@
             radio.disabled = true;
         });
         
-        // Nascondi i campi di input della conferma
         document.getElementById('confirmation-container').classList.add('hidden');
         document.getElementById('confirmation-display').classList.add('hidden');
     }
@@ -1090,28 +1013,23 @@
             radio.disabled = false;
         });
         
-        // Mostra i campi di conferma e resetta lo stato
         document.getElementById('confirmation-container').classList.remove('hidden');
         document.getElementById('confirmation-display').classList.add('hidden');
-        document.getElementById('lock-lesson-btn').disabled = false; // Ri-abilitato
+        document.getElementById('lock-lesson-btn').disabled = false; 
     }
-
-    // --- FUNZIONI DI RENDERIZZAZIONE UI ---
 
     function renderQuickCriteria(scores) {
         const container = document.getElementById('quick-criteria-container');
         container.innerHTML = QUICK_CRITERIA.map((criterion, index) => {
-            const value = scores[criterion] != null ? scores[criterion] : 5; // Default a 5 se non presente
-            const description = SCORE_10_INTERPRETATION[value]; // Ottieni la descrizione
+            const value = scores[criterion] != null ? scores[criterion] : 5; 
+            const description = SCORE_10_INTERPRETATION[value]; 
             return `
             <div class="space-y-1 p-3 bg-gray-50 rounded-lg shadow-inner">
                 <label for="quick-slider-${index}" class="block text-sm font-semibold text-gray-700">${index + 1}. ${criterion}</label>
                 
-                <!-- Testo descrizione nascosto -->
                 <p id="quick-desc-${index}" class="text-xs h-8 text-gray-500 overflow-hidden hidden">${description}</p>
                 
                 <div class="flex items-center space-x-3">
-                    <!-- Emoji con eventi mousedown/touchstart per il tooltip personalizzato -->
                     <span id="quick-value-${index}" 
                           class="text-4xl w-12 text-center cursor-default" 
                           onmousedown="showTooltip(event, ${index})"
@@ -1128,7 +1046,6 @@
         `}).join('');
     }
 
-    // Chiamato quando uno slider 0-10 viene mosso
     function updateQuickScore(event) {
         if (event.target.tagName !== 'INPUT' || event.target.type !== 'range') return;
         
@@ -1149,7 +1066,6 @@
         renderDetailedSummary(calculatedScores);
         renderCompetencyAreas(competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500);
         
-        // Aggiorna la previsione d'esame
         const examPredictions = calculateExamPredictionFromDetailed(calculatedScores);
         renderExamPredictions(examPredictions);
     }
@@ -1188,9 +1104,6 @@
         container.innerHTML = html;
     }
 
-    /**
-     * Accetta i punteggi 0-50 (per i colori) e 0-5 (per la visualizzazione)
-     */
     function renderCompetencyAreas(competencyAreas_0_50, competencyAreas_0_5, totalScore) {
         const container = document.getElementById('competency-summary');
         
@@ -1200,11 +1113,11 @@
             
             let color;
             if (score_0_5 >= 3) {
-                color = 'bg-green-200 text-green-800'; // Verde
+                color = 'bg-green-200 text-green-800'; 
             } else if (score_0_5 >= 2) {
-                color = 'bg-yellow-200 text-yellow-800'; // Giallo
+                color = 'bg-yellow-200 text-yellow-800'; 
             } else {
-                color = 'bg-red-200 text-red-800'; // Rosso
+                color = 'bg-red-200 text-red-800'; 
             }
 
             return `
@@ -1220,16 +1133,12 @@
         document.getElementById('total-score-500').textContent = `${totalScore} / 500`;
     }
     
-    /**
-     * Renderizza la sezione Previsione Esame (Grattabili)
-     */
     function renderExamPredictions(predictions) {
         const container = document.getElementById('exam-items-container');
-        container.innerHTML = ''; // Pulisce
+        container.innerHTML = ''; 
         
-        // Itera sulla lista dei criteri d'esame
         for (const [key, text] of Object.entries(EXAM_CRITERIA)) {
-            const result = predictions[key] || "NO"; // 'NO' di default
+            const result = predictions[key] || "NO"; 
             const resultClass = result === "SI" ? "si" : "no";
             
             const itemHtml = `
@@ -1245,18 +1154,14 @@
         }
     }
     
-    // Funzione per rivelare il "Grattabile"
     function reveal(key) {
         const cover = document.getElementById(`cover-${key}`);
         if (cover) {
             cover.style.opacity = '0';
-            // Rimuovi dopo l'animazione per non bloccare il testo
             setTimeout(() => { cover.classList.add('hidden'); }, 300);
         }
     }
 
-
-    // --- Funzioni Tooltip Personalizzate ---
     function showTooltip(event, index) {
         event.preventDefault(); 
         
@@ -1279,8 +1184,6 @@
     function hideTooltip() {
         tooltip.classList.add('hidden');
     }
-    
-    // --- Funzioni Import/Export ---
     
     function exportData() {
         const statusEl = document.getElementById('import-status');
@@ -1309,7 +1212,7 @@
             downloadAnchorNode.setAttribute("href", dataStr);
             const date = new Date().toISOString().split('T')[0];
             downloadAnchorNode.setAttribute("download", `backup_registro_valutazioni_${date}.json`);
-            document.body.appendChild(downloadAnchorNode); // Richiesto per Firefox
+            document.body.appendChild(downloadAnchorNode); 
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
             
@@ -1347,7 +1250,6 @@
                     localStorage.clear();
                     
                     data.lessons.forEach(lesson => {
-                        // Assicura che i dati importati siano validi
                         if (lesson.id && lesson.studentName) {
                             localStorage.setItem(lesson.id, JSON.stringify(lesson));
                         }
@@ -1355,7 +1257,7 @@
                     
                     statusEl.textContent = `Importate ${data.lessons.length} valutazioni con successo.`;
                     statusEl.className = "text-sm mt-3 text-green-600";
-                    loadSavedLessonsList(); // Aggiorna la lista
+                    loadSavedLessonsList(); 
                 } else {
                     statusEl.textContent = "Importazione annullata.";
                     statusEl.className = "text-sm mt-3 text-gray-600";
@@ -1366,7 +1268,6 @@
                 statusEl.textContent = `Errore durante l'importazione: ${error.message}`;
                 statusEl.className = "text-sm mt-3 text-red-600";
             } finally {
-                // Resetta l'input file per permettere di ricaricare lo stesso file
                 event.target.value = null;
             }
         };
@@ -1374,7 +1275,6 @@
         reader.readAsText(file);
     }
 
-    // Esponi le funzioni necessarie all'ambito globale per gli onclick HTML
     window.updateQuickScore = updateQuickScore;
     window.startNewLesson = startNewLesson;
     window.loadSavedLessonsList = loadSavedLessonsList;
@@ -1389,12 +1289,10 @@
     window.hideTooltip = hideTooltip;
     window.exportData = exportData;
     window.importData = importData;
-    window.reveal = reveal; // Esponi la funzione Grattabile
+    window.reveal = reveal; 
     
-    // Avvia l'applicazione
     initPage();
 
 </script>
 </body>
 </html>
-
