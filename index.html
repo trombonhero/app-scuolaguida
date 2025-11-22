@@ -367,6 +367,7 @@
 <script type="module">
 
     // *** CONFIGURAZIONE GOOGLE SCRIPT PER DRIVE ***
+    // Incolla qui l'URL che hai ottenuto distribuendo la Web App su Apps Script
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLHR0J1sbdFoOJizGNnQBllFEVNrB4LxZ5ESlNqQw1Xg3TmR1CyW7HIzD-0vgPns9SzQ/exec";
     
     let currentLessonId = null;
@@ -384,7 +385,7 @@
         1: "Grave errore → Tentativo fallito, comportamento inadeguato.",
         2: "Molto insicuro → Errori gravi, necessità di intervento.",
         3: "Insicuro → Errori evidenti, esecuzione incerta.",
-        4: "Migliorabile → Errori non gravi, ma guida imprecisa.", 
+        4: "Migliorabile → Errori non gravi, ma guida imprecisa.",
         5: "Quasi sufficiente → Autonomia parziale, migliorabile.",
         6: "Sufficiente → Controllo adeguato, ma con margini di miglioramento.",
         7: "Discreto → Guida sicura con qualche imprecisione.",
@@ -637,11 +638,6 @@
         renderExamPredictions(defaultPredictions);
         
         showHomeView();
-        
-        if (navigator.onLine) {
-             checkPendingDriveUpload();
-        }
-        window.addEventListener('online', checkPendingDriveUpload);
     }
 
     function showHomeView() {
@@ -650,6 +646,7 @@
         document.getElementById('student-name-input').value = ""; 
         loadSavedLessonsList(); 
         
+        // MODIFICATO: Pulsante Esporta con logica Drive
         const exportBtn = document.getElementById('export-btn');
         exportBtn.onclick = async () => {
              await exportData();
@@ -657,7 +654,7 @@
         
         document.getElementById('import-btn').onclick = () => document.getElementById('import-file-input').click();
     }
-    
+
     function showCalculatorPage(lessonId) {
         document.getElementById('home-view').classList.add('hidden');
         document.getElementById('calculator-page').classList.remove('hidden');
@@ -946,11 +943,19 @@
         }
     }
     
-    // --- DRIVE SYNC LOGIC ---
-    
+    // --- NUOVA FUNZIONE PER DRIVE (INVIO SEMPLICE) ---
     async function uploadToDrive(exportObj) {
         const driveStatusEl = document.getElementById('drive-status');
-        driveStatusEl.textContent = "⏳ Caricamento backup su Google Drive...";
+        
+        // CONTROLLO CONNESSIONE
+        if (!navigator.onLine) {
+             alert("⚠️ Nessuna connessione Internet.\nIl file è stato salvato solo sul dispositivo.");
+             driveStatusEl.textContent = "⚠️ Backup Drive saltato (Offline)";
+             driveStatusEl.className = "text-xs text-orange-600 mt-2 text-center";
+             return;
+        }
+
+        driveStatusEl.textContent = "⏳ Caricamento su Google Drive...";
         driveStatusEl.className = "text-xs text-blue-600 mt-2 text-center";
         
         try {
@@ -958,7 +963,7 @@
                  throw new Error("URL Script non configurato");
              }
 
-             // Usiamo text/plain per evitare il preflight check (CORS)
+             // Invio come text/plain per evitare blocchi CORS
              await fetch(GOOGLE_SCRIPT_URL, {
                  method: 'POST',
                  mode: 'no-cors',
@@ -966,34 +971,224 @@
                  body: JSON.stringify(exportObj)
              });
              
-             driveStatusEl.textContent = "✅ Backup salvato su Google Drive!";
+             // Poiché è no-cors, assumiamo successo se non ci sono errori di rete
+             driveStatusEl.textContent = "✅ Backup inviato a Google Drive!";
              driveStatusEl.className = "text-xs text-green-600 mt-2 text-center";
-             
-             localStorage.removeItem('pendingDriveBackup');
+             alert("✅ Backup inviato correttamente a Google Drive!");
              
         } catch (error) {
              console.error("Drive upload failed:", error);
-             localStorage.setItem('pendingDriveBackup', JSON.stringify(exportObj));
-             driveStatusEl.textContent = "⚠️ Offline. In coda per caricamento automatico.";
-             driveStatusEl.className = "text-xs text-orange-600 mt-2 text-center";
-        }
-    }
-    
-    async function checkPendingDriveUpload() {
-        const pendingData = localStorage.getItem('pendingDriveBackup');
-        if (pendingData) {
-            const driveStatusEl = document.getElementById('drive-status');
-            if (driveStatusEl) {
-                 driveStatusEl.textContent = "🔄 Tentativo caricamento coda...";
-            }
-            try {
-                await uploadToDrive(JSON.parse(pendingData));
-            } catch(e) {
-                // Keep pending
-            }
+             driveStatusEl.textContent = "❌ Errore invio Drive";
+             driveStatusEl.className = "text-xs text-red-600 mt-2 text-center";
+             alert("❌ Errore durante l'invio a Google Drive. Controlla la connessione o lo script.");
         }
     }
 
+    function goBackToList() {
+        showHomeView();
+    }
+    
+    function lockPage() {
+        document.getElementById('lock-status').innerHTML = 'Stato: <span class="text-red-600 font-medium">Archiviata (Sola lettura)</span>';
+        document.getElementById('lock-lesson-btn').disabled = true;
+        document.getElementById('lesson-notes').disabled = true;
+        
+        document.querySelectorAll('.score-slider').forEach(slider => {
+            slider.disabled = true;
+        });
+        document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(radio => {
+            radio.disabled = true;
+        });
+        
+        document.getElementById('confirmation-container').classList.add('hidden');
+        document.getElementById('confirmation-display').classList.add('hidden');
+    }
+    
+    function unlockPage() {
+        document.getElementById('lock-status').innerHTML = 'Stato: <span class="text-green-600">In corso...</span>';
+        document.getElementById('lock-lesson-btn').disabled = false;
+        document.getElementById('lesson-notes').disabled = false;
+        
+        document.querySelectorAll('.score-slider').forEach(slider => {
+            slider.disabled = false;
+        });
+        document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(radio => {
+            radio.disabled = false;
+        });
+        
+        document.getElementById('confirmation-container').classList.remove('hidden');
+        document.getElementById('confirmation-display').classList.add('hidden');
+        document.getElementById('lock-lesson-btn').disabled = false; 
+    }
+
+    function renderQuickCriteria(scores) {
+        const container = document.getElementById('quick-criteria-container');
+        container.innerHTML = QUICK_CRITERIA.map((criterion, index) => {
+            const value = scores[criterion] != null ? scores[criterion] : 5; 
+            const description = SCORE_10_INTERPRETATION[value]; 
+            return `
+            <div class="space-y-1 p-3 bg-gray-50 rounded-lg shadow-inner">
+                <label for="quick-slider-${index}" class="block text-sm font-semibold text-gray-700">${index + 1}. ${criterion}</label>
+                
+                <p id="quick-desc-${index}" class="text-xs h-8 text-gray-500 overflow-hidden hidden">${description}</p>
+                
+                <div class="flex items-center space-x-3">
+                    <span id="quick-value-${index}" 
+                          class="text-4xl w-12 text-center cursor-default" 
+                          onmousedown="showTooltip(event, ${index})"
+                          onmouseup="hideTooltip()"
+                          ontouchstart="showTooltip(event, ${index})"
+                          ontouchend="hideTooltip()"
+                          oncontextmenu="event.preventDefault();" 
+                          >
+                          ${EMOJI_INTERPRETATION[value]}
+                    </span>
+                    <input type="range" min="0" max="10" value="${value}" id="quick-slider-${index}" data-name="${criterion}" data-index="${index}" class="score-slider flex-grow" oninput="updateQuickScore(event)" onchange="saveLessonData(false)">
+                </div>
+            </div>
+        `}).join('');
+    }
+
+    function updateQuickScore(event) {
+        if (event.target.tagName !== 'INPUT' || event.target.type !== 'range') return;
+        
+        const slider = event.target;
+        const name = slider.getAttribute('data-name');
+        const index = slider.getAttribute('data-index');
+        const value = parseInt(slider.value, 10);
+        
+        const description = SCORE_10_INTERPRETATION[value];
+        const emojiEl = document.getElementById(`quick-value-${index}`);
+        
+        emojiEl.textContent = EMOJI_INTERPRETATION[value];
+        document.getElementById(`quick-desc-${index}`).textContent = description;
+        
+        quickScores[name] = value;
+
+        const { calculatedScores, competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500 } = calculateScores(quickScores);
+        renderDetailedSummary(calculatedScores);
+        renderCompetencyAreas(competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500);
+        
+        const examPredictions = calculateExamPredictionFromDetailed(calculatedScores);
+        renderExamPredictions(examPredictions);
+    }
+
+    function renderDetailedSummary(detailedScores) {
+        const container = document.getElementById('calculated-scores-container');
+        let html = '';
+
+        COMPETENCY_AREAS.forEach((area) => {
+            html += `
+                <div class="mt-4 mb-3 col-span-full border-b pb-1">
+                    <h3 class="text-base font-semibold text-gray-800">${area.name}</h3>
+                </div>
+            `;
+            
+            html += `<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 col-span-full">`;
+            
+            area.criteria.forEach(criterionIndex => {
+                const criterion = DETAILED_CRITERIA[criterionIndex];
+                const score = detailedScores[criterion] || 0;
+                const interpretation = SCORE_5_INTERPRETATION[score] || SCORE_5_INTERPRETATION[0];
+
+                html += `
+                    <div class="grid grid-cols-[1fr_auto] items-center gap-2 text-sm">
+                        <span class="text-gray-700 truncate" title="${criterion}">${criterion}</span>
+                        <span class="flex items-center justify-center w-6 h-6 font-bold rounded-full text-xs ${interpretation.color}">
+                            ${score}
+                        </span>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+        });
+        
+        container.innerHTML = html;
+    }
+
+    function renderCompetencyAreas(competencyAreas_0_50, competencyAreas_0_5, totalScore) {
+        const container = document.getElementById('competency-summary');
+        
+        container.innerHTML = COMPETENCY_AREAS.map(area => {
+            const score_0_50 = competencyAreas_0_50[area.name] || 0;
+            const score_0_5 = competencyAreas_0_5[area.name] || 0;
+            
+            let color;
+            if (score_0_5 >= 3) {
+                color = 'bg-green-200 text-green-800'; 
+            } else if (score_0_5 >= 2) {
+                color = 'bg-yellow-200 text-yellow-800'; 
+            } else {
+                color = 'bg-red-200 text-red-800'; 
+            }
+
+            return `
+                <div class="flex justify-between items-center p-2 rounded-lg border border-gray-100 bg-white shadow-sm">
+                    <span class="font-medium text-gray-700">${area.name}</span>
+                    <span class="flex items-center justify-center w-8 h-8 text-sm font-bold rounded-full ${color}">
+                        ${score_0_5}
+                    </span>
+                </div>
+            `;
+        }).join('');
+
+        document.getElementById('total-score-500').textContent = `${totalScore} / 500`;
+    }
+    
+    function renderExamPredictions(predictions) {
+        const container = document.getElementById('exam-items-container');
+        container.innerHTML = ''; 
+        
+        for (const [key, text] of Object.entries(EXAM_CRITERIA)) {
+            const result = predictions[key] || "NO"; 
+            const resultClass = result === "SI" ? "si" : "no";
+            
+            const itemHtml = `
+                <div class="flex justify-between items-center p-2 rounded-lg border border-gray-100 bg-white shadow-sm">
+                    <span class="font-medium text-gray-700">${key}) ${text}</span>
+                    <div class="scratch-container">
+                        <div id="result-${key}" class="scratch-result ${resultClass}">${result}</div>
+                        <div id="cover-${key}" class="scratch-cover" onclick="reveal('${key}')">GRATTA QUI</div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += itemHtml;
+        }
+    }
+    
+    function reveal(key) {
+        const cover = document.getElementById(`cover-${key}`);
+        if (cover) {
+            cover.style.opacity = '0';
+            setTimeout(() => { cover.classList.add('hidden'); }, 300);
+        }
+    }
+
+    function showTooltip(event, index) {
+        event.preventDefault(); 
+        
+        const slider = document.getElementById(`quick-slider-${index}`);
+        if (!slider) return;
+        const value = slider.value;
+        
+        const text = SCORE_10_INTERPRETATION[value];
+        
+        tooltip.textContent = text;
+        tooltip.classList.remove('hidden');
+
+        const x = event.touches ? event.touches[0].pageX : event.pageX;
+        const y = event.touches ? event.touches[0].pageY : event.pageY;
+
+        tooltip.style.left = (x + 15) + 'px'; 
+        tooltip.style.top = (y + 15) + 'px'; 
+    }
+
+    function hideTooltip() {
+        tooltip.classList.add('hidden');
+    }
+    
+    // --- MODIFICA EXPORT CON INVIO SEMPLICE ---
     async function exportData() {
         const statusEl = document.getElementById('import-status');
         
@@ -1017,7 +1212,7 @@
                  return;
             }
 
-            // 1. Local Download
+            // 1. Download Locale (Sempre)
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
@@ -1030,7 +1225,7 @@
             statusEl.textContent = `Esportate ${exportObj.lessons.length} valutazioni in locale.`;
             statusEl.className = "text-sm mt-3 text-green-600";
             
-            // 2. Trigger Drive Upload
+            // 2. Prova Invio Drive (Se Online)
             await uploadToDrive(exportObj);
 
         } catch (error) {
@@ -1089,6 +1284,7 @@
         reader.readAsText(file);
     }
 
+    // Esponi le funzioni necessarie all'ambito globale per gli onclick HTML
     window.updateQuickScore = updateQuickScore;
     window.startNewLesson = startNewLesson;
     window.loadSavedLessonsList = loadSavedLessonsList;
@@ -1105,6 +1301,7 @@
     window.importData = importData;
     window.reveal = reveal; 
     
+    // Avvia l'applicazione
     initPage();
 
 </script>
