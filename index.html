@@ -1298,7 +1298,14 @@
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (key.startsWith('lesson_')) {
-                    exportObj.lessons.push(JSON.parse(localStorage.getItem(key)));
+                    const lesson = JSON.parse(localStorage.getItem(key));
+                    
+                    // MODIFICA: Ricalcola il punteggio totale al volo per tutte le lezioni
+                    // per assicurarsi che "calculatedTotalScore" sia presente anche se la lezione non è chiusa.
+                    const { totalScore_0_500 } = calculateScores(lesson.quickScores || {});
+                    lesson.calculatedTotalScore = totalScore_0_500;
+                    
+                    exportObj.lessons.push(lesson);
                 }
             }
             
@@ -1308,41 +1315,46 @@
                  return;
             }
 
-            // --- 1. DOWNLOAD LOCALE (CORRETTO PER MOBILE) ---
+            // --- 1. DOWNLOAD LOCALE (CORRETTO PER MOBILE E IPAD) ---
             const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.href = url;
             const date = new Date().toISOString().split('T')[0];
             downloadAnchorNode.download = `backup_registro_valutazioni_${date}.json`;
+            
+            // Aggiunta per compatibilità iPad/iOS
+            downloadAnchorNode.target = "_blank"; 
+            
             document.body.appendChild(downloadAnchorNode); 
             downloadAnchorNode.click();
+            
+            // Aumentato il timeout per permettere a iPad di elaborare il click
             setTimeout(() => {
                 document.body.removeChild(downloadAnchorNode);
                 window.URL.revokeObjectURL(url);
-            }, 100);
+            }, 3000); 
             
             statusEl.textContent = `Scaricato backup locale (${exportObj.lessons.length} lezioni). Invio a Drive in corso...`;
             statusEl.className = "text-sm mt-3 text-blue-600";
 
-            // --- 2. INVIO A GOOGLE APPS SCRIPT (CORRETTO PER MOBILE/CORS) ---
-            // Usiamo 'no-cors' perché GAS su domini esterni viene bloccato dai browser mobile se si aspetta una risposta standard
+            // --- 2. INVIO A GOOGLE APPS SCRIPT (CORRETTO PER MOBILE/CORS/IPAD) ---
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // CRUCIALE: Permette l'invio "alla cieca" senza che il browser blocchi per CORS
+                mode: 'no-cors', 
+                credentials: 'omit', // MODIFICA IMPORTANTE: Evita invio cookie che Safari blocca
                 headers: {
                     'Content-Type': 'text/plain;charset=utf-8' 
                 },
                 body: JSON.stringify(exportObj)
             })
             .then(response => {
-                // Con no-cors la risposta è 'opaque' e lo status è 0, ma la promise si risolve se la rete va.
                 statusEl.textContent = `Backup scaricato e inviato a Google Drive (Invio confermato).`;
                 statusEl.className = "text-sm mt-3 text-green-600 font-bold";
             })
             .catch(error => {
                 console.error("Errore Drive:", error);
-                statusEl.textContent = `Backup scaricato, ma invio a Drive fallito (controlla connessione).`;
+                statusEl.textContent = `Backup scaricato, ma invio a Drive fallito (controlla connessione o impostazioni privacy Safari).`;
                 statusEl.className = "text-sm mt-3 text-red-600";
             });
 
