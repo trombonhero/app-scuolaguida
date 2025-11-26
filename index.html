@@ -1395,6 +1395,11 @@
                     const { totalScore_0_500 } = calculateScores(lesson.quickScores || {});
                     lesson.finalScore = totalScore_0_500;
                     
+                    // MODIFICA: Assicura che location sia presente
+                    if (!lesson.location) {
+                        lesson.location = "Sede non specificata"; 
+                    }
+                    
                     exportObj.lessons.push(lesson);
                 }
             }
