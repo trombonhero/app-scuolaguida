@@ -54,7 +54,7 @@
         }
         
         /* FIX TABLET: Impedisce lo scorrimento della pagina quando si interagisce con gli input */
-        input[type="text"], textarea, select {
+        input[type="text"], textarea, select, input[type="date"] {
              touch-action: manipulation;
         }
         
@@ -234,18 +234,24 @@
                 <input type="text" id="student-name-input" placeholder="Es. Mario Rossi" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
             </div>
 
-            <!-- Riga 2: Sede (Nuovo) -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Sede</label>
-                <select id="location-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="toggleLocationInput()">
-                    <option value="Colleferro">Colleferro</option>
-                    <option value="Genazzano">Genazzano</option>
-                    <option value="Palestrina">Palestrina</option>
-                    <option value="Paliano">Paliano</option>
-                    <option value="Roma">Roma</option>
-                    <option value="other">Altro (inserisci manuale)</option>
-                </select>
-                <input type="text" id="location-input-manual" placeholder="Specifica altra sede..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mt-2 hidden">
+            <!-- Riga 2: Sede e Data (Griglia) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Sede</label>
+                    <select id="location-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="toggleLocationInput()">
+                        <option value="Colleferro">Colleferro</option>
+                        <option value="Genazzano">Genazzano</option>
+                        <option value="Palestrina">Palestrina</option>
+                        <option value="Paliano">Paliano</option>
+                        <option value="Roma">Roma</option>
+                        <option value="other">Altro (inserisci manuale)</option>
+                    </select>
+                    <input type="text" id="location-input-manual" placeholder="Specifica altra sede..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mt-2 hidden">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Data Lezione</label>
+                    <input type="date" id="lesson-date-input" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
             </div>
 
             <!-- Riga 3: Patente e Durata -->
@@ -783,6 +789,9 @@
         document.getElementById('location-select').value = "Colleferro";
         toggleLocationInput();
         document.getElementById('location-input-manual').value = "";
+        // Reset Date (default to today)
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('lesson-date-input').value = today;
         
         loadSavedLessonsList(); // Ricarica la lista
         
@@ -838,6 +847,23 @@
             location = manualInput.value.trim() || "Sede non specificata";
         }
 
+        // Campo Data
+        const dateInput = document.getElementById('lesson-date-input');
+        const dateVal = dateInput.value; // YYYY-MM-DD
+        let createdAt;
+
+        if (dateVal) {
+            // Combine selected date with current time to preserve ordering
+            const now = new Date();
+            const [year, month, day] = dateVal.split('-').map(Number);
+            // Date constructor uses 0-indexed month
+            const lessonDate = new Date(year, month - 1, day, now.getHours(), now.getMinutes(), now.getSeconds());
+            createdAt = lessonDate.toISOString();
+        } else {
+            // Fallback if empty (should not happen with date input but just in case)
+            createdAt = new Date().toISOString();
+        }
+
         const errorEl = document.getElementById('landing-error');
         
         if (studentName.length < 3) {
@@ -858,8 +884,8 @@
             studentName: studentName,
             licenseType: licenseType,
             duration: duration,
-            location: location, // Salvataggio sede
-            createdAt: new Date().toISOString(),
+            location: location, 
+            createdAt: createdAt, // Use selected date
             notes: "",
             moduloSvolto: "nessuno",
             quickScores: defaultQuickScores,
