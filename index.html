@@ -219,9 +219,34 @@
             font-weight: 700;
         }
         
+        /* Notifica Toast */
+        #toast-notification {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #10b981; /* Green-500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            font-weight: 600;
+            transition: opacity 0.3s, transform 0.3s;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #toast-notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
     </style>
 </head>
 <body>
+
+<!-- Notifica Toast -->
+<div id="toast-notification">Valutazione Salvata con successo!</div>
 
 <!-- Tooltip personalizzato che verrà controllato da JS -->
 <div id="custom-tooltip" class="hidden absolute z-50 p-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg max-w-xs" style="pointer-events: none; transition: opacity 0.1s ease;">
@@ -343,14 +368,43 @@
                 <!-- NOME MODIFICABILE -->
                 <label class="text-xs text-gray-500 font-bold uppercase">Nome Allievo</label>
                 <input type="text" id="student-name-edit" 
-                       class="text-xl sm:text-2xl font-bold text-blue-600 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none w-full mb-1"
+                       class="text-xl sm:text-2xl font-bold text-blue-600 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none w-full mb-3"
                        oninput="updateStudentName(this.value)">
                 
-                <!-- Dettagli aggiuntivi Patente/Durata/Sede -->
-                <p id="lesson-details-display" class="text-sm text-gray-600 font-medium mt-1">
-                    <!-- Riempito via JS -->
-                </p>
-                <p id="lock-status" class="text-sm font-medium text-gray-500 mt-1">
+                <!-- Dettagli modificabili Patente/Durata/Sede (SOSTITUITO IL VECCHIO DISPLAY STATICO) -->
+                <div class="grid grid-cols-3 gap-2 text-sm text-gray-700 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                    <!-- Patente -->
+                    <div class="flex flex-col">
+                        <label class="text-[10px] uppercase font-bold text-gray-400">Patente</label>
+                        <input type="text" id="edit-license-type" class="bg-transparent font-semibold focus:outline-none border-b border-transparent focus:border-blue-400 w-full" oninput="updateLessonDetails()">
+                    </div>
+                    <!-- Durata -->
+                    <div class="flex flex-col border-l border-gray-200 pl-2">
+                        <label class="text-[10px] uppercase font-bold text-gray-400">Durata</label>
+                        <select id="edit-duration" class="bg-transparent font-semibold focus:outline-none w-full" onchange="updateLessonDetails()">
+                            <option value="30">30 min</option>
+                            <option value="60">60 min</option>
+                            <option value="120">120 min</option>
+                        </select>
+                    </div>
+                    <!-- Sede -->
+                    <div class="flex flex-col border-l border-gray-200 pl-2 relative">
+                        <label class="text-[10px] uppercase font-bold text-gray-400">Sede</label>
+                        <select id="edit-location-select" class="bg-transparent font-semibold focus:outline-none w-full" onchange="toggleEditLocationInput(); updateLessonDetails()">
+                            <option value="Colleferro">Colleferro</option>
+                            <option value="Genazzano">Genazzano</option>
+                            <option value="Palestrina">Palestrina</option>
+                            <option value="Paliano">Paliano</option>
+                            <option value="Roma">Roma</option>
+                            <option value="other">Altro...</option>
+                        </select>
+                        <input type="text" id="edit-location-manual" placeholder="Scrivi sede..." class="hidden absolute top-0 left-0 w-full h-full bg-white border border-blue-300 rounded px-1 z-10" onblur="updateLessonDetails()">
+                        <!-- Close button for manual input mainly for UI reset -->
+                        <button id="close-manual-loc" class="hidden absolute -top-2 -right-2 bg-red-100 text-red-500 rounded-full w-4 h-4 flex items-center justify-center text-xs z-20" onclick="resetEditLocation()">x</button>
+                    </div>
+                </div>
+
+                <p id="lock-status" class="text-sm font-medium text-gray-500 mt-2">
                     Stato: <span class="text-green-600">In corso...</span>
                 </p>
             </div>
@@ -383,14 +437,14 @@
                 <div>
                     <input type="radio" id="filter-amquad" name="card-filter" value="AmQuad" class="radio-filter hidden" onchange="updateCardFilter('AmQuad')">
                     <label for="filter-amquad" class="cursor-pointer px-3 py-2 border rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-50 border-gray-200 transition-colors">
-                        Am Quad, B1
+                        AM Quad, B1
                     </label>
                 </div>
                 <!-- Am Ciclo -->
                 <div>
                     <input type="radio" id="filter-amciclo" name="card-filter" value="AmCiclo" class="radio-filter hidden" onchange="updateCardFilter('AmCiclo')">
                     <label for="filter-amciclo" class="cursor-pointer px-3 py-2 border rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-50 border-gray-200 transition-colors">
-                        Am Ciclo
+                        AM Ciclo
                     </label>
                 </div>
                 <!-- Superiori -->
@@ -406,6 +460,22 @@
         <p class="text-sm text-gray-600 mb-4">
             Assegna una valutazione. La descrizione di supporto appare tenendo premuta l'emoticon.
         </p>
+        
+        <!-- MASTER SLIDER: Valutazione Rapida Totale -->
+        <div class="mb-8 p-4 bg-indigo-50 border border-indigo-200 rounded-lg shadow-sm">
+            <label for="master-slider" class="block text-sm font-bold text-indigo-900 mb-2">
+                ⚡ Valutazione Rapida Totale (Imposta tutti)
+            </label>
+            <div class="flex items-center space-x-3">
+                <span id="master-value-display" class="text-2xl w-10 text-center">🧐</span>
+                <input type="range" min="0" max="10" value="5" id="master-slider" 
+                       class="score-slider flex-grow cursor-pointer" 
+                       oninput="updateMasterScore(event)">
+            </div>
+            <p class="text-xs text-indigo-600 mt-2">
+                Muovi questo slider per impostare rapidamente lo stesso voto a tutti i criteri sottostanti.
+            </p>
+        </div>
 
         <div id="quick-criteria-container" class="grid lg:grid-cols-3 md:grid-cols-2 gap-x-8 gap-y-6">
             <!-- I criteri rapidi sono inseriti dal JS in base al filtro -->
@@ -594,15 +664,14 @@
     ];
     
     // DEFINIZIONE FILTRI E INDICI (0-based rispetto all'array sopra)
-    // MODIFICATO: Swapped content of AmQuad and Superiori based on user feedback
     const CARD_CONFIGS = {
         'B': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
         'Moto': [0, 23, 6, 3, 4, 24, 8, 9, 10, 25, 26, 27, 28, 29, 13, 16, 30, 17, 18, 19],
         'AmCiclo': [0, 23, 6, 3, 4, 24, 8, 9, 10, 25, 35, 36, 37, 38, 13, 16, 30, 17, 18, 19],
-        // Superiori: Uses indices 31-34 and general ones
-        'Superiori': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 31, 13, 32, 33, 34, 16, 17, 18, 19],
-        // AmQuad: Uses indices 20-22 and general ones
-        'AmQuad': [0, 1, 2, 3, 20, 21, 22, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+        // AmQuad (era Superiori)
+        'AmQuad': [0, 1, 2, 3, 20, 21, 22, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+        // Superiori (era AmQuad)
+        'Superiori': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 31, 13, 32, 33, 34, 16, 17, 18, 19]
     };
 
     // 3. Lista dei 77 criteri dettagliati (Scala 0-5)
@@ -704,7 +773,27 @@
     /**
      * Applica le 77 formule complesse e calcola le 10 aree di competenza.
      */
-    function calculateScores(quickScores) {
+    function calculateScores(quickScores, cardType = 'B') {
+        
+        // SE LA SCHEDA NON È 'B', IL PUNTEGGIO È 0
+        if (cardType !== 'B') {
+             // Return zeroed structure
+             const zeroedCalculated = {};
+             DETAILED_CRITERIA.forEach(c => zeroedCalculated[c] = 0);
+             const zeroedAreas50 = {};
+             const zeroedAreas5 = {};
+             COMPETENCY_AREAS.forEach(a => {
+                 zeroedAreas50[a.name] = 0;
+                 zeroedAreas5[a.name] = 0;
+             });
+             return { 
+                 calculatedScores: zeroedCalculated, 
+                 competencyAreas_0_50: zeroedAreas50, 
+                 competencyAreas_0_5: zeroedAreas5, 
+                 totalScore_0_500: 0 
+             };
+        }
+
         const calculatedScores = {};
         const q = QUICK_CRITERIA.map(name => quickScores[name] || 0);
         // Helper per mappare B(n) a q[n-2]
@@ -1257,12 +1346,37 @@
         document.getElementById('student-name-edit').value = lessonData.studentName;
         document.getElementById('lesson-notes').value = lessonData.notes || "";
         
-        // Visualizza dettagli Patente, Durata e Sede
-        const detailsDisplay = document.getElementById('lesson-details-display');
-        const license = lessonData.licenseType || "B"; 
-        const dur = lessonData.duration || "60";
-        const loc = lessonData.location || "Sede non specificata";
-        detailsDisplay.textContent = `Patente ${license} - ${dur} min - ${loc}`;
+        // Populate Editable Details
+        document.getElementById('edit-license-type').value = lessonData.licenseType || "B";
+        document.getElementById('edit-duration').value = lessonData.duration || "60";
+        
+        // Populate Location logic
+        const savedLoc = lessonData.location || "Colleferro";
+        const locationSelect = document.getElementById('edit-location-select');
+        const manualLocInput = document.getElementById('edit-location-manual');
+        const closeManualBtn = document.getElementById('close-manual-loc');
+        
+        // Check if saved location is in select options
+        let optionFound = false;
+        for (let i = 0; i < locationSelect.options.length; i++) {
+            if (locationSelect.options[i].value === savedLoc && savedLoc !== 'other') {
+                locationSelect.selectedIndex = i;
+                optionFound = true;
+                break;
+            }
+        }
+        
+        if (optionFound) {
+            manualLocInput.classList.add('hidden');
+            closeManualBtn.classList.add('hidden');
+            manualLocInput.value = "";
+        } else {
+            // Set to "other" and show manual input with value
+            locationSelect.value = "other";
+            manualLocInput.value = savedLoc;
+            manualLocInput.classList.remove('hidden');
+            closeManualBtn.classList.remove('hidden');
+        }
 
         
         // Carica il modulo salvato
@@ -1280,7 +1394,7 @@
         // Gestione visibilità sezioni calcolo
         toggleCalculationSections(currentCardFilter === 'B');
 
-        const scores = calculateScores(quickScores);
+        const scores = calculateScores(quickScores, currentCardFilter); // PASS CARD TYPE
         renderDetailedSummary(scores.calculatedScores);
         renderCompetencyAreas(scores.competencyAreas_0_50, scores.competencyAreas_0_5, scores.totalScore_0_500);
         
@@ -1300,6 +1414,56 @@
         const activeRb = document.querySelector(`input[name="card-filter"][value="${currentCardFilter}"]`);
         if(activeRb) activeRb.checked = true;
     }
+    
+    // Logic for Editable Details
+    function updateLessonDetails() {
+        if (!currentLessonId) return;
+        const currentDataString = localStorage.getItem(currentLessonId);
+        if (!currentDataString) return;
+        
+        const lessonData = JSON.parse(currentDataString);
+        
+        lessonData.licenseType = document.getElementById('edit-license-type').value.toUpperCase();
+        lessonData.duration = document.getElementById('edit-duration').value;
+        
+        const locSelect = document.getElementById('edit-location-select');
+        if (locSelect.value === 'other') {
+             lessonData.location = document.getElementById('edit-location-manual').value;
+        } else {
+             lessonData.location = locSelect.value;
+        }
+        
+        localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
+    }
+    window.updateLessonDetails = updateLessonDetails;
+    
+    function toggleEditLocationInput() {
+        const select = document.getElementById('edit-location-select');
+        const manualInput = document.getElementById('edit-location-manual');
+        const closeBtn = document.getElementById('close-manual-loc');
+        
+        if (select.value === 'other') {
+            manualInput.classList.remove('hidden');
+            closeBtn.classList.remove('hidden');
+            manualInput.focus();
+        } else {
+            manualInput.classList.add('hidden');
+            closeBtn.classList.add('hidden');
+        }
+    }
+    window.toggleEditLocationInput = toggleEditLocationInput;
+    
+    function resetEditLocation() {
+        const select = document.getElementById('edit-location-select');
+        const manualInput = document.getElementById('edit-location-manual');
+        const closeBtn = document.getElementById('close-manual-loc');
+        
+        select.value = "Colleferro"; // Default fallback
+        manualInput.classList.add('hidden');
+        closeBtn.classList.add('hidden');
+        updateLessonDetails();
+    }
+    window.resetEditLocation = resetEditLocation;
     
     // Funzione per mostrare/nascondere le sezioni di calcolo
     function toggleCalculationSections(isVisible) {
@@ -1360,8 +1524,10 @@
         renderQuickCriteria(quickScores, filterValue);
         
         // Ricalcola punteggi (solo se B, altrimenti calcola ma non mostra)
+        // Passa il filtro alla funzione di calcolo
+        const scores = calculateScores(quickScores, filterValue);
+        
         if (filterValue === 'B') {
-            const scores = calculateScores(quickScores);
             renderDetailedSummary(scores.calculatedScores);
             renderCompetencyAreas(scores.competencyAreas_0_50, scores.competencyAreas_0_5, scores.totalScore_0_500);
             const examPredictions = calculateExamPredictionFromDetailed(scores.calculatedScores);
@@ -1413,51 +1579,42 @@
      * Funzione dedicata per il salvataggio finale (Blocco)
      */
     function saveAndLockLesson() {
-        if (!currentLessonId) {
-            console.error("No currentLessonId");
-            return;
-        }
+        if (!currentLessonId) return;
+        const currentDataString = localStorage.getItem(currentLessonId);
+        if (!currentDataString) return;
+        const lessonData = JSON.parse(currentDataString);
         
-        try {
-            const currentDataString = localStorage.getItem(currentLessonId);
-            if (!currentDataString) return;
-            const lessonData = JSON.parse(currentDataString);
+        // Se è già bloccata, torna indietro
+        if (lessonData.isLocked) {
+             goBackToList(); 
+             return;
+        }
+
+        if (confirm("Sei sicuro di voler salvare e archiviare questa valutazione?")) {
             
-            if (lessonData.isLocked) {
-                 goBackToList(); 
-                 return;
-            }
+            // Salva tutti i dati (slider, note, moduli)
+            lessonData.notes = document.getElementById('lesson-notes').value;
+            lessonData.quickScores = quickScores;
+            lessonData.selectedCard = currentCardFilter;
+            const selectedModulo = document.querySelector('input[name="modulo_obbligatorio"]:checked')?.value || "nessuno";
+            lessonData.moduloSvolto = selectedModulo;
 
-            if (confirm("Sei sicuro di voler salvare e archiviare questa valutazione?")) {
-                
-                // 1. Update Data from DOM
-                lessonData.notes = document.getElementById('lesson-notes').value || "";
-                lessonData.quickScores = quickScores;
-                lessonData.selectedCard = currentCardFilter;
-                
-                const selectedModulo = document.querySelector('input[name="modulo_obbligatorio"]:checked')?.value || "nessuno";
-                lessonData.moduloSvolto = selectedModulo;
+            // Calcola e salva il punteggio finale (PASS CARD FILTER!)
+            const { totalScore_0_500 } = calculateScores(lessonData.quickScores, currentCardFilter);
+            lessonData.finalScore = totalScore_0_500;
+            
+            lessonData.isLocked = true;
+            localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
+            
+            // MOSTRA NOTIFICA TOAST
+            const toast = document.getElementById('toast-notification');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
 
-                // 2. Calculate Score (Safe Mode)
-                try {
-                    const { totalScore_0_500 } = calculateScores(lessonData.quickScores);
-                    lessonData.finalScore = totalScore_0_500;
-                } catch (calcError) {
-                    console.error("Calculation Error", calcError);
-                    lessonData.finalScore = 0;
-                }
-                
-                // 3. Lock and Save
-                lessonData.isLocked = true;
-                localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
-                
-                // 4. UI Feedback
-                // Simply return to list as requested "come in principio"
-                goBackToList();
-            }
-        } catch (e) {
-            alert("Errore durante il salvataggio: " + e.message);
-            console.error(e);
+            // Torna alla home dopo il salvataggio in ogni caso
+            goBackToList();
         }
     }
     
@@ -1488,6 +1645,12 @@
         
         document.getElementById('lesson-notes').disabled = true;
         document.getElementById('student-name-edit').disabled = true;
+        document.getElementById('edit-license-type').disabled = true;
+        document.getElementById('edit-duration').disabled = true;
+        document.getElementById('edit-location-select').disabled = true;
+        document.getElementById('edit-location-manual').disabled = true;
+        document.getElementById('close-manual-loc').classList.add('hidden'); // Hide reset button when locked
+        document.getElementById('master-slider').disabled = true; // Disable Master Slider
         
         document.querySelectorAll('.score-slider').forEach(slider => {
             slider.disabled = true;
@@ -1514,6 +1677,17 @@
         
         document.getElementById('lesson-notes').disabled = false;
         document.getElementById('student-name-edit').disabled = false;
+        document.getElementById('edit-license-type').disabled = false;
+        document.getElementById('edit-duration').disabled = false;
+        document.getElementById('edit-location-select').disabled = false;
+        document.getElementById('edit-location-manual').disabled = false;
+        document.getElementById('master-slider').disabled = false; // Enable Master Slider
+        
+        // Check manual location button visibility based on logic
+        const locSelect = document.getElementById('edit-location-select');
+        if (locSelect.value === 'other') {
+             document.getElementById('close-manual-loc').classList.remove('hidden');
+        }
         
         document.querySelectorAll('.score-slider').forEach(slider => {
             slider.disabled = false;
@@ -1612,7 +1786,7 @@
         quickScores[name] = value;
 
         // Ricalcola tutto (solo se è B ha senso mostrarlo, ma lo ricalcoliamo per coerenza interna)
-        const { calculatedScores, competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500 } = calculateScores(quickScores);
+        const { calculatedScores, competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500 } = calculateScores(quickScores, currentCardFilter);
         
         // Se siamo su B, aggiorna la UI
         if(currentCardFilter === 'B') {
@@ -1622,6 +1796,47 @@
             renderExamPredictions(examPredictions);
         }
     }
+    
+    // Funzione specifica per il MASTER SLIDER
+    function updateMasterScore(event) {
+        const masterValue = parseInt(event.target.value, 10);
+        const display = document.getElementById('master-value-display');
+        display.textContent = EMOJI_INTERPRETATION[masterValue];
+        
+        // Indici attivi per il filtro corrente
+        const activeIndices = CARD_CONFIGS[currentCardFilter];
+        
+        activeIndices.forEach(index => {
+            const criterionName = QUICK_CRITERIA[index];
+            
+            // Salta i campi Tempo
+            if (criterionName.includes("(Tempo)")) return;
+            
+            // Aggiorna quickScores
+            quickScores[criterionName] = masterValue;
+            
+            // Aggiorna UI dello slider specifico
+            const slider = document.getElementById(`quick-slider-${index}`);
+            const emojiEl = document.getElementById(`quick-value-${index}`);
+            const descEl = document.getElementById(`quick-desc-${index}`);
+            
+            if (slider) slider.value = masterValue;
+            if (emojiEl) emojiEl.textContent = EMOJI_INTERPRETATION[masterValue];
+            if (descEl) descEl.textContent = SCORE_10_INTERPRETATION[masterValue];
+        });
+        
+        saveLessonData(false); // Salva le modifiche
+        
+        // Ricalcola i punteggi
+        if(currentCardFilter === 'B') {
+            const { calculatedScores, competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500 } = calculateScores(quickScores, currentCardFilter);
+            renderDetailedSummary(calculatedScores);
+            renderCompetencyAreas(competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500);
+            const examPredictions = calculateExamPredictionFromDetailed(calculatedScores);
+            renderExamPredictions(examPredictions);
+        }
+    }
+    window.updateMasterScore = updateMasterScore;
     
     // Funzione specifica per aggiornare i campi Tempo (Testo)
     function updateQuickTime(event) {
@@ -1782,8 +1997,8 @@
                     
                     // ESPORTA SOLO SE NON È GIÀ ARCHIVIATO
                     if (!lesson.isArchived) {
-                        // Ricalcola punteggi per sicurezza
-                        const { totalScore_0_500 } = calculateScores(lesson.quickScores || {});
+                        // Ricalcola punteggi per sicurezza (PASS CARD TYPE CORRECTLY)
+                        const { totalScore_0_500 } = calculateScores(lesson.quickScores || {}, lesson.selectedCard || 'B');
                         lesson.finalScore = totalScore_0_500;
                         
                         if (!lesson.location) lesson.location = "Sede non specificata"; 
@@ -1922,6 +2137,7 @@
     window.importData = importData;
     window.reveal = reveal;
     window.unlockAndOpenLesson = unlockAndOpenLesson;
+    window.updateMasterScore = updateMasterScore; // Expose master slider logic
     
     // Avvia l'applicazione
     initPage();
