@@ -338,7 +338,7 @@
     <div class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Export e Dati</h2>
         <p class="text-sm text-gray-600 mb-4">
-            Esporta i dati attuali. <strong>Nota:</strong> Le valutazioni esportate verranno spostate automaticamente in "Archivio".
+            Esporta i dati attuali. <strong>Nota:</strong> Le valutazioni esportate verranno spostate automaticamente in "Archivio" SOLO se sei online.
         </p>
         <div class="grid grid-cols-2 gap-4">
             <button id="export-btn" class="btn btn-primary">
@@ -2015,7 +2015,39 @@
                  return;
             }
 
-            // --- 1. DOWNLOAD LOCALE ---
+            // 1. OFFLINE CHECK
+            if (!navigator.onLine) {
+                const proceed = confirm("⚠️ SEI OFFLINE.\n\nVuoi scaricare il backup sul dispositivo?\n\nNOTA: Le valutazioni rimarranno 'Da Esportare' e NON verranno archiviate finché non effettuerai l'export con una connessione attiva.");
+                if (!proceed) {
+                    statusEl.textContent = "Export annullato (Offline).";
+                    return;
+                }
+
+                // DOWNLOAD LOCALE SENZA ARCHIVIAZIONE
+                const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.href = url;
+                const date = new Date().toISOString().split('T')[0];
+                downloadAnchorNode.download = `backup_locale_offline_${date}.json`;
+                
+                downloadAnchorNode.target = "_blank"; 
+                document.body.appendChild(downloadAnchorNode); 
+                downloadAnchorNode.click();
+
+                setTimeout(() => {
+                    document.body.removeChild(downloadAnchorNode);
+                    window.URL.revokeObjectURL(url);
+                }, 3000);
+                
+                statusEl.textContent = "Backup scaricato SOLO in locale. Riprova quando sei online per archiviare.";
+                statusEl.className = "text-sm mt-3 text-orange-600 font-bold";
+                return; // STOP QUI
+            }
+
+            // 2. ONLINE FLOW (Normale)
+            
+            // DOWNLOAD LOCALE
             const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const downloadAnchorNode = document.createElement('a');
@@ -2031,8 +2063,7 @@
                 document.body.removeChild(downloadAnchorNode);
                 window.URL.revokeObjectURL(url);
                 
-                // --- 2. LOGICA ARCHIVIAZIONE AUTOMATICA ---
-                // Una volta avviato il download, marchiamo le lezioni come archiviate
+                // ARCHIVIAZIONE (SOLO ONLINE)
                 lessonsToArchive.forEach(lesson => {
                     lesson.isArchived = true;
                     localStorage.setItem(lesson.id, JSON.stringify(lesson));
@@ -2048,7 +2079,7 @@
             statusEl.textContent = `Preparazione download...`;
             statusEl.className = "text-sm mt-3 text-blue-600";
 
-            // --- 3. INVIO A GOOGLE APPS SCRIPT (Opzionale/Background) ---
+            // INVIO AL CLOUD
             const payload = JSON.stringify(exportObj);
             if (navigator.sendBeacon && payload.length < 64000) { 
                  navigator.sendBeacon(GOOGLE_SCRIPT_URL, payload);
