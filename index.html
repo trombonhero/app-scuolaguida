@@ -471,6 +471,7 @@
             manualLocInput.classList.remove('hidden');
             licenseSelect.innerHTML = '<option value="other_license">Altro (inserisci manualmente)</option>';
             licenseSelect.disabled = false;
+            // FIX: Quando la sede è "other", forziamo la chiamata per mostrare il box manuale della patente
             toggleLicenseInput(); 
             updateStudentOptions();
             return;
@@ -478,6 +479,7 @@
             manualLocInput.classList.add('hidden');
         }
 
+        // Se la sede esiste nel DB (anche se vuota come Paliano)
         if (location && DB_ALLIEVI[location]) {
             const licenses = Object.keys(DB_ALLIEVI[location]);
             if (licenses.length > 0) {
@@ -485,6 +487,7 @@
                     licenseSelect.innerHTML += `<option value="${lic}">${lic}</option>`;
                 });
             }
+            // SEMPRE AGGIUNGI OPZIONE MANUALE
             licenseSelect.innerHTML += '<option value="other_license">Altro (inserisci manualmente)</option>';
             licenseSelect.disabled = false;
         }
@@ -496,10 +499,13 @@
         const licenseSelect = document.getElementById('license-type-select');
         const manualLicenseInput = document.getElementById('license-input-manual');
         
+        // Se la sede è "other", il box patente manuale deve apparire SEMPRE
         if(locationSelect.value === 'other') {
-             licenseSelect.value = 'other_license';
+             licenseSelect.value = 'other_license'; // Forza selezione
              manualLicenseInput.classList.remove('hidden');
+             // Non facciamo focus qui per non saltare se l'utente sta scrivendo la sede
         } else {
+             // Comportamento standard
              if(licenseSelect.value === 'other_license') {
                 manualLicenseInput.classList.remove('hidden');
                 manualLicenseInput.focus();
@@ -521,6 +527,7 @@
         manualStudentInput.classList.add('hidden');
         manualStudentInput.value = ""; 
 
+        // Se siamo in modalità manuale
         if (location === 'other' || license === 'other_license') {
              studentSelect.innerHTML = '<option value="manual">Inserimento Manuale</option>';
              studentSelect.disabled = false;
@@ -535,6 +542,7 @@
                 studentSelect.innerHTML += `<option value="${stud}">${stud}</option>`;
             });
         }
+        // SEMPRE AGGIUNGI OPZIONE MANUALE
         studentSelect.innerHTML += '<option value="manual">-- Nuovo / Non in lista --</option>';
         studentSelect.disabled = false;
     }
