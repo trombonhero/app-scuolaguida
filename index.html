@@ -391,7 +391,7 @@
 </div>
 
 <script type="module">
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwpYgIOc0xlgRdMxTlPzCaZfFtjwFd8WVfHnTP7yUoMOxkmQxH4Iq5qEGwZAh5BKNXq/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkHbvXDiVAdRhNGVKIksKRpbBKRbnStac4keAUW39AqQ4nj_WaSR5WoK2AfMXuYoTg/exec";
 
     const DB_ALLIEVI = {
         "Colleferro": { "B": ["Angelica Gabrieli", "Belli Anna", "Campagna Valerio", "Cellini Chiara", "Cimmino Maria Rita", "Colagiacomo Michela", "Coluzzi Elena", "De Felice Lonardo", "Denise Gabrielli", "Fedele Valentina", "Forte Desiree", "Rotondi Alessandra", "Samuele Chima", "Tafa Eriksela", "Vari Giada"] },
@@ -583,28 +583,38 @@
         return { score_0_50, average_0_5_display };
     }
 
-    function calculateScores(quickScores, cardType = 'B') {
-        if (cardType !== 'B') {
-             const zeroedCalculated = {}; DETAILED_CRITERIA.forEach(c => zeroedCalculated[c] = 0);
-             const zeroedAreas50 = {}; const zeroedAreas5 = {};
-             COMPETENCY_AREAS.forEach(a => { zeroedAreas50[a.name] = 0; zeroedAreas5[a.name] = 0; });
-             return { calculatedScores: zeroedCalculated, competencyAreas_0_50: zeroedAreas50, competencyAreas_0_5: zeroedAreas5, totalScore_0_500: 0 };
-        }
+    function calculateScores(quickScores, cardType) { // Removed default 'B'
+        // Inizializza tutto a 0
         const calculatedScores = {};
+        const competencyAreas_0_50 = {};
+        const competencyAreas_0_5 = {};
+        
+        // Sempre calcola per sicurezza e coerenza (anche se non visualizzato)
+        // Se non è 'B', i valori nascosti sono "" che getQ trasforma in 0
+        
         const q = QUICK_CRITERIA.map(name => quickScores[name] || 0);
-        const getQ = (index) => { const val = q[index]; return (typeof val === 'number') ? val : 0; }; 
+        const getQ = (index) => { 
+            const val = q[index]; 
+            // "" o null diventa 0 per il calcolo
+            return (typeof val === 'number') ? val : 0; 
+        }; 
+
         const formulas = [
             (q) => (getQ(17) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(17) * 0.5) / 2, (q) => (getQ(17) * 1) / 2, (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, (q) => (getQ(1) * 0.4 + getQ(8) * 0.3 + getQ(9) * 0.3) / 2, (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, (q) => (getQ(1) * 0.6 + getQ(8) * 0.2 + getQ(9) * 0.2) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 0.5 + getQ(8) * 0.5) / 2, (q) => (getQ(0) * 0.5 + getQ(9) * 0.5) / 2, (q) => (getQ(18) * 0.4 + getQ(10) * 0.1 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(15) * 0.1) / 2, (q) => (getQ(2) > 0 ? (getQ(2) * 0.5 + getQ(0) * 0.5) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.5) : 0) / 2, (q) => (getQ(2) > 0 ? (getQ(17) * 1) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(15) * 0.25) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(16) * 0.25) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 1) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, (q) => (getQ(6) * 1) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.3) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.2 + getQ(3) * 0.1) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.25 + getQ(7) * 0.25) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.2 + getQ(3) * 0.2 + getQ(7) * 0.1) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(1) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(3) * 0.25 + getQ(5) * 0.25) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.25 + getQ(3) * 0.25 + getQ(5) * 0.25 + getQ(1) * 0.25) : 0) / 2, (q) => (getQ(9) * 1) / 2, (q) => (getQ(9) * 1) / 2, (q) => (getQ(8) * 1) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, (q) => (getQ(0) * 0.75 + getQ(16) * 0.25) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(0) * 0.5 + getQ(16) * 0.5) / 2, (q) => (getQ(2) * 0.5 + getQ(3) * 0.5) / 2, (q) => (getQ(4) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(4) * 1) / 2, (q) => (getQ(4) * 0.5 + getQ(5) * 0.5) / 2, (q) => (getQ(3) * 0.2 + getQ(4) * 0.8) / 2, (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(7) * 0.2 + getQ(1) * 0.2 + getQ(2) * 0.2 + getQ(5) * 0.2 + getQ(11) * 0.2) / 2, (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, (q) => (getQ(1) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 1) : 0) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(9) * 0.2) : 0) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(8) * 0.2) : 0) / 2, (q) => (getQ(13) * 1) / 2, (q) => (getQ(13) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2
         ];
+        
         DETAILED_CRITERIA.forEach((criterion, index) => {
             try { calculatedScores[criterion] = customRound(formulas[index](q)); } catch (e) { calculatedScores[criterion] = 0; }
         });
-        const competencyAreas_0_50 = {}; const competencyAreas_0_5 = {}; let totalScore_0_500 = 0;
+        
+        let totalScore_0_500 = 0;
         COMPETENCY_AREAS.forEach(area => {
             const { score_0_50, average_0_5_display } = calculateAreaScore(area.criteria, calculatedScores);
-            competencyAreas_0_50[area.name] = score_0_50; competencyAreas_0_5[area.name] = average_0_5_display;
+            competencyAreas_0_50[area.name] = score_0_50; 
+            competencyAreas_0_5[area.name] = average_0_5_display;
             totalScore_0_500 += score_0_50;
         });
+
         return { calculatedScores, competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500 };
     }
 
