@@ -331,10 +331,25 @@
         <div class="mt-8">
             <label class="block text-sm font-medium text-gray-700 mb-3">Moduli Obbligatori Svolti:</label>
             <div id="moduli-container" class="space-y-3">
-                <div><input type="radio" id="modulo_nessuno" name="modulo_obbligatorio" value="nessuno" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)" checked><label for="modulo_nessuno" class="ml-2 text-sm font-medium text-gray-900">Nessuno</label></div>
-                <div><input type="radio" id="modulo_a" name="modulo_obbligatorio" value="A" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_a" class="ml-2 text-sm font-medium text-gray-900">Modulo A</label></div>
-                <div><input type="radio" id="modulo_b" name="modulo_obbligatorio" value="B" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_b" class="ml-2 text-sm font-medium text-gray-900">Modulo B</label></div>
-                <div><input type="radio" id="modulo_c" name="modulo_obbligatorio" value="C" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_c" class="ml-2 text-sm font-medium text-gray-900">Modulo C</label></div>
+                <div>
+                    <input type="radio" id="modulo_nessuno" name="modulo_obbligatorio" value="nessuno" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)" checked>
+                    <label for="modulo_nessuno" class="ml-2 text-sm font-medium text-gray-900">Nessuno</label>
+                </div>
+                <div>
+                    <input type="radio" id="modulo_a" name="modulo_obbligatorio" value="A" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)">
+                    <label for="modulo_a" class="ml-2 text-sm font-medium text-gray-900">Modulo A</label>
+                    <p class="text-xs text-gray-600 ml-6 pl-1">La guida in condizioni di visione notturna, Circolazione su strade urbane strette e larghe, con veicoli parcheggiati ai lati e non, affrontando incroci regolati da segnaletica verticale e da impianti semaforici.</p>
+                </div>
+                <div>
+                    <input type="radio" id="modulo_b" name="modulo_obbligatorio" value="B" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)">
+                    <label for="modulo_b" class="ml-2 text-sm font-medium text-gray-900">Modulo B</label>
+                    <p class="text-xs text-gray-600 ml-6 pl-1">Guida su strade extraurbane, Circolazione su strade urbane di scorrimento, o su strade extraurbane secondarie, utilizzando il veicolo ed il motore a regime di copia massima consumando e inquinando il minimo possibile.</p>
+                </div>
+                <div>
+                    <input type="radio" id="modulo_c" name="modulo_obbligatorio" value="C" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)">
+                    <label for="modulo_c" class="ml-2 text-sm font-medium text-gray-900">Modulo C</label>
+                    <p class="text-xs text-gray-600 ml-6 pl-1">Guida su autostrade o su strade extraurbane, Circolazione su autostrade o su strade extraurbane principali o su strade extraurbane secondarie superando la velocità di 50 Km/h, utilizzando la 5^ marcia e adeguando le marce alla velocità.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -394,9 +409,9 @@
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkHbvXDiVAdRhNGVKIksKRpbBKRbnStac4keAUW39AqQ4nj_WaSR5WoK2AfMXuYoTg/exec";
 
     const DB_ALLIEVI = {
-        "Colleferro": { "B": ["Angelica Gabrieli", "Belli Anna", "Campagna Valerio", "Cellini Chiara", "Cimmino Maria Rita", "Colagiacomo Michela", "Coluzzi Elena", "De Felice Lonardo", "Denise Gabrielli", "Fedele Valentina", "Forte Desiree", "Rotondi Alessandra", "Samuele Chima", "Tafa Eriksela", "Vari Giada"] },
-        "Genazzano": { "B": ["Beatrice Canini", "Bianchi Daniele", "Escalona Laura Piedra", "Lazzara Martina", "Massimiliano Rocca", "Nita Gabriel", "Sciarretta Eleonora"] },
-        "Palestrina": { "B": ["Bonanni Francesco", "Dell'Orco Simone", "Federici Beatrice", "Federici Irene", "Gabriele Stefanini", "Ianniccari Matteo", "Martucci Alessandra", "Sara Divizia", "Velluti Marta", "Verrelli Ruggero"] },
+        "Colleferro": { "B": ["Belli Anna","Bran Elisa","Campagna Valerio","Chima Samuele","Cimmino Maria Rita","Colagiacomo Michela","Collacchi Valerio","Coluzzi Elena","De Felice Lonardo","Fedele Valentina","Forte Desiree","Frattaroli Valeria","Gabrieli Angelica","Gabrielli Denise","Gagliarducci Valerio","Gallo Noemi","Gizzi Aurora","Greco Maria Grazia","Iadarola Pietro","Ippoliti Ilaria","Licocci Nicolò","Marchetti Valentina","Marcozzi Giacomo","Matturro Angelica","Mazzocchi Daniele","Mescia Angelica","Momodu Odidi","Necci Lorenza","Palombo Nicolas","Pecchi Aurora Consilia","Pezzella Gregory","Priori Maria Martina","Proia Lavinia","Ravelli Fabrizio","Ricci Valerio","Russo Andrea","Santigli Eleonora","Sozzi Aurora","Stella Lorenzo","Taggi Benedetta","Turco Greta","Turri Cristal","Uras Beatrice","Vari Giada"] },
+        "Genazzano": { "B": ["Agnetelli Asia","Bianchi Daniele","Canini Beatrice","Escalona Laura Piedra","Lazzara Martina","Nita Gabriel","Rocca Massimiliano"] },
+        "Palestrina": { "B": ["Bonanni Francesco","Dell'Orco Simone","Federici Beatrice","Federici Irene","Romano Sara","Stefanini Gabriele","Verrelli Ruggero"] },
         "Paliano": {}, 
         "Roma": {}     
     };
@@ -583,38 +598,28 @@
         return { score_0_50, average_0_5_display };
     }
 
-    function calculateScores(quickScores, cardType) { // Removed default 'B'
-        // Inizializza tutto a 0
+    function calculateScores(quickScores, cardType = 'B') {
+        if (cardType !== 'B') {
+             const zeroedCalculated = {}; DETAILED_CRITERIA.forEach(c => zeroedCalculated[c] = 0);
+             const zeroedAreas50 = {}; const zeroedAreas5 = {};
+             COMPETENCY_AREAS.forEach(a => { zeroedAreas50[a.name] = 0; zeroedAreas5[a.name] = 0; });
+             return { calculatedScores: zeroedCalculated, competencyAreas_0_50: zeroedAreas50, competencyAreas_0_5: zeroedAreas5, totalScore_0_500: 0 };
+        }
         const calculatedScores = {};
-        const competencyAreas_0_50 = {};
-        const competencyAreas_0_5 = {};
-        
-        // Sempre calcola per sicurezza e coerenza (anche se non visualizzato)
-        // Se non è 'B', i valori nascosti sono "" che getQ trasforma in 0
-        
         const q = QUICK_CRITERIA.map(name => quickScores[name] || 0);
-        const getQ = (index) => { 
-            const val = q[index]; 
-            // "" o null diventa 0 per il calcolo
-            return (typeof val === 'number') ? val : 0; 
-        }; 
-
+        const getQ = (index) => { const val = q[index]; return (typeof val === 'number') ? val : 0; }; 
         const formulas = [
             (q) => (getQ(17) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(17) * 0.5) / 2, (q) => (getQ(17) * 1) / 2, (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, (q) => (getQ(1) * 0.4 + getQ(8) * 0.3 + getQ(9) * 0.3) / 2, (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, (q) => (getQ(1) * 0.6 + getQ(8) * 0.2 + getQ(9) * 0.2) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 0.5 + getQ(8) * 0.5) / 2, (q) => (getQ(0) * 0.5 + getQ(9) * 0.5) / 2, (q) => (getQ(18) * 0.4 + getQ(10) * 0.1 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(15) * 0.1) / 2, (q) => (getQ(2) > 0 ? (getQ(2) * 0.5 + getQ(0) * 0.5) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.5) : 0) / 2, (q) => (getQ(2) > 0 ? (getQ(17) * 1) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(15) * 0.25) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(16) * 0.25) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 1) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, (q) => (getQ(6) * 1) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.3) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.2 + getQ(3) * 0.1) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.25 + getQ(7) * 0.25) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.2 + getQ(3) * 0.2 + getQ(7) * 0.1) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(1) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(3) * 0.25 + getQ(5) * 0.25) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.25 + getQ(3) * 0.25 + getQ(5) * 0.25 + getQ(1) * 0.25) : 0) / 2, (q) => (getQ(9) * 1) / 2, (q) => (getQ(9) * 1) / 2, (q) => (getQ(8) * 1) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, (q) => (getQ(0) * 0.75 + getQ(16) * 0.25) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(0) * 0.5 + getQ(16) * 0.5) / 2, (q) => (getQ(2) * 0.5 + getQ(3) * 0.5) / 2, (q) => (getQ(4) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(4) * 1) / 2, (q) => (getQ(4) * 0.5 + getQ(5) * 0.5) / 2, (q) => (getQ(3) * 0.2 + getQ(4) * 0.8) / 2, (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(7) * 0.2 + getQ(1) * 0.2 + getQ(2) * 0.2 + getQ(5) * 0.2 + getQ(11) * 0.2) / 2, (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, (q) => (getQ(1) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 1) : 0) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(9) * 0.2) : 0) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(8) * 0.2) : 0) / 2, (q) => (getQ(13) * 1) / 2, (q) => (getQ(13) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2
         ];
-        
         DETAILED_CRITERIA.forEach((criterion, index) => {
             try { calculatedScores[criterion] = customRound(formulas[index](q)); } catch (e) { calculatedScores[criterion] = 0; }
         });
-        
-        let totalScore_0_500 = 0;
+        const competencyAreas_0_50 = {}; const competencyAreas_0_5 = {}; let totalScore_0_500 = 0;
         COMPETENCY_AREAS.forEach(area => {
             const { score_0_50, average_0_5_display } = calculateAreaScore(area.criteria, calculatedScores);
-            competencyAreas_0_50[area.name] = score_0_50; 
-            competencyAreas_0_5[area.name] = average_0_5_display;
+            competencyAreas_0_50[area.name] = score_0_50; competencyAreas_0_5[area.name] = average_0_5_display;
             totalScore_0_500 += score_0_50;
         });
-
         return { calculatedScores, competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500 };
     }
 
