@@ -180,6 +180,15 @@
             font-weight: bold;
             color: #2563eb;
         }
+
+        /* --- NUOVI COLORI PUNTEGGI --- */
+        .bg-score-0 { background-color: #9E9E9E; color: white; } /* Grigio */
+        .bg-score-1 { background-color: #EA3D33; color: white; } /* Rosso */
+        .bg-score-2 { background-color: #FE9F10; color: white; } /* Arancione */
+        .bg-score-3 { background-color: #94C655; color: white; } /* Verde Chiaro (Lime) */
+        .bg-score-4 { background-color: #49A04B; color: white; } /* Verde Medio */
+        .bg-score-5 { background-color: #38843D; color: white; } /* Verde Scuro */
+
     </style>
 </head>
 <body>
@@ -418,7 +427,6 @@
 <script type="module">
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkHbvXDiVAdRhNGVKIksKRpbBKRbnStac4keAUW39AqQ4nj_WaSR5WoK2AfMXuYoTg/exec";
 
-    // --- DATABASE ANAGRAFICA AGGIORNATO ---
     const DB_ALLIEVI = {
         "Colleferro": {
             "B": [
@@ -485,9 +493,19 @@
     
     const EXAM_CRITERIA = { 'a': "Azione sul volante", 'b': "Azione sul cambio", 'c': "Uso sulla frizione", 'd': "Spunto in salita", 'e': "Manovre parcheggio", 'f': "Azionamento altri comandi", 'g': "Svolta a destra e sinistra", 'h': "Attraversamento incroci", 'i': "Mano da tenere", 'l': "Rispetto segnaletica orizzontale", 'm': "Rispetto segnaletica", 'n': "Transito in rotatorie", 'o': "Transito in sensi unici", 'p': "Strade pluricorsie", 'q': "Conversione ad U", 'r': "Sorpasso", 's': "Rispetto delle precedenze", 't': "Distanze di sicurezza", 'u': "Velocità adeguata", 'v': "Corretta positura nell'osservazione", 'z': "Tempestività nell'osservazione", 'x': "Valutazione del pericolo" };
 
+    // --- FUNZIONI UTILITY PER I COLORI ---
+    function getScoreClass(score) {
+        const s = Math.round(score);
+        if (s === 0) return 'bg-score-0';
+        if (s === 1) return 'bg-score-1';
+        if (s === 2) return 'bg-score-2';
+        if (s === 3) return 'bg-score-3';
+        if (s === 4) return 'bg-score-4';
+        if (s === 5) return 'bg-score-5';
+        return 'bg-gray-200 text-gray-800'; 
+    }
+
     // --- LOGICA DI RICERCA GLOBALE ---
-    
-    // Crea un indice piatto di tutti gli studenti
     function getAllStudentsFlat() {
         const list = [];
         for (const [loc, licences] of Object.entries(DB_ALLIEVI)) {
@@ -500,7 +518,6 @@
         return list;
     }
 
-    // Gestisce l'input della ricerca
     function handleGlobalSearch(query) {
         const resultsContainer = document.getElementById('search-results');
         if (!query || query.length < 2) {
@@ -523,7 +540,6 @@
             `).join('');
         }
         
-        // Aggiungi opzione per nuovo allievo
         html += `
             <div class="suggestion-item border-t border-gray-200 bg-gray-50" onclick="selectNewStudent('${query.replace(/'/g, "\\'")}')">
                 <span class="font-bold text-blue-600">+ Usa "${query}" come nuovo allievo</span>
@@ -536,62 +552,41 @@
     }
     window.handleGlobalSearch = handleGlobalSearch;
 
-    // Seleziona uno studente esistente
     function selectGlobalStudent(loc, lic, name) {
-        // Imposta Sede
         const locSelect = document.getElementById('location-select');
         locSelect.value = loc;
-        updateLicenseOptions(); // Trigger update for licenses
+        updateLicenseOptions(); 
         
-        // Imposta Patente
         const licSelect = document.getElementById('license-type-select');
         licSelect.value = lic;
-        toggleLicenseInput(); // Handle manual input visibility if needed
-        updateStudentOptions(); // Trigger update for students
+        toggleLicenseInput(); 
+        updateStudentOptions(); 
 
-        // Imposta Studente
         const studSelect = document.getElementById('student-select');
         studSelect.value = name;
-        checkManualStudentInput(); // Handle manual input visibility
+        checkManualStudentInput(); 
 
-        // Pulisci ricerca
         document.getElementById('global-student-search').value = '';
         document.getElementById('search-results').classList.add('hidden');
     }
     window.selectGlobalStudent = selectGlobalStudent;
 
-    // Seleziona un nuovo studente (input manuale)
     function selectNewStudent(name) {
-        // Resetta selezioni per forzare l'input
         document.getElementById('location-select').value = "";
         updateLicenseOptions();
         
-        // Imposta il nome nel campo di ricerca come promemoria o svuota? 
-        // Meglio: forziamo l'uso del campo manuale studente quando arriverà il momento
-        
-        // Pre-fill manual input hiddenly or alert user?
-        // Let's set the manual input directly and show it when appropriate, 
-        // BUT we first need to select a location to unlock the rest.
-        // So we just clear the search and alert the user to select location.
-        // OR better: we set the name in the manual input variable and auto-select "Manual" when they reach that step.
-        
-        // Simple approach: Alert user to start selecting Location/License, and pre-fill the manual name box
         const manualNameInput = document.getElementById('student-name-manual');
         manualNameInput.value = name;
         
-        // We can't select "Manual" in student select yet because it depends on Location/License.
-        // So we just clear search and let them proceed.
         document.getElementById('global-student-search').value = '';
         document.getElementById('search-results').classList.add('hidden');
         
         alert(`Hai scelto "${name}".\nOra seleziona Sede e Patente, poi troverai il nome già inserito o potrai selezionare "Nuovo".`);
         
-        // Focus on location to start flow
         document.getElementById('location-select').focus();
     }
     window.selectNewStudent = selectNewStudent;
     
-    // Close search on click outside
     document.addEventListener('click', function(e) {
         const searchBox = document.getElementById('global-student-search');
         const results = document.getElementById('search-results');
@@ -693,9 +688,6 @@
         studentSelect.disabled = true;
         manualStudentInput.classList.add('hidden');
         
-        // Retrieve potential pre-filled manual name from Search
-        // If the manual input already has a value (from search), keep it. 
-        // Otherwise reset.
         if (manualStudentInput.value === "") manualStudentInput.value = ""; 
 
         // Se siamo in modalità manuale
@@ -717,7 +709,6 @@
         studentSelect.innerHTML += '<option value="manual">-- Nuovo / Non in lista --</option>';
         studentSelect.disabled = false;
         
-        // If we have a pre-filled manual name (from search "New Student"), select Manual automatically
         if (manualStudentInput.value !== "") {
             studentSelect.value = 'manual';
             checkManualStudentInput();
@@ -756,32 +747,42 @@
         });
         const average_0_5_raw = count > 0 ? sum / count : 0;
         const score_0_50 = Math.min(50, Math.max(0, parseFloat((average_0_5_raw * 10).toFixed(0))));
-        const average_0_5_display = parseFloat(average_0_5_raw.toFixed(1));
+        
+        // MODIFICA QUI: Arrotondamento standard all'intero più vicino per visualizzazione
+        const average_0_5_display = Math.round(average_0_5_raw); 
+
         return { score_0_50, average_0_5_display };
     }
 
     function calculateScores(quickScores, cardType = 'B') {
-        if (cardType !== 'B') {
-             const zeroedCalculated = {}; DETAILED_CRITERIA.forEach(c => zeroedCalculated[c] = 0);
-             const zeroedAreas50 = {}; const zeroedAreas5 = {};
-             COMPETENCY_AREAS.forEach(a => { zeroedAreas50[a.name] = 0; zeroedAreas5[a.name] = 0; });
-             return { calculatedScores: zeroedCalculated, competencyAreas_0_50: zeroedAreas50, competencyAreas_0_5: zeroedAreas5, totalScore_0_500: 0 };
-        }
         const calculatedScores = {};
+        const competencyAreas_0_50 = {}; 
+        const competencyAreas_0_5 = {}; // Initialize here to avoid ReferenceError
+        let totalScore_0_500 = 0;
+        
+        if (cardType !== 'B') {
+             DETAILED_CRITERIA.forEach(c => calculatedScores[c] = 0);
+             COMPETENCY_AREAS.forEach(a => { competencyAreas_0_50[a.name] = 0; competencyAreas_0_5[a.name] = 0; });
+             return { calculatedScores, competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500 };
+        }
+
         const q = QUICK_CRITERIA.map(name => quickScores[name] || 0);
         const getQ = (index) => { const val = q[index]; return (typeof val === 'number') ? val : 0; }; 
         const formulas = [
             (q) => (getQ(17) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(17) * 0.5) / 2, (q) => (getQ(17) * 1) / 2, (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, (q) => (getQ(1) * 0.4 + getQ(8) * 0.3 + getQ(9) * 0.3) / 2, (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, (q) => (getQ(1) * 0.6 + getQ(8) * 0.2 + getQ(9) * 0.2) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 0.5 + getQ(8) * 0.5) / 2, (q) => (getQ(0) * 0.5 + getQ(9) * 0.5) / 2, (q) => (getQ(18) * 0.4 + getQ(10) * 0.1 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(15) * 0.1) / 2, (q) => (getQ(2) > 0 ? (getQ(2) * 0.5 + getQ(0) * 0.5) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.5) : 0) / 2, (q) => (getQ(2) > 0 ? (getQ(17) * 1) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(15) * 0.25) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(16) * 0.25) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 1) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, (q) => (getQ(6) * 1) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.3) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.2 + getQ(3) * 0.1) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.25 + getQ(7) * 0.25) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.2 + getQ(3) * 0.2 + getQ(7) * 0.1) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(1) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(3) * 0.25 + getQ(5) * 0.25) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.25 + getQ(3) * 0.25 + getQ(5) * 0.25 + getQ(1) * 0.25) : 0) / 2, (q) => (getQ(9) * 1) / 2, (q) => (getQ(9) * 1) / 2, (q) => (getQ(8) * 1) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, (q) => (getQ(0) * 0.75 + getQ(16) * 0.25) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(0) * 0.5 + getQ(16) * 0.5) / 2, (q) => (getQ(2) * 0.5 + getQ(3) * 0.5) / 2, (q) => (getQ(4) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(4) * 1) / 2, (q) => (getQ(4) * 0.5 + getQ(5) * 0.5) / 2, (q) => (getQ(3) * 0.2 + getQ(4) * 0.8) / 2, (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(7) * 0.2 + getQ(1) * 0.2 + getQ(2) * 0.2 + getQ(5) * 0.2 + getQ(11) * 0.2) / 2, (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, (q) => (getQ(1) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 1) : 0) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(9) * 0.2) : 0) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(8) * 0.2) : 0) / 2, (q) => (getQ(13) * 1) / 2, (q) => (getQ(13) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2
         ];
+        
         DETAILED_CRITERIA.forEach((criterion, index) => {
             try { calculatedScores[criterion] = customRound(formulas[index](q)); } catch (e) { calculatedScores[criterion] = 0; }
         });
-        const competencyAreas_0_50 = {}; const competencyAreas_0_5 = {}; let totalScore_0_500 = 0;
+        
         COMPETENCY_AREAS.forEach(area => {
             const { score_0_50, average_0_5_display } = calculateAreaScore(area.criteria, calculatedScores);
-            competencyAreas_0_50[area.name] = score_0_50; competencyAreas_0_5[area.name] = average_0_5_display;
+            competencyAreas_0_50[area.name] = score_0_50; 
+            competencyAreas_0_5[area.name] = average_0_5_display;
             totalScore_0_500 += score_0_50;
         });
+
         return { calculatedScores, competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500 };
     }
 
@@ -1178,7 +1179,9 @@
             h += `<div class="mt-4 mb-3 col-span-full border-b pb-1"><h3 class="text-base font-semibold text-gray-800">${a.name}</h3></div><div class="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 col-span-full">`;
             a.criteria.forEach(i => {
                 const sc = scores[DETAILED_CRITERIA[i]] || 0;
-                h += `<div class="grid grid-cols-[1fr_auto] items-center gap-2 text-sm"><span class="text-gray-700 truncate" title="${DETAILED_CRITERIA[i]}">${DETAILED_CRITERIA[i]}</span><span class="flex items-center justify-center w-6 h-6 font-bold rounded-full text-xs ${SCORE_5_INTERPRETATION[sc].color}">${sc}</span></div>`;
+                // APPLICA COLORE PERSONALIZZATO
+                const colorClass = getScoreClass(sc);
+                h += `<div class="grid grid-cols-[1fr_auto] items-center gap-2 text-sm"><span class="text-gray-700 truncate" title="${DETAILED_CRITERIA[i]}">${DETAILED_CRITERIA[i]}</span><span class="flex items-center justify-center w-6 h-6 font-bold rounded-full text-xs ${colorClass}">${sc}</span></div>`;
             });
             h += `</div>`;
         });
@@ -1188,8 +1191,9 @@
     function renderCompetencyAreas(sc50, sc5, total) {
         document.getElementById('competency-summary').innerHTML = COMPETENCY_AREAS.map(a => {
             const s = sc5[a.name] || 0;
-            let c = 'bg-red-200 text-red-800'; if(s>=3) c = 'bg-green-200 text-green-800'; else if(s>=2) c = 'bg-yellow-200 text-yellow-800';
-            return `<div class="flex justify-between items-center p-2 rounded-lg border border-gray-100 bg-white shadow-sm"><span class="font-medium text-gray-700">${a.name}</span><span class="flex items-center justify-center w-8 h-8 text-sm font-bold rounded-full ${c}">${s}</span></div>`;
+            // APPLICA COLORE PERSONALIZZATO (s è già arrotondato)
+            const colorClass = getScoreClass(s);
+            return `<div class="flex justify-between items-center p-2 rounded-lg border border-gray-100 bg-white shadow-sm"><span class="font-medium text-gray-700">${a.name}</span><span class="flex items-center justify-center w-8 h-8 text-sm font-bold rounded-full ${colorClass}">${s}</span></div>`;
         }).join('');
         document.getElementById('total-score-500').textContent = `${total} / 500`;
     }
