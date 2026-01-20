@@ -365,10 +365,25 @@
         <div class="mt-8">
             <label class="block text-sm font-medium text-gray-700 mb-3">Moduli Obbligatori Svolti:</label>
             <div id="moduli-container" class="space-y-3">
-                <div><input type="radio" id="modulo_nessuno" name="modulo_obbligatorio" value="nessuno" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)" checked><label for="modulo_nessuno" class="ml-2 text-sm font-medium text-gray-900">Nessuno</label></div>
-                <div><input type="radio" id="modulo_a" name="modulo_obbligatorio" value="A" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_a" class="ml-2 text-sm font-medium text-gray-900">Modulo A</label></div>
-                <div><input type="radio" id="modulo_b" name="modulo_obbligatorio" value="B" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_b" class="ml-2 text-sm font-medium text-gray-900">Modulo B</label></div>
-                <div><input type="radio" id="modulo_c" name="modulo_obbligatorio" value="C" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_c" class="ml-2 text-sm font-medium text-gray-900">Modulo C</label></div>
+                <div>
+                    <input type="radio" id="modulo_nessuno" name="modulo_obbligatorio" value="nessuno" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)" checked>
+                    <label for="modulo_nessuno" class="ml-2 text-sm font-medium text-gray-900">Nessuno</label>
+                </div>
+                <div>
+                    <input type="radio" id="modulo_a" name="modulo_obbligatorio" value="A" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)">
+                    <label for="modulo_a" class="ml-2 text-sm font-medium text-gray-900">Modulo A</label>
+                    <p class="text-xs text-gray-600 ml-6 pl-1">La guida in condizioni di visione notturna, Circolazione su strade urbane strette e larghe, con veicoli parcheggiati ai lati e non, affrontando incroci regolati da segnaletica verticale e da impianti semaforici.</p>
+                </div>
+                <div>
+                    <input type="radio" id="modulo_b" name="modulo_obbligatorio" value="B" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)">
+                    <label for="modulo_b" class="ml-2 text-sm font-medium text-gray-900">Modulo B</label>
+                    <p class="text-xs text-gray-600 ml-6 pl-1">Guida su strade extraurbane, Circolazione su strade urbane di scorrimento, o su strade extraurbane secondarie, utilizzando il veicolo ed il motore a regime di copia massima consumando e inquinando il minimo possibile.</p>
+                </div>
+                <div>
+                    <input type="radio" id="modulo_c" name="modulo_obbligatorio" value="C" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)">
+                    <label for="modulo_c" class="ml-2 text-sm font-medium text-gray-900">Modulo C</label>
+                    <p class="text-xs text-gray-600 ml-6 pl-1">Guida su autostrade o su strade extraurbane, Circolazione su autostrade o su strade extraurbane principali o su strade extraurbane secondarie superando la velocità di 50 Km/h, utilizzando la 5^ marcia e adeguando le marce alla velocità.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -633,7 +648,6 @@
             manualLocInput.classList.remove('hidden');
             licenseSelect.innerHTML = '<option value="other_license">Altro (inserisci manualmente)</option>';
             licenseSelect.disabled = false;
-            // FIX: Quando la sede è "other", forziamo la chiamata per mostrare il box manuale della patente
             toggleLicenseInput(); 
             updateStudentOptions();
             return;
@@ -641,7 +655,6 @@
             manualLocInput.classList.add('hidden');
         }
 
-        // Se la sede esiste nel DB (anche se vuota come Paliano)
         if (location && DB_ALLIEVI[location]) {
             const licenses = Object.keys(DB_ALLIEVI[location]);
             if (licenses.length > 0) {
@@ -649,7 +662,6 @@
                     licenseSelect.innerHTML += `<option value="${lic}">${lic}</option>`;
                 });
             }
-            // SEMPRE AGGIUNGI OPZIONE MANUALE
             licenseSelect.innerHTML += '<option value="other_license">Altro (inserisci manualmente)</option>';
             licenseSelect.disabled = false;
         }
@@ -661,13 +673,10 @@
         const licenseSelect = document.getElementById('license-type-select');
         const manualLicenseInput = document.getElementById('license-input-manual');
         
-        // Se la sede è "other", il box patente manuale deve apparire SEMPRE
         if(locationSelect.value === 'other') {
-             licenseSelect.value = 'other_license'; // Forza selezione
+             licenseSelect.value = 'other_license'; 
              manualLicenseInput.classList.remove('hidden');
-             // Non facciamo focus qui per non saltare se l'utente sta scrivendo la sede
         } else {
-             // Comportamento standard
              if(licenseSelect.value === 'other_license') {
                 manualLicenseInput.classList.remove('hidden');
                 manualLicenseInput.focus();
@@ -690,7 +699,6 @@
         
         if (manualStudentInput.value === "") manualStudentInput.value = ""; 
 
-        // Se siamo in modalità manuale
         if (location === 'other' || license === 'other_license') {
              studentSelect.innerHTML = '<option value="manual">Inserimento Manuale</option>';
              studentSelect.disabled = false;
@@ -705,7 +713,6 @@
                 studentSelect.innerHTML += `<option value="${stud}">${stud}</option>`;
             });
         }
-        // SEMPRE AGGIUNGI OPZIONE MANUALE
         studentSelect.innerHTML += '<option value="manual">-- Nuovo / Non in lista --</option>';
         studentSelect.disabled = false;
         
@@ -748,7 +755,6 @@
         const average_0_5_raw = count > 0 ? sum / count : 0;
         const score_0_50 = Math.min(50, Math.max(0, parseFloat((average_0_5_raw * 10).toFixed(0))));
         
-        // MODIFICA QUI: Arrotondamento standard all'intero più vicino per visualizzazione
         const average_0_5_display = Math.round(average_0_5_raw); 
 
         return { score_0_50, average_0_5_display };
@@ -757,7 +763,7 @@
     function calculateScores(quickScores, cardType = 'B') {
         const calculatedScores = {};
         const competencyAreas_0_50 = {}; 
-        const competencyAreas_0_5 = {}; // Initialize here to avoid ReferenceError
+        const competencyAreas_0_5 = {}; 
         let totalScore_0_500 = 0;
         
         if (cardType !== 'B') {
