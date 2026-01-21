@@ -445,17 +445,17 @@
     const DB_ALLIEVI = {
         "Colleferro": {
             "B": [
-                "Belli Anna", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", "Chima Samuele", 
-                "Cimmino Maria Rita", "Colagiacomo Michela", "Collacchi Valerio", "Coluzzi Elena", 
-                "De Felice Lonardo", "Fedele Valentina", "Forte Desiree", "Frattaroli Valeria", 
-                "Gabrieli Angelica", "Gabrielli Denise", "Gagliarducci Valerio", "Gallo Noemi", 
-                "Gizzi Aurora", "Greco Maria Grazia", "Grieco Chiara", "Iadarola Pietro", 
-                "Ippoliti Ilaria", "Leo veronica", "Licocci Nicolò", "Loreti Ilaria", 
-                "Marchetti Valentina", "Marcozzi Giacomo", "Matturro Angelica", "Mazzocchi Daniele", 
-                "Mescia Angelica", "Momodu Odidi", "Necci Lorenza", "Palombo Nicolas", 
-                "Pecchi Aurora Consilia", "Pezzella Gregory", "Priori Maria Martina", "Proia Lavinia", 
-                "Ravelli Fabrizio", "Ricci Valerio", "Russo Andrea", "Santigli Eleonora", "Sozzi Aurora", 
-                "Stella Lorenzo", "Taggi Benedetta", "Turco Greta", "Turri Cristal", "Uras Beatrice", "Vari Giada"
+                "Arduini Edoardo", "Belli Anna", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", 
+                "Chima Samuele", "Collacchi Valerio", "Coluzzi Elena", "De Felice Lonardo", 
+                "Frattaroli Valeria", "Gabrieli Angelica", "Gabrielli Denise", "Gagliarducci Valerio", 
+                "Gallo Noemi", "Gizzi Aurora", "Greco Maria Grazia", "Grieco Chiara", "Iadarola Pietro", 
+                "Ippoliti Ilaria", "Leo veronica", "Loreti Ilaria", "Marchetti Valentina", 
+                "Marcozzi Giacomo", "Mastrogiacomo Giorgia", "Matturro Angelica", "Mazzocchi Daniele", 
+                "Mescia Angelica", "Momodu Odidi", "Necci Lorenza", "Pecchi Aurora Consilia", 
+                "Pezzella Gregory", "Priori Maria Martina", "Proia Lavinia", "Ravelli Fabrizio", 
+                "Ricci Valerio", "Russo Andrea", "Santigli Eleonora", "Sortoluzzi Selene", 
+                "Sozzi Aurora", "Stella Lorenzo", "Turco Greta", "Turri Cristal", "Uras Beatrice", 
+                "Vari Giada"
             ],
             "BS": ["Carrubino Erica"]
         },
@@ -463,7 +463,7 @@
             "B": [
                 "Agnetelli Asia", "Angelucci Lara", "Bangrazi Kevin", "Bianchi Daniele", 
                 "Canini Beatrice", "Carp Alexandru", "Escalona Laura Piedra", "Gentili Evelin", 
-                "Lazzara Martina", "Maggi Asia", "Nita Gabriel", "Rocca Massimiliano"
+                "Lazzara Martina", "Luberti Alessio", "Maggi Asia", "Nita Gabriel", "Rocca Massimiliano"
             ]
         },
         "Palestrina": {
@@ -472,7 +472,9 @@
                 "Federici Beatrice", "Federici Irene", "Romano Sara", "Stefanini Gabriele", "Verrelli Ruggero"
             ]
         },
-        "Paliano": {}, 
+        "Paliano": {
+            "B": ["Marucci Francesca", "Verani Lorenzo"]
+        }, 
         "Roma": {}     
     };
 
@@ -754,9 +756,7 @@
         });
         const average_0_5_raw = count > 0 ? sum / count : 0;
         const score_0_50 = Math.min(50, Math.max(0, parseFloat((average_0_5_raw * 10).toFixed(0))));
-        
-        const average_0_5_display = Math.round(average_0_5_raw); 
-
+        const average_0_5_display = parseFloat(average_0_5_raw.toFixed(1));
         return { score_0_50, average_0_5_display };
     }
 
@@ -769,7 +769,7 @@
         if (cardType !== 'B') {
              DETAILED_CRITERIA.forEach(c => calculatedScores[c] = 0);
              COMPETENCY_AREAS.forEach(a => { competencyAreas_0_50[a.name] = 0; competencyAreas_0_5[a.name] = 0; });
-             return { calculatedScores, competencyAreas_0_50, competencyAreas_0_5, totalScore_0_500 };
+             return { calculatedScores: zeroedCalculated, competencyAreas_0_50: zeroedAreas50, competencyAreas_0_5: zeroedAreas5, totalScore_0_500: 0 };
         }
 
         const q = QUICK_CRITERIA.map(name => quickScores[name] || 0);
