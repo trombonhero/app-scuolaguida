@@ -345,12 +345,17 @@
             </div>
         </div>
 
-        <p class="text-sm text-gray-600 mb-4">Assegna una valutazione. La descrizione di supporto appare tenendo premuta l'emoticon.</p>
+        <div class="flex justify-between items-center mb-4">
+            <p class="text-sm text-gray-600">Assegna una valutazione. La descrizione di supporto appare tenendo premuta l'emoticon.</p>
+            <button onclick="toggleEmojiMode()" class="text-xs bg-white border border-gray-300 px-3 py-1 rounded-full shadow-sm hover:bg-gray-50 font-semibold text-blue-600 transition-colors">
+                Cambia stile: <span id="toggle-icon-display">🔢</span>
+            </button>
+        </div>
         
         <div class="mb-8 p-4 bg-indigo-50 border border-indigo-200 rounded-lg shadow-sm">
             <label for="master-slider" class="block text-sm font-bold text-indigo-900 mb-2">⚡ Valutazione Rapida Totale (Imposta tutti)</label>
             <div class="flex items-center space-x-3">
-                <span id="master-value-display" class="text-2xl w-10 text-center">🧐</span>
+                <span id="master-value-display" class="text-2xl w-10 text-center font-bold">🧐</span>
                 <input type="range" min="0" max="10" value="5" id="master-slider" class="score-slider flex-grow cursor-pointer" oninput="updateMasterScore(event)">
             </div>
         </div>
@@ -365,25 +370,10 @@
         <div class="mt-8">
             <label class="block text-sm font-medium text-gray-700 mb-3">Moduli Obbligatori Svolti:</label>
             <div id="moduli-container" class="space-y-3">
-                <div>
-                    <input type="radio" id="modulo_nessuno" name="modulo_obbligatorio" value="nessuno" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)" checked>
-                    <label for="modulo_nessuno" class="ml-2 text-sm font-medium text-gray-900">Nessuno</label>
-                </div>
-                <div>
-                    <input type="radio" id="modulo_a" name="modulo_obbligatorio" value="A" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)">
-                    <label for="modulo_a" class="ml-2 text-sm font-medium text-gray-900">Modulo A</label>
-                    <p class="text-xs text-gray-600 ml-6 pl-1">La guida in condizioni di visione notturna, Circolazione su strade urbane strette e larghe, con veicoli parcheggiati ai lati e non, affrontando incroci regolati da segnaletica verticale e da impianti semaforici.</p>
-                </div>
-                <div>
-                    <input type="radio" id="modulo_b" name="modulo_obbligatorio" value="B" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)">
-                    <label for="modulo_b" class="ml-2 text-sm font-medium text-gray-900">Modulo B</label>
-                    <p class="text-xs text-gray-600 ml-6 pl-1">Guida su strade extraurbane, Circolazione su strade urbane di scorrimento, o su strade extraurbane secondarie, utilizzando il veicolo ed il motore a regime di copia massima consumando e inquinando il minimo possibile.</p>
-                </div>
-                <div>
-                    <input type="radio" id="modulo_c" name="modulo_obbligatorio" value="C" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)">
-                    <label for="modulo_c" class="ml-2 text-sm font-medium text-gray-900">Modulo C</label>
-                    <p class="text-xs text-gray-600 ml-6 pl-1">Guida su autostrade o su strade extraurbane, Circolazione su autostrade o su strade extraurbane principali o su strade extraurbane secondarie superando la velocità di 50 Km/h, utilizzando la 5^ marcia e adeguando le marce alla velocità.</p>
-                </div>
+                <div><input type="radio" id="modulo_nessuno" name="modulo_obbligatorio" value="nessuno" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)" checked><label for="modulo_nessuno" class="ml-2 text-sm font-medium text-gray-900">Nessuno</label></div>
+                <div><input type="radio" id="modulo_a" name="modulo_obbligatorio" value="A" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_a" class="ml-2 text-sm font-medium text-gray-900">Modulo A</label></div>
+                <div><input type="radio" id="modulo_b" name="modulo_obbligatorio" value="B" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_b" class="ml-2 text-sm font-medium text-gray-900">Modulo B</label></div>
+                <div><input type="radio" id="modulo_c" name="modulo_obbligatorio" value="C" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_c" class="ml-2 text-sm font-medium text-gray-900">Modulo C</label></div>
             </div>
         </div>
     </div>
@@ -442,45 +432,35 @@
 <script type="module">
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkHbvXDiVAdRhNGVKIksKRpbBKRbnStac4keAUW39AqQ4nj_WaSR5WoK2AfMXuYoTg/exec";
 
+    // --- DATABASE AGGIORNATO ---
     const DB_ALLIEVI = {
         "Colleferro": {
             "B": [
-                "Arduini Edoardo", "Belli Anna", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", 
-                "Chima Samuele", "Collacchi Valerio", "Coluzzi Elena", "De Felice Lonardo", 
-                "Frattaroli Valeria", "Gabrieli Angelica", "Gabrielli Denise", "Gagliarducci Valerio", 
-                "Gallo Noemi", "Gizzi Aurora", "Greco Maria Grazia", "Grieco Chiara", "Iadarola Pietro", 
-                "Ippoliti Ilaria", "Leo veronica", "Loreti Ilaria", "Marchetti Valentina", 
-                "Marcozzi Giacomo", "Mastrogiacomo Giorgia", "Matturro Angelica", "Mazzocchi Daniele", 
-                "Mescia Angelica", "Momodu Odidi", "Necci Lorenza", "Pecchi Aurora Consilia", 
-                "Pezzella Gregory", "Priori Maria Martina", "Proia Lavinia", "Ravelli Fabrizio", 
-                "Ricci Valerio", "Russo Andrea", "Santigli Eleonora", "Sortoluzzi Selene", 
-                "Sozzi Aurora", "Stella Lorenzo", "Turco Greta", "Turri Cristal", "Uras Beatrice", 
-                "Vari Giada"
+                "Arduini Edoardo", "Belli Anna", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", "Chima Samuele", "Collacchi Valerio", "Coluzzi Elena", "Crecco Alice", "De Felice Lonardo", "Dragutinovic Cristian", "Frattaroli Valeria", "Gabrieli Angelica", "Gabrielli Denise", "Gagliarducci Valerio", "Gallo Noemi", "Gizzi Aurora", "Greco Maria Grazia", "Grieco Chiara", "Iadarola Pietro", "Ippoliti Ilaria", "Leo veronica", "Loreti Ilaria", "Marchetti Valentina", "Marcozzi Giacomo", "Mastrogiacomo Giorgia", "Matturro Angelica", "Mazzocchi Daniele", "Mescia Angelica", "Momodu Odidi", "Necci Lorenza", "Pecchi Aurora Consilia", "Pelacci Alisia", "Pezzella Gregory", "Priori Maria Martina", "Proia Lavinia", "Ravelli Fabrizio", "Ricci Valerio", "Russo Andrea", "Santigli Eleonora", "Sortoluzzi Selene", "Sozzi Aurora", "Stella Lorenzo", "Turco Greta", "Turri Cristal", "Uras Beatrice", "Vari Giada"
             ],
             "BS": ["Carrubino Erica"]
         },
         "Genazzano": {
             "B": [
-                "Agnetelli Asia", "Angelucci Lara", "Bangrazi Kevin", "Bianchi Daniele", 
-                "Canini Beatrice", "Carp Alexandru", "Escalona Laura Piedra", "Gentili Evelin", 
-                "Lazzara Martina", "Luberti Alessio", "Maggi Asia", "Nita Gabriel", "Rocca Massimiliano"
+                "Agnetelli Asia", "Angelucci Lara", "Bangrazi Kevin", "Bianchi Daniele", "Canini Beatrice", "Carp Alexandru", "Escalona Laura Piedra", "Gentili Evelin", "Lazzara Martina", "Luberti Alessio", "Maggi Asia", "Nita Gabriel", "Rocca Massimiliano"
             ]
         },
         "Palestrina": {
             "B": [
-                "Bernardini Giulia", "Bonanni Francesco", "Boscaini Elena", "Dell'Orco Simone", 
-                "Federici Beatrice", "Federici Irene", "Romano Sara", "Stefanini Gabriele", "Verrelli Ruggero"
+                "Bernardini Giulia", "Boscaini Elena", "Dell'Orco Simone", "Romano Sara", "Verrelli Ruggero"
             ]
         },
         "Paliano": {
-            "B": ["Marucci Francesca", "Verani Lorenzo"]
+            "B": ["Marucci Francesca", "Tiroli Clara", "Verani Lorenzo"]
         }, 
         "Roma": {}     
     };
 
     let currentLessonId = null;
     let quickScores = {}; 
-    let currentCardFilter = 'B'; 
+    let currentCardFilter = 'B';
+    let showEmojis = true; // Stato visualizzazione
+    
     const tooltip = document.getElementById('custom-tooltip');
     const EMOJI_INTERPRETATION = { 0: "😶", 1: "😱", 2: "😨", 3: "😣", 4: "🤔", 5: "🧐", 6: "🙂", 7: "😊", 8: "😄", 9: "🤩", 10: "😎" };
     const SCORE_10_INTERPRETATION = {
@@ -756,7 +736,9 @@
         });
         const average_0_5_raw = count > 0 ? sum / count : 0;
         const score_0_50 = Math.min(50, Math.max(0, parseFloat((average_0_5_raw * 10).toFixed(0))));
-        const average_0_5_display = parseFloat(average_0_5_raw.toFixed(1));
+        
+        const average_0_5_display = Math.round(average_0_5_raw); 
+
         return { score_0_50, average_0_5_display };
     }
 
@@ -1090,6 +1072,35 @@
     }
     window.resetEditLocation = resetEditLocation;
 
+    // --- FUNZIONE TOGGLE EMOJI MODE ---
+    function toggleEmojiMode() {
+        showEmojis = !showEmojis;
+        document.getElementById('toggle-icon-display').textContent = showEmojis ? "🔢" : "🙂";
+        
+        // Aggiorna Master Slider
+        const masterVal = parseInt(document.getElementById('master-slider').value);
+        document.getElementById('master-value-display').textContent = showEmojis ? EMOJI_INTERPRETATION[masterVal] : masterVal;
+
+        // Aggiorna tutti gli slider renderizzati
+        const container = document.getElementById('quick-criteria-container');
+        const valueSpans = container.querySelectorAll('span[id^="val-"]');
+        valueSpans.forEach(span => {
+            const idx = span.id.split('-')[1]; 
+            const slider = document.getElementById(`slider-${idx}`);
+            if(slider) {
+                const val = parseInt(slider.value);
+                span.textContent = showEmojis ? EMOJI_INTERPRETATION[val] : val;
+                // Opzionale: Aggiungi classe per rendere il numero più grande/grassetto se necessario
+                if(!showEmojis) {
+                    span.classList.add('font-bold', 'text-gray-800');
+                } else {
+                    span.classList.remove('font-bold', 'text-gray-800');
+                }
+            }
+        });
+    }
+    window.toggleEmojiMode = toggleEmojiMode;
+
     function updateCardFilter(filter, save = true) {
         currentCardFilter = filter;
         if(save) {
@@ -1129,7 +1140,8 @@
                  return `<div class="space-y-1 p-3 bg-blue-50 rounded-lg shadow-inner border border-blue-100"><label class="block text-sm font-semibold text-blue-800">${displayIdx+1}. ${c}</label><div class="flex items-center space-x-3"><input type="text" value="${val||''}" data-name="${c}" placeholder="00:00" class="w-full p-2 text-lg font-mono border border-blue-300 rounded text-center" oninput="updateQuickTime(event)"></div></div>`;
             } else {
                  const v = (val!=null && val!=="") ? val : 5;
-                 return `<div class="space-y-1 p-3 bg-gray-50 rounded-lg shadow-inner"><label class="block text-sm font-semibold text-gray-700">${displayIdx+1}. ${c}</label><p id="desc-${idx}" class="text-xs h-8 text-gray-500 overflow-hidden hidden">${SCORE_10_INTERPRETATION[v]}</p><div class="flex items-center space-x-3"><span id="val-${idx}" class="text-4xl w-12 text-center cursor-default" onmousedown="showTooltip(event, ${idx})" onmouseup="hideTooltip()" ontouchstart="showTooltip(event, ${idx})" ontouchend="hideTooltip()">${EMOJI_INTERPRETATION[v]}</span><input type="range" min="0" max="10" value="${v}" id="slider-${idx}" data-idx="${idx}" data-name="${c}" class="score-slider flex-grow" oninput="updateQuickScore(event)"></div></div>`;
+                 const displayVal = showEmojis ? EMOJI_INTERPRETATION[v] : v; // Usa lo stato corrente
+                 return `<div class="space-y-1 p-3 bg-gray-50 rounded-lg shadow-inner"><label class="block text-sm font-semibold text-gray-700">${displayIdx+1}. ${c}</label><p id="desc-${idx}" class="text-xs h-8 text-gray-500 overflow-hidden hidden">${SCORE_10_INTERPRETATION[v]}</p><div class="flex items-center space-x-3"><span id="val-${idx}" class="text-4xl w-12 text-center cursor-default ${!showEmojis ? 'font-bold text-gray-800' : ''}" onmousedown="showTooltip(event, ${idx})" onmouseup="hideTooltip()" ontouchstart="showTooltip(event, ${idx})" ontouchend="hideTooltip()">${displayVal}</span><input type="range" min="0" max="10" value="${v}" id="slider-${idx}" data-idx="${idx}" data-name="${c}" class="score-slider flex-grow" oninput="updateQuickScore(event)"></div></div>`;
             }
         }).join('');
     }
@@ -1138,7 +1150,10 @@
         const idx = e.target.getAttribute('data-idx');
         const name = e.target.getAttribute('data-name');
         const val = parseInt(e.target.value);
-        document.getElementById(`val-${idx}`).textContent = EMOJI_INTERPRETATION[val];
+        
+        const displayVal = showEmojis ? EMOJI_INTERPRETATION[val] : val;
+        document.getElementById(`val-${idx}`).textContent = displayVal;
+        
         document.getElementById(`desc-${idx}`).textContent = SCORE_10_INTERPRETATION[val];
         quickScores[name] = val;
         if(currentCardFilter === 'B') {
@@ -1155,7 +1170,9 @@
 
     function updateMasterScore(e) {
         const val = parseInt(e.target.value);
-        document.getElementById('master-value-display').textContent = EMOJI_INTERPRETATION[val];
+        const displayVal = showEmojis ? EMOJI_INTERPRETATION[val] : val;
+        document.getElementById('master-value-display').textContent = displayVal;
+        
         const indices = CARD_CONFIGS[currentCardFilter];
         indices.forEach(idx => {
             const name = QUICK_CRITERIA[idx];
@@ -1164,7 +1181,7 @@
                 const sl = document.getElementById(`slider-${idx}`);
                 if(sl) {
                     sl.value = val;
-                    document.getElementById(`val-${idx}`).textContent = EMOJI_INTERPRETATION[val];
+                    document.getElementById(`val-${idx}`).textContent = displayVal;
                     document.getElementById(`desc-${idx}`).textContent = SCORE_10_INTERPRETATION[val];
                 }
             }
