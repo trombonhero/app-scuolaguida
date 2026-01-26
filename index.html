@@ -362,12 +362,8 @@
 
         <div id="quick-criteria-container" class="grid lg:grid-cols-3 md:grid-cols-2 gap-x-8 gap-y-6"></div>
 
-        <div class="mt-8">
-            <label for="lesson-notes" class="block text-sm font-medium text-gray-700 mb-2">Note della Lezione (Opzionale):</label>
-            <textarea id="lesson-notes" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" oninput="saveLessonData(false)"></textarea>
-        </div>
-        
-        <div class="mt-8">
+        <!-- MODULI OBBLIGATORI (HIDDEN ON NON-B) -->
+        <div id="mandatory-modules-section" class="mt-8">
             <label class="block text-sm font-medium text-gray-700 mb-3">Moduli Obbligatori Svolti:</label>
             <div id="moduli-container" class="space-y-3">
                 <div><input type="radio" id="modulo_nessuno" name="modulo_obbligatorio" value="nessuno" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)" checked><label for="modulo_nessuno" class="ml-2 text-sm font-medium text-gray-900">Nessuno</label></div>
@@ -375,6 +371,11 @@
                 <div><input type="radio" id="modulo_b" name="modulo_obbligatorio" value="B" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_b" class="ml-2 text-sm font-medium text-gray-900">Modulo B</label></div>
                 <div><input type="radio" id="modulo_c" name="modulo_obbligatorio" value="C" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_c" class="ml-2 text-sm font-medium text-gray-900">Modulo C</label></div>
             </div>
+        </div>
+        
+        <div class="mt-8">
+            <label for="lesson-notes" class="block text-sm font-medium text-gray-700 mb-2">Note della Lezione (Opzionale):</label>
+            <textarea id="lesson-notes" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" oninput="saveLessonData(false)"></textarea>
         </div>
     </div>
 
@@ -436,13 +437,24 @@
     const DB_ALLIEVI = {
         "Colleferro": {
             "B": [
-                "Arduini Edoardo", "Belli Anna", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", "Chima Samuele", "Collacchi Valerio", "Coluzzi Elena", "Crecco Alice", "De Felice Lonardo", "Dragutinovic Cristian", "Frattaroli Valeria", "Gabrieli Angelica", "Gabrielli Denise", "Gagliarducci Valerio", "Gallo Noemi", "Gizzi Aurora", "Greco Maria Grazia", "Grieco Chiara", "Iadarola Pietro", "Ippoliti Ilaria", "Leo veronica", "Loreti Ilaria", "Marchetti Valentina", "Marcozzi Giacomo", "Mastrogiacomo Giorgia", "Matturro Angelica", "Mazzocchi Daniele", "Mescia Angelica", "Momodu Odidi", "Necci Lorenza", "Pecchi Aurora Consilia", "Pelacci Alisia", "Pezzella Gregory", "Priori Maria Martina", "Proia Lavinia", "Ravelli Fabrizio", "Ricci Valerio", "Russo Andrea", "Santigli Eleonora", "Sortoluzzi Selene", "Sozzi Aurora", "Stella Lorenzo", "Turco Greta", "Turri Cristal", "Uras Beatrice", "Vari Giada"
+                "Arduini Edoardo", "Belli Anna", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", 
+                "Chima Samuele", "Collacchi Valerio", "Coluzzi Elena", "Crecco Alice", "De Felice Lonardo", 
+                "Dragutinovic Cristian", "Frattaroli Valeria", "Gabrieli Angelica", "Gabrielli Denise", 
+                "Gagliarducci Valerio", "Gallo Noemi", "Gizzi Aurora", "Greco Maria Grazia", "Grieco Chiara", 
+                "Iadarola Pietro", "Ippoliti Ilaria", "Leo veronica", "Loreti Ilaria", "Marchetti Valentina", 
+                "Marcozzi Giacomo", "Mastrogiacomo Giorgia", "Matturro Angelica", "Mazzocchi Daniele", 
+                "Mescia Angelica", "Momodu Odidi", "Necci Lorenza", "Pecchi Aurora Consilia", "Pelacci Alisia", 
+                "Pezzella Gregory", "Priori Maria Martina", "Proia Lavinia", "Ravelli Fabrizio", "Ricci Valerio", 
+                "Russo Andrea", "Santigli Eleonora", "Sortoluzzi Selene", "Sozzi Aurora", "Stella Lorenzo", 
+                "Turco Greta", "Turri Cristal", "Uras Beatrice", "Vari Giada"
             ],
             "BS": ["Carrubino Erica"]
         },
         "Genazzano": {
             "B": [
-                "Agnetelli Asia", "Angelucci Lara", "Bangrazi Kevin", "Bianchi Daniele", "Canini Beatrice", "Carp Alexandru", "Escalona Laura Piedra", "Gentili Evelin", "Lazzara Martina", "Luberti Alessio", "Maggi Asia", "Nita Gabriel", "Rocca Massimiliano"
+                "Agnetelli Asia", "Angelucci Lara", "Bangrazi Kevin", "Bianchi Daniele", 
+                "Canini Beatrice", "Carp Alexandru", "Escalona Laura Piedra", "Gentili Evelin", 
+                "Lazzara Martina", "Luberti Alessio", "Maggi Asia", "Nita Gabriel", "Rocca Massimiliano"
             ]
         },
         "Palestrina": {
@@ -458,9 +470,9 @@
 
     let currentLessonId = null;
     let quickScores = {}; 
-    let currentCardFilter = 'B';
-    let showEmojis = true; // Stato visualizzazione
-    
+    let currentCardFilter = 'B'; 
+    let showEmojis = true;
+
     const tooltip = document.getElementById('custom-tooltip');
     const EMOJI_INTERPRETATION = { 0: "😶", 1: "😱", 2: "😨", 3: "😣", 4: "🤔", 5: "🧐", 6: "🙂", 7: "😊", 8: "😄", 9: "🤩", 10: "😎" };
     const SCORE_10_INTERPRETATION = {
@@ -630,6 +642,7 @@
             manualLocInput.classList.remove('hidden');
             licenseSelect.innerHTML = '<option value="other_license">Altro (inserisci manualmente)</option>';
             licenseSelect.disabled = false;
+            // FIX: Quando la sede è "other", forziamo la chiamata per mostrare il box manuale della patente
             toggleLicenseInput(); 
             updateStudentOptions();
             return;
@@ -637,6 +650,7 @@
             manualLocInput.classList.add('hidden');
         }
 
+        // Se la sede esiste nel DB (anche se vuota come Paliano)
         if (location && DB_ALLIEVI[location]) {
             const licenses = Object.keys(DB_ALLIEVI[location]);
             if (licenses.length > 0) {
@@ -644,6 +658,7 @@
                     licenseSelect.innerHTML += `<option value="${lic}">${lic}</option>`;
                 });
             }
+            // SEMPRE AGGIUNGI OPZIONE MANUALE
             licenseSelect.innerHTML += '<option value="other_license">Altro (inserisci manualmente)</option>';
             licenseSelect.disabled = false;
         }
@@ -655,10 +670,13 @@
         const licenseSelect = document.getElementById('license-type-select');
         const manualLicenseInput = document.getElementById('license-input-manual');
         
+        // Se la sede è "other", il box patente manuale deve apparire SEMPRE
         if(locationSelect.value === 'other') {
-             licenseSelect.value = 'other_license'; 
+             licenseSelect.value = 'other_license'; // Forza selezione
              manualLicenseInput.classList.remove('hidden');
+             // Non facciamo focus qui per non saltare se l'utente sta scrivendo la sede
         } else {
+             // Comportamento standard
              if(licenseSelect.value === 'other_license') {
                 manualLicenseInput.classList.remove('hidden');
                 manualLicenseInput.focus();
@@ -681,6 +699,7 @@
         
         if (manualStudentInput.value === "") manualStudentInput.value = ""; 
 
+        // Se siamo in modalità manuale
         if (location === 'other' || license === 'other_license') {
              studentSelect.innerHTML = '<option value="manual">Inserimento Manuale</option>';
              studentSelect.disabled = false;
@@ -695,6 +714,7 @@
                 studentSelect.innerHTML += `<option value="${stud}">${stud}</option>`;
             });
         }
+        // SEMPRE AGGIUNGI OPZIONE MANUALE
         studentSelect.innerHTML += '<option value="manual">-- Nuovo / Non in lista --</option>';
         studentSelect.disabled = false;
         
@@ -751,7 +771,7 @@
         if (cardType !== 'B') {
              DETAILED_CRITERIA.forEach(c => calculatedScores[c] = 0);
              COMPETENCY_AREAS.forEach(a => { competencyAreas_0_50[a.name] = 0; competencyAreas_0_5[a.name] = 0; });
-             return { calculatedScores: zeroedCalculated, competencyAreas_0_50: zeroedAreas50, competencyAreas_0_5: zeroedAreas5, totalScore_0_500: 0 };
+             return { calculatedScores: calculatedScores, competencyAreas_0_50: competencyAreas_0_50, competencyAreas_0_5: competencyAreas_0_5, totalScore_0_500: 0 };
         }
 
         const q = QUICK_CRITERIA.map(name => quickScores[name] || 0);
@@ -1118,7 +1138,7 @@
         const scores = calculateScores(quickScores, filter);
         // Toggle sections based on 'B'
         const hide = filter !== 'B';
-        ['total-score-section','competency-section-wrapper','detailed-summary-section-wrapper','exam-prediction-section'].forEach(id => {
+        ['total-score-section','competency-section-wrapper','detailed-summary-section-wrapper','exam-prediction-section', 'mandatory-modules-section'].forEach(id => {
             const el = document.getElementById(id); if(el) if(hide) el.classList.add('hidden'); else el.classList.remove('hidden');
         });
 
