@@ -513,17 +513,17 @@
         "Esercizi", // 41 (Nuovo)
         "Retro L", // 42 (Nuovo)
         "Manovra L", // 43 (Nuovo)
-        "Combinazione Freno Frizione", // 44 (Nuovo)
-        "Controllo Punto Morto" // 45 (Nuovo)
+        "Combinazione Freno Frizione" // 44 (Nuovo)
+        // Removed duplicate Punto Morto
     ];
     
     // Configurazione Indici (0-based)
     const CARD_CONFIGS = {
         'B': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-        'Moto': [26, 27, 28, 29, 39, 9, 10, 40, 45], // Updated
-        'AmCiclo': [41, 36, 39, 9, 10, 40, 45], // Updated
-        'AmQuad': [41, 42, 39, 9, 10, 40, 45], // Updated
-        'Superiori': [43, 13, 31, 44, 4, 7, 10] // Updated
+        'Moto': [26, 27, 28, 29, 39, 9, 10, 40, 11], // 11 = Punto morto existing
+        'AmCiclo': [41, 36, 39, 9, 10, 40, 11], 
+        'AmQuad': [41, 42, 39, 9, 10, 40, 11], 
+        'Superiori': [43, 13, 31, 44, 4, 7, 10] 
     };
 
     const DETAILED_CRITERIA = ["Regolazione sedile in distanza, altezza ed inclinazione", "Regolazione specchi, poggiatesta e cintura", "Posizione corretta delle mani", "Uso volante in curva aperta dx sx", "Uso volante in curva media dx sx", "Uso volante in curva stretta dx sx", "Uso volante in svolta dx sx", "Uso visione centrale e direzione del veicolo", "Uso visione periferica", "Dinamicità dello sguardo", "Capacità di anticipazione visiva", "Corretto utilizzo sguardo in curva a destra", "Corretto utilizzo sguardo in curva a sinistra", "Corretta sequenza rti (retrovisori, testa, indicatore)", "Sensibilità all'uso dell'acceleratore", "Sensibilità uso freno frenata degressiva", "Passaggio freno acceleratore ancoraggio tacco", "Frenata di precisione rispetto ad un punto d'arresto predeterminato", "Frenata in situazioni di pericolo", "Corretto utilizzo del piede sulla frizione", "Piede su passaruota con frizione a riposo", "Ricerca innesto frizione", "Tenuta pedale dopo innesto", "Combinazione gas frizione in partenza", "Partenza in pianura discesa", "Partenza in salita", "Impostazioni mano su cambio", "Incremento marce seconda e terza", "Decremento marce terza e seconda", "Sequenza completa incremento marce", "Sequenza completa scalata marce", "Preparazione cambiata anticipo mano", "Incremento marce con equilibrio volante", "Scalata tenuta freno e uso frizione", "Coordinazione motoria frizione cambio volante", "Svolta a sx su strada a doppio senso (posizione, esecuzione)", "Svolta a sx su strada a senso unico (posizione, esecuzione)", "Svolta a destra (posizione esecuzione)", "Comportamenti alle rotatorie", "Comportamento in preselezione di incrocio", "Rispetto della segnaletica agli incroci", "Capacità di adattamento al buio", "Comportamento nei confronti dei veicoli che provengono dalla direzione opposta, anche in caso di spazio limitato", "Superamento di ostacoli (vetture parcheggiate, ostacoli in genere)", "Comportamento alle fermate di bus/tram", "Rispetto degli attraversamenti pedonali e dei comportamenti correlati ai pedoni", "Guida proattiva - Capacità di prevenire il pericolo", "Capacità di adattamento velocità alla strada ed ai suoi limiti", "Corretto utilizzo del cambio di velocità (eco)", "Comprensione del punto di cambiata", "Utilizzo razionale dell'inerzia (eco roll)", "Utilizzo razionale del freno motore (cut-off)", "Rispetto delle distanze di sicurezza", "Ingresso su corsia di accelerazione", "Inserimento nel traffico in condizioni di sicurezza", "Capacità di valutazione delle distanze ed adattamento al traffico", "Uso corretto degli specchi retrovisori nella fase di inizio del sorpasso", "Corretta gestione del volante nella fase di inizio e fine sorpasso", "Rientro dal sorpasso in sicurezza (specchi, ecc)", "Uscita su strade a precedenza mediante corsia di decelerazione", "Retromarcia in rettilineo", "Retromarcia ad L con svolta a sinistra", "Retromarcia ad L con svolta a destra", "Inversione di marcia con marcia avanti", "Inversione di marcia in retromarcia", "Parcheggi in retromarcia parallelo a destra", "Parcheggi in retromarcia parallelo a sinistra", "Parcheggio in retromarcia su strada in pendenza", "Parcheggio a pettine (in retromarcia ed in avanti)", "Parcheggio a spina (in retromarcia ed in avanti)", "Controllo carta di circolazione", "Controllo pneumatici", "Controllo sterzo e comandi sul volante", "Controllo livelli", "Controllo dispositivi di segnalazione visiva ed illuminazione", "Controllo corretta chiusura porte - cofano motore", "Corrette operazioni nella discesa dal veicolo"];
@@ -674,6 +674,7 @@
             manualLocInput.classList.remove('hidden');
             licenseSelect.innerHTML = '<option value="other_license">Altro (inserisci manualmente)</option>';
             licenseSelect.disabled = false;
+            // FIX: Quando la sede è "other", forziamo la chiamata per mostrare il box manuale della patente
             toggleLicenseInput(); 
             updateStudentOptions();
             return;
@@ -681,6 +682,7 @@
             manualLocInput.classList.add('hidden');
         }
 
+        // Se la sede esiste nel DB (anche se vuota come Paliano)
         if (location && DB_ALLIEVI[location]) {
             const licenses = Object.keys(DB_ALLIEVI[location]);
             if (licenses.length > 0) {
@@ -688,6 +690,7 @@
                     licenseSelect.innerHTML += `<option value="${lic}">${lic}</option>`;
                 });
             }
+            // SEMPRE AGGIUNGI OPZIONE MANUALE
             licenseSelect.innerHTML += '<option value="other_license">Altro (inserisci manualmente)</option>';
             licenseSelect.disabled = false;
         }
@@ -699,10 +702,13 @@
         const licenseSelect = document.getElementById('license-type-select');
         const manualLicenseInput = document.getElementById('license-input-manual');
         
+        // Se la sede è "other", il box patente manuale deve apparire SEMPRE
         if(locationSelect.value === 'other') {
-             licenseSelect.value = 'other_license'; 
+             licenseSelect.value = 'other_license'; // Forza selezione
              manualLicenseInput.classList.remove('hidden');
+             // Non facciamo focus qui per non saltare se l'utente sta scrivendo la sede
         } else {
+             // Comportamento standard
              if(licenseSelect.value === 'other_license') {
                 manualLicenseInput.classList.remove('hidden');
                 manualLicenseInput.focus();
@@ -725,6 +731,7 @@
         
         if (manualStudentInput.value === "") manualStudentInput.value = ""; 
 
+        // Se siamo in modalità manuale
         if (location === 'other' || license === 'other_license') {
              studentSelect.innerHTML = '<option value="manual">Inserimento Manuale</option>';
              studentSelect.disabled = false;
@@ -739,6 +746,7 @@
                 studentSelect.innerHTML += `<option value="${stud}">${stud}</option>`;
             });
         }
+        // SEMPRE AGGIUNGI OPZIONE MANUALE
         studentSelect.innerHTML += '<option value="manual">-- Nuovo / Non in lista --</option>';
         studentSelect.disabled = false;
         
@@ -760,6 +768,18 @@
         }
     }
     window.checkManualStudentInput = checkManualStudentInput;
+    
+    // --- UPDATE STUDENT NAME (NO TRIM DURING TYPING) ---
+    function updateStudentName(newName) {
+        if (!currentLessonId) return;
+        const currentDataString = localStorage.getItem(currentLessonId);
+        if (!currentDataString) return;
+        
+        const lessonData = JSON.parse(currentDataString);
+        lessonData.studentName = newName; 
+        localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
+    }
+    window.updateStudentName = updateStudentName;
 
     // --- CALCOLI E LOGICA CORE ---
     function customRound(value) {
@@ -1025,19 +1045,30 @@
     function saveAndLockLesson() {
         if(!currentLessonId) return;
         if(confirm("Sei sicuro di voler salvare e archiviare questa valutazione?")) {
-            saveLessonData(true); // Save current state
-            const data = JSON.parse(localStorage.getItem(currentLessonId));
-            const { totalScore_0_500 } = calculateScores(data.quickScores, currentCardFilter);
-            data.finalScore = totalScore_0_500;
-            data.isLocked = true;
-            localStorage.setItem(currentLessonId, JSON.stringify(data));
-            
-            // Show toast
-            const toast = document.getElementById('toast-notification');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-            
-            showHomeView(); // Go back
+            saveLessonData(true); 
+            try {
+                const data = JSON.parse(localStorage.getItem(currentLessonId));
+                let finalScore = 0;
+                try {
+                    const result = calculateScores(data.quickScores, currentCardFilter);
+                    finalScore = result.totalScore_0_500;
+                } catch(err) {
+                    console.warn("Calcolo punteggio non riuscito, impostato a 0.", err);
+                    finalScore = 0;
+                }
+                
+                data.finalScore = finalScore;
+                data.isLocked = true;
+                localStorage.setItem(currentLessonId, JSON.stringify(data));
+                
+                const toast = document.getElementById('toast-notification');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+                
+                showHomeView(); 
+            } catch(e) {
+                alert("Errore durante il salvataggio: " + e.message);
+            }
         }
     }
     window.saveAndLockLesson = saveAndLockLesson;
@@ -1068,7 +1099,7 @@
         document.querySelectorAll('input[type="text"][data-time]').forEach(i => i.disabled = true);
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(r => r.disabled = true);
         document.querySelectorAll('.radio-filter').forEach(r => r.disabled = true);
-        document.querySelectorAll('select.score-select').forEach(s => s.disabled = true); // Lock Selects for Superiori
+        document.querySelectorAll('select.score-select').forEach(s => s.disabled = true); 
     }
 
     function unlockPage() {
@@ -1087,7 +1118,7 @@
         document.querySelectorAll('input[type="text"][data-time]').forEach(i => i.disabled = false);
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(r => r.disabled = false);
         document.querySelectorAll('.radio-filter').forEach(r => r.disabled = false);
-        document.querySelectorAll('select.score-select').forEach(s => s.disabled = false); // Unlock Selects
+        document.querySelectorAll('select.score-select').forEach(s => s.disabled = false); 
     }
     
     // UPDATE LESSON DETAILS (Header Edit)
@@ -1165,14 +1196,12 @@
         
         // Toggle Master Slider & Emoji Button Visibility for Superiori
         const isSuperiori = (filter === 'Superiori');
-        const masterContainer = document.getElementById('master-slider-container'); // Need to ID this div first
+        const masterContainer = document.getElementById('master-slider-container');
         const emojiBtn = document.getElementById('emoji-toggle-btn');
         
-        // Find container by parent or add ID
-        const msDiv = document.querySelector('label[for="master-slider"]').parentNode;
-        if(msDiv) {
-            if(isSuperiori) msDiv.classList.add('hidden');
-            else msDiv.classList.remove('hidden');
+        if(masterContainer) {
+            if(isSuperiori) masterContainer.classList.add('hidden');
+            else masterContainer.classList.remove('hidden');
         }
         
         if(emojiBtn) {
