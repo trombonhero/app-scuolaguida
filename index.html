@@ -229,7 +229,8 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipo Patente</label>
-                    <select id="license-type-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="toggleLicenseInput(); updateStudentOptions()" disabled>
+                    <!-- FIX: toggleLicenseInput(true) per focus esplicito utente -->
+                    <select id="license-type-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="toggleLicenseInput(true); updateStudentOptions()" disabled>
                         <option value="">Prima seleziona Sede</option>
                     </select>
                     <input type="text" id="license-input-manual" placeholder="Scrivi patente..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mt-2 hidden">
@@ -240,7 +241,8 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nome Allievo/a</label>
                 <div class="relative">
-                    <select id="student-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="checkManualStudentInput()" disabled>
+                    <!-- FIX: checkManualStudentInput(true) per focus esplicito utente -->
+                    <select id="student-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="checkManualStudentInput(true)" disabled>
                         <option value="">Prima seleziona Patente</option>
                     </select>
                 </div>
@@ -508,19 +510,19 @@
         "Otto", 
         "Passaggio stretto", 
         "Accelerazione e frenata",
-        "Circolazione", // 39 (Nuovo)
-        "Rotatorie", // 40 (Nuovo)
-        "Esercizi", // 41 (Nuovo)
-        "Retro L", // 42 (Nuovo)
-        "Manovra L", // 43 (Nuovo)
-        "Combinazione Freno Frizione" // 44 (Nuovo)
-        // Removed duplicate Punto Morto
+        "Circolazione", // 39
+        "Rotatorie", // 40
+        "Esercizi", // 41
+        "Retro L", // 42
+        "Manovra L", // 43
+        "Combinazione Freno Frizione", // 44
+        "Controllo Punto Morto" // 45 (Unused now)
     ];
     
-    // Configurazione Indici (0-based)
+    // FIX: Moto and AM cards now use Index 11 (Punto morto) instead of 45
     const CARD_CONFIGS = {
         'B': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-        'Moto': [26, 27, 28, 29, 39, 9, 10, 40, 11], // 11 = Punto morto existing
+        'Moto': [26, 27, 28, 29, 39, 9, 10, 40, 11], 
         'AmCiclo': [41, 36, 39, 9, 10, 40, 11], 
         'AmQuad': [41, 42, 39, 9, 10, 40, 11], 
         'Superiori': [43, 13, 31, 44, 4, 7, 10] 
@@ -697,7 +699,7 @@
     }
     window.updateLicenseOptions = updateLicenseOptions;
     
-    function toggleLicenseInput() {
+    function toggleLicenseInput(shouldFocus = false) {
         const locationSelect = document.getElementById('location-select');
         const licenseSelect = document.getElementById('license-type-select');
         const manualLicenseInput = document.getElementById('license-input-manual');
@@ -711,7 +713,7 @@
              // Comportamento standard
              if(licenseSelect.value === 'other_license') {
                 manualLicenseInput.classList.remove('hidden');
-                manualLicenseInput.focus();
+                if(shouldFocus) manualLicenseInput.focus();
             } else {
                 manualLicenseInput.classList.add('hidden');
             }
@@ -736,7 +738,8 @@
              studentSelect.innerHTML = '<option value="manual">Inserimento Manuale</option>';
              studentSelect.disabled = false;
              studentSelect.value = 'manual';
-             checkManualStudentInput();
+             // Don't call checkManualStudentInput here as it steals focus
+             // checkManualStudentInput();
              return;
         }
 
@@ -752,17 +755,18 @@
         
         if (manualStudentInput.value !== "") {
             studentSelect.value = 'manual';
-            checkManualStudentInput();
+            // Only show manual input, avoid focusing here as user might be interacting with other elements
+            manualStudentInput.classList.remove('hidden');
         }
     }
     window.updateStudentOptions = updateStudentOptions;
 
-    function checkManualStudentInput() {
+    function checkManualStudentInput(shouldFocus = false) {
         const studentSelect = document.getElementById('student-select');
         const manualInput = document.getElementById('student-name-manual');
         if (studentSelect.value === 'manual') {
             manualInput.classList.remove('hidden');
-            manualInput.focus();
+            if(shouldFocus) manualInput.focus();
         } else {
             manualInput.classList.add('hidden');
         }
