@@ -347,12 +347,14 @@
 
         <div class="flex justify-between items-center mb-4">
             <p class="text-sm text-gray-600">Assegna una valutazione. La descrizione di supporto appare tenendo premuta l'emoticon.</p>
-            <button onclick="toggleEmojiMode()" class="text-xs bg-white border border-gray-300 px-3 py-1 rounded-full shadow-sm hover:bg-gray-50 font-semibold text-blue-600 transition-colors">
+            <!-- Pulsante toggle emoji visibile SOLO se non siamo in Superiori -->
+            <button id="emoji-toggle-btn" onclick="toggleEmojiMode()" class="text-xs bg-white border border-gray-300 px-3 py-1 rounded-full shadow-sm hover:bg-gray-50 font-semibold text-blue-600 transition-colors">
                 Cambia stile: <span id="toggle-icon-display">🔢</span>
             </button>
         </div>
         
-        <div class="mb-8 p-4 bg-indigo-50 border border-indigo-200 rounded-lg shadow-sm">
+        <!-- Master Slider nascosto per Superiori -->
+        <div id="master-slider-container" class="mb-8 p-4 bg-indigo-50 border border-indigo-200 rounded-lg shadow-sm">
             <label for="master-slider" class="block text-sm font-bold text-indigo-900 mb-2">⚡ Valutazione Rapida Totale (Imposta tutti)</label>
             <div class="flex items-center space-x-3">
                 <span id="master-value-display" class="text-2xl w-10 text-center font-bold">🧐</span>
@@ -449,7 +451,7 @@
                 "Turco Greta", "Turri Cristal", "Uras Beatrice", "Vari Giada"
             ],
             "BS": ["Carrubino Erica"],
-            "B1": ["Falcone damiano", "Testa Greta", "Testa Syria"]
+            "B1": ["Falcone damiano", "Testa greta", "Testa siria"]
         },
         "Genazzano": {
             "B": [
@@ -485,14 +487,43 @@
         10: "Ottimo → Controllo totale, sicurezza massima."
     };
 
-    const QUICK_CRITERIA = ["Sguardo", "Fluidità nel volante", "Accelerazione in partenza", "Modulazione della frenata", "Fluidità nel cambio", "Utilizzo della frizione", "Partenza in salita", "Posizione del veicolo su strada", "Svolta a destra", "Svolta a sinistra", "Comportamento negli incroci", "Punto morto", "Voltarsi nelle retromarce", "Inversione di marcia", "Parcheggi in retromarcia", "Accostare il veicolo", "Padronanza delle situazioni", "Postura di guida", "Regolazione e uso degli specchi retrovisori", "Uso e conoscenza dei dispositivi e teoria motore", "ES. 1 Curva", "ES. 2 Parcheggio ed uscita in retro", "ES. 3 Accel./Frenata emergenza", "Partenza", "Posizione della moto su strada", "Girare la testa", "ES. equilibrio", "ES. equilibrio (Tempo)", "ES. velocità", "ES. velocità (Tempo)", "Sistemazione prima della partenza", "Manovra di accostamento in retromarcia", "Parcheggio in retromarcia \"L\"", "Parcheggio in retromarcia \"S\"", "Accostare il veicolo (fermata)", "Slalom", "Otto", "Passaggio stretto", "Accelerazione e frenata"];
+    const QUICK_CRITERIA = [
+        "Sguardo", "Fluidità nel volante", "Accelerazione in partenza", "Modulazione della frenata", "Fluidità nel cambio", "Utilizzo della frizione", "Partenza in salita", "Posizione del veicolo su strada", "Svolta a destra", "Svolta a sinistra", "Comportamento negli incroci", "Punto morto", "Voltarsi nelle retromarce", "Inversione di marcia", "Parcheggi in retromarcia", "Accostare il veicolo", "Padronanza delle situazioni", "Postura di guida", "Regolazione e uso degli specchi retrovisori", "Uso e conoscenza dei dispositivi e teoria motore",
+        "ES. 1 Curva", 
+        "ES. 2 Parcheggio ed uscita in retro", 
+        "ES. 3 Accel./Frenata emergenza", 
+        "Partenza", 
+        "Posizione della moto su strada", 
+        "Girare la testa", 
+        "ES. equilibrio", 
+        "ES. equilibrio (Tempo)", 
+        "ES. velocità", 
+        "ES. velocità (Tempo)", 
+        "Sistemazione prima della partenza", 
+        "Manovra di accostamento in retromarcia", 
+        "Parcheggio in retromarcia \"L\"", 
+        "Parcheggio in retromarcia \"S\"", 
+        "Accostare il veicolo (fermata)", 
+        "Slalom", 
+        "Otto", 
+        "Passaggio stretto", 
+        "Accelerazione e frenata",
+        "Circolazione", // 39 (Nuovo)
+        "Rotatorie", // 40 (Nuovo)
+        "Esercizi", // 41 (Nuovo)
+        "Retro L", // 42 (Nuovo)
+        "Manovra L", // 43 (Nuovo)
+        "Combinazione Freno Frizione", // 44 (Nuovo)
+        "Controllo Punto Morto" // 45 (Nuovo)
+    ];
     
+    // Configurazione Indici (0-based)
     const CARD_CONFIGS = {
         'B': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-        'Moto': [0, 23, 6, 3, 4, 24, 8, 9, 10, 25, 26, 27, 28, 29, 13, 16, 30, 17, 18, 19],
-        'AmCiclo': [0, 23, 6, 3, 4, 24, 8, 9, 10, 25, 35, 36, 37, 38, 13, 16, 30, 17, 18, 19],
-        'AmQuad': [0, 1, 2, 3, 20, 21, 22, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-        'Superiori': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 31, 13, 32, 33, 34, 16, 17, 18, 19]
+        'Moto': [26, 27, 28, 29, 39, 9, 10, 40, 45], // Updated
+        'AmCiclo': [41, 36, 39, 9, 10, 40, 45], // Updated
+        'AmQuad': [41, 42, 39, 9, 10, 40, 45], // Updated
+        'Superiori': [43, 13, 31, 44, 4, 7, 10] // Updated
     };
 
     const DETAILED_CRITERIA = ["Regolazione sedile in distanza, altezza ed inclinazione", "Regolazione specchi, poggiatesta e cintura", "Posizione corretta delle mani", "Uso volante in curva aperta dx sx", "Uso volante in curva media dx sx", "Uso volante in curva stretta dx sx", "Uso volante in svolta dx sx", "Uso visione centrale e direzione del veicolo", "Uso visione periferica", "Dinamicità dello sguardo", "Capacità di anticipazione visiva", "Corretto utilizzo sguardo in curva a destra", "Corretto utilizzo sguardo in curva a sinistra", "Corretta sequenza rti (retrovisori, testa, indicatore)", "Sensibilità all'uso dell'acceleratore", "Sensibilità uso freno frenata degressiva", "Passaggio freno acceleratore ancoraggio tacco", "Frenata di precisione rispetto ad un punto d'arresto predeterminato", "Frenata in situazioni di pericolo", "Corretto utilizzo del piede sulla frizione", "Piede su passaruota con frizione a riposo", "Ricerca innesto frizione", "Tenuta pedale dopo innesto", "Combinazione gas frizione in partenza", "Partenza in pianura discesa", "Partenza in salita", "Impostazioni mano su cambio", "Incremento marce seconda e terza", "Decremento marce terza e seconda", "Sequenza completa incremento marce", "Sequenza completa scalata marce", "Preparazione cambiata anticipo mano", "Incremento marce con equilibrio volante", "Scalata tenuta freno e uso frizione", "Coordinazione motoria frizione cambio volante", "Svolta a sx su strada a doppio senso (posizione, esecuzione)", "Svolta a sx su strada a senso unico (posizione, esecuzione)", "Svolta a destra (posizione esecuzione)", "Comportamenti alle rotatorie", "Comportamento in preselezione di incrocio", "Rispetto della segnaletica agli incroci", "Capacità di adattamento al buio", "Comportamento nei confronti dei veicoli che provengono dalla direzione opposta, anche in caso di spazio limitato", "Superamento di ostacoli (vetture parcheggiate, ostacoli in genere)", "Comportamento alle fermate di bus/tram", "Rispetto degli attraversamenti pedonali e dei comportamenti correlati ai pedoni", "Guida proattiva - Capacità di prevenire il pericolo", "Capacità di adattamento velocità alla strada ed ai suoi limiti", "Corretto utilizzo del cambio di velocità (eco)", "Comprensione del punto di cambiata", "Utilizzo razionale dell'inerzia (eco roll)", "Utilizzo razionale del freno motore (cut-off)", "Rispetto delle distanze di sicurezza", "Ingresso su corsia di accelerazione", "Inserimento nel traffico in condizioni di sicurezza", "Capacità di valutazione delle distanze ed adattamento al traffico", "Uso corretto degli specchi retrovisori nella fase di inizio del sorpasso", "Corretta gestione del volante nella fase di inizio e fine sorpasso", "Rientro dal sorpasso in sicurezza (specchi, ecc)", "Uscita su strade a precedenza mediante corsia di decelerazione", "Retromarcia in rettilineo", "Retromarcia ad L con svolta a sinistra", "Retromarcia ad L con svolta a destra", "Inversione di marcia con marcia avanti", "Inversione di marcia in retromarcia", "Parcheggi in retromarcia parallelo a destra", "Parcheggi in retromarcia parallelo a sinistra", "Parcheggio in retromarcia su strada in pendenza", "Parcheggio a pettine (in retromarcia ed in avanti)", "Parcheggio a spina (in retromarcia ed in avanti)", "Controllo carta di circolazione", "Controllo pneumatici", "Controllo sterzo e comandi sul volante", "Controllo livelli", "Controllo dispositivi di segnalazione visiva ed illuminazione", "Controllo corretta chiusura porte - cofano motore", "Corrette operazioni nella discesa dal veicolo"];
@@ -650,7 +681,6 @@
             manualLocInput.classList.add('hidden');
         }
 
-        // Se la sede esiste nel DB (anche se vuota come Paliano)
         if (location && DB_ALLIEVI[location]) {
             const licenses = Object.keys(DB_ALLIEVI[location]);
             if (licenses.length > 0) {
@@ -658,7 +688,6 @@
                     licenseSelect.innerHTML += `<option value="${lic}">${lic}</option>`;
                 });
             }
-            // SEMPRE AGGIUNGI OPZIONE MANUALE
             licenseSelect.innerHTML += '<option value="other_license">Altro (inserisci manualmente)</option>';
             licenseSelect.disabled = false;
         }
@@ -670,13 +699,10 @@
         const licenseSelect = document.getElementById('license-type-select');
         const manualLicenseInput = document.getElementById('license-input-manual');
         
-        // Se la sede è "other", il box patente manuale deve apparire SEMPRE
         if(locationSelect.value === 'other') {
-             licenseSelect.value = 'other_license'; // Forza selezione
+             licenseSelect.value = 'other_license'; 
              manualLicenseInput.classList.remove('hidden');
-             // Non facciamo focus qui per non saltare se l'utente sta scrivendo la sede
         } else {
-             // Comportamento standard
              if(licenseSelect.value === 'other_license') {
                 manualLicenseInput.classList.remove('hidden');
                 manualLicenseInput.focus();
@@ -699,7 +725,6 @@
         
         if (manualStudentInput.value === "") manualStudentInput.value = ""; 
 
-        // Se siamo in modalità manuale
         if (location === 'other' || license === 'other_license') {
              studentSelect.innerHTML = '<option value="manual">Inserimento Manuale</option>';
              studentSelect.disabled = false;
@@ -714,7 +739,6 @@
                 studentSelect.innerHTML += `<option value="${stud}">${stud}</option>`;
             });
         }
-        // SEMPRE AGGIUNGI OPZIONE MANUALE
         studentSelect.innerHTML += '<option value="manual">-- Nuovo / Non in lista --</option>';
         studentSelect.disabled = false;
         
@@ -1044,6 +1068,7 @@
         document.querySelectorAll('input[type="text"][data-time]').forEach(i => i.disabled = true);
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(r => r.disabled = true);
         document.querySelectorAll('.radio-filter').forEach(r => r.disabled = true);
+        document.querySelectorAll('select.score-select').forEach(s => s.disabled = true); // Lock Selects for Superiori
     }
 
     function unlockPage() {
@@ -1062,6 +1087,7 @@
         document.querySelectorAll('input[type="text"][data-time]').forEach(i => i.disabled = false);
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(r => r.disabled = false);
         document.querySelectorAll('.radio-filter').forEach(r => r.disabled = false);
+        document.querySelectorAll('select.score-select').forEach(s => s.disabled = false); // Unlock Selects
     }
     
     // UPDATE LESSON DETAILS (Header Edit)
@@ -1126,14 +1152,34 @@
         if(save) {
             const allowed = CARD_CONFIGS[filter];
             QUICK_CRITERIA.forEach((c, i) => {
-                if(allowed.includes(i)) { if(!c.includes("(Tempo)")) quickScores[c] = 5; }
-                else { 
-                    // CHANGE: Set to empty string instead of 0
+                if(allowed.includes(i)) { 
+                    if(c.includes("(Tempo)")) quickScores[c] = "";
+                    else if (filter === 'Superiori') quickScores[c] = ""; // Reset for dropdowns
+                    else quickScores[c] = 5; 
+                } else { 
                     quickScores[c] = ""; 
                 }
             });
             saveLessonData(false);
         }
+        
+        // Toggle Master Slider & Emoji Button Visibility for Superiori
+        const isSuperiori = (filter === 'Superiori');
+        const masterContainer = document.getElementById('master-slider-container'); // Need to ID this div first
+        const emojiBtn = document.getElementById('emoji-toggle-btn');
+        
+        // Find container by parent or add ID
+        const msDiv = document.querySelector('label[for="master-slider"]').parentNode;
+        if(msDiv) {
+            if(isSuperiori) msDiv.classList.add('hidden');
+            else msDiv.classList.remove('hidden');
+        }
+        
+        if(emojiBtn) {
+            if(isSuperiori) emojiBtn.classList.add('hidden');
+            else emojiBtn.classList.remove('hidden');
+        }
+
         renderQuickCriteria();
         const scores = calculateScores(quickScores, filter);
         // Toggle sections based on 'B'
@@ -1156,15 +1202,45 @@
         container.innerHTML = indices.map((idx, displayIdx) => {
             const c = QUICK_CRITERIA[idx];
             const val = quickScores[c];
+            
+            // Caso SUPERIORI: Dropdown
+            if (currentCardFilter === 'Superiori') {
+                return `
+                <div class="space-y-1 p-3 bg-purple-50 rounded-lg shadow-inner border border-purple-100">
+                    <label class="block text-sm font-semibold text-purple-900">${displayIdx+1}. ${c}</label>
+                    <select class="score-select w-full p-2 border border-purple-300 rounded focus:ring-purple-500 focus:border-purple-500" 
+                            data-name="${c}" onchange="updateDropdownScore(event)">
+                        <option value="" ${!val ? 'selected' : ''}>Seleziona...</option>
+                        <option value="Sì" ${val === 'Sì' ? 'selected' : ''}>Sì</option>
+                        <option value="No" ${val === 'No' ? 'selected' : ''}>No</option>
+                        <option value="Da rivedere" ${val === 'Da rivedere' ? 'selected' : ''}>Da rivedere</option>
+                        <option value="Pericolo" ${val === 'Pericolo' ? 'selected' : ''}>Pericolo</option>
+                    </select>
+                </div>`;
+            }
+
+            // Caso TEMPO
             if(c.includes("(Tempo)")) {
                  return `<div class="space-y-1 p-3 bg-blue-50 rounded-lg shadow-inner border border-blue-100"><label class="block text-sm font-semibold text-blue-800">${displayIdx+1}. ${c}</label><div class="flex items-center space-x-3"><input type="text" value="${val||''}" data-name="${c}" placeholder="00:00" class="w-full p-2 text-lg font-mono border border-blue-300 rounded text-center" oninput="updateQuickTime(event)"></div></div>`;
-            } else {
+            } 
+            
+            // Caso STANDARD (Slider)
+            else {
                  const v = (val!=null && val!=="") ? val : 5;
-                 const displayVal = showEmojis ? EMOJI_INTERPRETATION[v] : v; // Usa lo stato corrente
+                 const displayVal = showEmojis ? EMOJI_INTERPRETATION[v] : v; 
                  return `<div class="space-y-1 p-3 bg-gray-50 rounded-lg shadow-inner"><label class="block text-sm font-semibold text-gray-700">${displayIdx+1}. ${c}</label><p id="desc-${idx}" class="text-xs h-8 text-gray-500 overflow-hidden hidden">${SCORE_10_INTERPRETATION[v]}</p><div class="flex items-center space-x-3"><span id="val-${idx}" class="text-4xl w-12 text-center cursor-default ${!showEmojis ? 'font-bold text-gray-800' : ''}" onmousedown="showTooltip(event, ${idx})" onmouseup="hideTooltip()" ontouchstart="showTooltip(event, ${idx})" ontouchend="hideTooltip()">${displayVal}</span><input type="range" min="0" max="10" value="${v}" id="slider-${idx}" data-idx="${idx}" data-name="${c}" class="score-slider flex-grow" oninput="updateQuickScore(event)"></div></div>`;
             }
         }).join('');
     }
+
+    // Funzione specifica per i Dropdown (Superiori)
+    function updateDropdownScore(e) {
+        const name = e.target.getAttribute('data-name');
+        const val = e.target.value;
+        quickScores[name] = val;
+        saveLessonData(false);
+    }
+    window.updateDropdownScore = updateDropdownScore;
 
     function updateQuickScore(e) {
         const idx = e.target.getAttribute('data-idx');
@@ -1196,7 +1272,8 @@
         const indices = CARD_CONFIGS[currentCardFilter];
         indices.forEach(idx => {
             const name = QUICK_CRITERIA[idx];
-            if(!name.includes("(Tempo)")) {
+            // Skip Tempo and Superiori dropdown logic
+            if(!name.includes("(Tempo)") && currentCardFilter !== 'Superiori') {
                 quickScores[name] = val;
                 const sl = document.getElementById(`slider-${idx}`);
                 if(sl) {
@@ -1355,5 +1432,4 @@
     initPage();
 </script>
 </body>
-
 </html>
