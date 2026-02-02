@@ -66,11 +66,6 @@
             transition: all 0.2s;
             text-align: center;
         }
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-            border-radius: 0.375rem;
-        }
         .btn-primary { background-color: #007bff; color: white; }
         .btn-primary:hover { background-color: #0069d9; }
         
@@ -747,16 +742,20 @@
 
         studentSelect.innerHTML = '<option value="">Seleziona Allievo...</option>';
         studentSelect.disabled = true;
-        manualStudentInput.classList.add('hidden');
         
-        if (manualStudentInput.value === "") manualStudentInput.value = ""; 
+        // IMPORTANT: Only hide if NOT using "New Student" feature from search
+        // Check if value is set and we are in init phase
+        if (manualStudentInput.value === "") {
+             manualStudentInput.classList.add('hidden');
+        }
 
         // Se siamo in modalità manuale
         if (location === 'other' || license === 'other_license') {
              studentSelect.innerHTML = '<option value="manual">Inserimento Manuale</option>';
              studentSelect.disabled = false;
              studentSelect.value = 'manual';
-             checkManualStudentInput();
+             // Don't call checkManualStudentInput here as it steals focus
+             // checkManualStudentInput();
              return;
         }
 
@@ -770,10 +769,10 @@
         studentSelect.innerHTML += '<option value="manual">-- Nuovo / Non in lista --</option>';
         studentSelect.disabled = false;
         
+        // Restore manual selection if we came from Search "New Student"
         if (manualStudentInput.value !== "") {
             studentSelect.value = 'manual';
-            // Only show manual input, avoid focusing here as user might be interacting with other elements
-            manualStudentInput.classList.remove('hidden');
+            checkManualStudentInput();
         }
     }
     window.updateStudentOptions = updateStudentOptions;
@@ -1070,11 +1069,8 @@
         if(confirm("Vuoi riaprire questa valutazione?")) {
             const data = JSON.parse(localStorage.getItem(id));
             data.isLocked = false;
-            // Note: We don't change cloudSynced here. If it was synced, it remains synced until saved again?
-            // Actually if we edit, we probably want to re-sync.
-            // Let's set cloudSynced = false on unlock to force re-upload of changes.
-            data.cloudSynced = false; 
-            
+            // Mark as unsynced so we know it changed
+            data.cloudSynced = false;
             localStorage.setItem(id, JSON.stringify(data));
             showCalculatorPage(id);
         }
@@ -1532,12 +1528,7 @@
         
         // ARCHIVIAZIONE
         setTimeout(() => {
-            toArchive.forEach(l => { 
-                l.isArchived = true; 
-                // Assumed synced if exported online
-                l.cloudSynced = true; 
-                localStorage.setItem(l.id, JSON.stringify(l)); 
-            });
+            toArchive.forEach(l => { l.isArchived = true; localStorage.setItem(l.id, JSON.stringify(l)); });
             loadSavedLessonsList();
             status.textContent = `Esportate ${obj.lessons.length} lezioni.`;
             status.className = "text-sm mt-3 text-green-600 font-bold";
