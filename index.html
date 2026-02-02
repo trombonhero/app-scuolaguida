@@ -66,6 +66,11 @@
             transition: all 0.2s;
             text-align: center;
         }
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: 0.375rem;
+        }
         .btn-primary { background-color: #007bff; color: white; }
         .btn-primary:hover { background-color: #0069d9; }
         
@@ -241,6 +246,7 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nome Allievo/a</label>
                 <div class="relative">
+                    <!-- FIX: checkManualStudentInput(true) per focus esplicito utente -->
                     <select id="student-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="checkManualStudentInput(true)" disabled>
                         <option value="">Prima seleziona Patente</option>
                     </select>
@@ -304,12 +310,22 @@
                 <label class="text-xs text-gray-500 font-bold uppercase">Nome Allievo</label>
                 <input type="text" id="student-name-edit" class="text-xl sm:text-2xl font-bold text-blue-600 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none w-full mb-3" oninput="updateStudentName(this.value)">
                 
-                <div class="grid grid-cols-3 gap-2 text-sm text-gray-700 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                <div class="grid grid-cols-2 gap-2 text-sm text-gray-700 bg-gray-50 p-2 rounded-lg border border-gray-100 mb-2">
+                     <!-- NUOVO: DATA EDITABILE -->
                     <div class="flex flex-col">
+                        <label class="text-[10px] uppercase font-bold text-gray-400">Data</label>
+                        <input type="date" id="edit-lesson-date" class="bg-transparent font-semibold focus:outline-none w-full" onchange="updateLessonDetails()">
+                    </div>
+                    <!-- Patente -->
+                    <div class="flex flex-col border-l border-gray-200 pl-2">
                         <label class="text-[10px] uppercase font-bold text-gray-400">Patente</label>
                         <input type="text" id="edit-license-type" class="bg-transparent font-semibold focus:outline-none border-b border-transparent focus:border-blue-400 w-full" oninput="updateLessonDetails()">
                     </div>
-                    <div class="flex flex-col border-l border-gray-200 pl-2">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2 text-sm text-gray-700 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                    <!-- Durata -->
+                    <div class="flex flex-col">
                         <label class="text-[10px] uppercase font-bold text-gray-400">Durata</label>
                         <select id="edit-duration" class="bg-transparent font-semibold focus:outline-none w-full" onchange="updateLessonDetails()">
                             <option value="30">30 min</option>
@@ -317,6 +333,7 @@
                             <option value="120">120 min</option>
                         </select>
                     </div>
+                    <!-- Sede -->
                     <div class="flex flex-col border-l border-gray-200 pl-2 relative">
                         <label class="text-[10px] uppercase font-bold text-gray-400">Sede</label>
                         <select id="edit-location-select" class="bg-transparent font-semibold focus:outline-none w-full" onchange="toggleEditLocationInput(); updateLessonDetails()">
@@ -437,53 +454,42 @@
 <script type="module">
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkHbvXDiVAdRhNGVKIksKRpbBKRbnStac4keAUW39AqQ4nj_WaSR5WoK2AfMXuYoTg/exec";
 
-// --- DATABASE AGGIORNATO ---
+    // --- DATABASE AGGIORNATO ---
     const DB_ALLIEVI = {
         "Colleferro": {
             "B": [
-                "Alice Crecco", "Alisia Pelacci", "Andrea Russo", "Angelica Gabrieli", "Angelica Matturro", 
-                "Angelica Mescia", "Anna Belli", "Arduini Edoardo", "Aurora Consilia Pecchi", "Aurora Gizzi", 
-                "Aurora Sozzi", "Beatrice Uras", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", 
-                "Chiara Grieco", "Chima Samuele", "Collacchi Valerio", "Coluzzi Elena", "Cristal Turri", 
-                "Cristian Dragutinovic", "Daniele Mazzocchi", "De Felice Lonardo", "Denise Gabrielli", 
-                "Eleonora Santigli", "Fabrizio Ravelli", "Ferrante Martina", "Frattaroli Valeria", 
-                "Gagliarducci Valerio", "Galesso Tommaso", "Gallo Noemi", "Giacomo Marcozzi", "Giada Vari", 
-                "Giorgia Mastrogiacomo", "Grazia Greco Maria", "Gregory Pezzella", "Greta Turco", 
-                "Iadarola Pietro", "Ilaria Ippoliti", "Ilaria Loreti", "Lavinia Proia", "Leo Veronica", 
-                "Lorenza Necci", "Lorenzo Stella", "Marchetti Valentina", "Maria Martina Priori", 
-                "Momodu Odidi", "Ricci Valerio", "Selene Sortoluzzi"
+                "Arduini Edoardo", "Belli Anna", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", 
+                "Chima Samuele", "Collacchi Valerio", "Coluzzi Elena", "Crecco Alice", "De Felice Lonardo", 
+                "Dragutinovic Cristian", "Frattaroli Valeria", "Gabrieli Angelica", "Gabrielli Denise", 
+                "Gagliarducci Valerio", "Gallo Noemi", "Gizzi Aurora", "Greco Maria Grazia", "Grieco Chiara", 
+                "Iadarola Pietro", "Ippoliti Ilaria", "Leo veronica", "Loreti Ilaria", "Marchetti Valentina", 
+                "Marcozzi Giacomo", "Mastrogiacomo Giorgia", "Matturro Angelica", "Mazzocchi Daniele", 
+                "Mescia Angelica", "Momodu Odidi", "Necci Lorenza", "Pecchi Aurora Consilia", "Pelacci Alisia", 
+                "Pezzella Gregory", "Priori Maria Martina", "Proia Lavinia", "Ravelli Fabrizio", "Ricci Valerio", 
+                "Russo Andrea", "Santigli Eleonora", "Sortoluzzi Selene", "Sozzi Aurora", "Stella Lorenzo", 
+                "Turco Greta", "Turri Cristal", "Uras Beatrice", "Vari Giada"
             ],
-            "B1": ["Damiano Falcone", "Greta Testa", "Syria Testa"],
-            "BS": ["Carrubino Erica"]
-        },
-        "Di Castro": {
-            "Am": ["Luca Silvestri"]
+            "BS": ["Carrubino Erica"],
+            "B1": ["Falcone damiano", "Testa greta", "Testa siria"]
         },
         "Genazzano": {
             "B": [
-                "Agnetelli Asia", "Alessio Luberti", "Alexandru Carp", "Amarilda Mataj", "Angelucci Lara", 
-                "Asia Maggi", "Bangrazi Kevin", "Beatrice Canini", "Bianchi Daniele", "Chiara Ronci", 
-                "Eleonora Poeta", "Escalona Laura Piedra", "Evelin Gentili", "Gabriel Nita", "Lazzara Martina", 
-                "Massimiliano Rocca"
+                "Agnetelli Asia", "Angelucci Lara", "Bangrazi Kevin", "Bianchi Daniele", 
+                "Canini Beatrice", "Carp Alexandru", "Escalona Laura Piedra", "Gentili Evelin", 
+                "Lazzara Martina", "Luberti Alessio", "Maggi Asia", "Mataj Amarilda", "Nita Gabriel", "Rocca Massimiliano"
             ]
-        },
-        "La Maxima": {
-            "A": ["Carlo Crescenzi", "Chiara Nicolia"]
         },
         "Palestrina": {
             "B": [
-                "Bernardini Giulia", "Boscaini Elena", "Chiara Trentini", "Dell'Orco Simone", 
-                "Romano Sara", "Ruggero Verrelli"
+                "Bernardini Giulia", "Boscaini Elena", "Dell'Orco Simone", "Romano Sara", "Verrelli Ruggero"
             ]
         },
         "Paliano": {
-            "B": [
-                "Alexander Porfilio", "Antonio Terenzi", "Aurora Sportoletti", "Clara Tiroli", 
-                "Francesca Marucci", "Ippoliti Leonardo", "Lorenzo Verani", "Pacciani Virginia"
-            ]
-        }
+            "B": ["Ippoliti Leonardo", "Marucci Francesca", "Pacciani Virginia", "Tiroli Clara", "Verani Lorenzo"]
+        }, 
+        "Roma": {}     
     };
-    
+
     let currentLessonId = null;
     let quickScores = {}; 
     let currentCardFilter = 'B'; 
@@ -521,12 +527,13 @@
         "Otto", 
         "Passaggio stretto", 
         "Accelerazione e frenata",
-        "Circolazione", // 39
-        "Rotatorie", // 40
-        "Esercizi", // 41
-        "Retro L", // 42
-        "Manovra L", // 43
-        "Combinazione Freno Frizione" // 44
+        "Circolazione", // 39 (Nuovo)
+        "Rotatorie", // 40 (Nuovo)
+        "Esercizi", // 41 (Nuovo)
+        "Retro L", // 42 (Nuovo)
+        "Manovra L", // 43 (Nuovo)
+        "Combinazione Freno Frizione" // 44 (Nuovo)
+        // Removed duplicate Punto Morto
     ];
     
     // FIX: Moto and AM cards now use Index 11 (Punto morto) instead of 45
@@ -622,8 +629,6 @@
         document.getElementById('global-student-search').value = '';
         document.getElementById('search-results').classList.add('hidden');
         
-        // FOCUS FLOW: Location is filled, License is filled, Name is filled.
-        // We can focus on duration? Or just let user click start.
         document.getElementById('duration-input').focus();
     }
     window.selectGlobalStudent = selectGlobalStudent;
@@ -634,14 +639,11 @@
         
         const manualNameInput = document.getElementById('student-name-manual');
         manualNameInput.value = name;
-        
-        // FIX: Remove alert and force show manual input in a visible way (even if cascade isn't ready, we prep it)
         manualNameInput.classList.remove('hidden'); 
         
         document.getElementById('global-student-search').value = '';
         document.getElementById('search-results').classList.add('hidden');
         
-        // Focus on location to start flow
         document.getElementById('location-select').focus();
     }
     window.selectNewStudent = selectNewStudent;
@@ -720,10 +722,13 @@
         const licenseSelect = document.getElementById('license-type-select');
         const manualLicenseInput = document.getElementById('license-input-manual');
         
+        // Se la sede è "other", il box patente manuale deve apparire SEMPRE
         if(locationSelect.value === 'other') {
-             licenseSelect.value = 'other_license'; 
+             licenseSelect.value = 'other_license'; // Forza selezione
              manualLicenseInput.classList.remove('hidden');
+             // Non facciamo focus qui per non saltare se l'utente sta scrivendo la sede
         } else {
+             // Comportamento standard
              if(licenseSelect.value === 'other_license') {
                 manualLicenseInput.classList.remove('hidden');
                 if(shouldFocus) manualLicenseInput.focus();
@@ -742,12 +747,9 @@
 
         studentSelect.innerHTML = '<option value="">Seleziona Allievo...</option>';
         studentSelect.disabled = true;
+        manualStudentInput.classList.add('hidden');
         
-        // IMPORTANT: Only hide if NOT using "New Student" feature from search
-        // Check if value is set and we are in init phase
-        if (manualStudentInput.value === "") {
-             manualStudentInput.classList.add('hidden');
-        }
+        if (manualStudentInput.value === "") manualStudentInput.value = ""; 
 
         // Se siamo in modalità manuale
         if (location === 'other' || license === 'other_license') {
@@ -768,10 +770,10 @@
         studentSelect.innerHTML += '<option value="manual">-- Nuovo / Non in lista --</option>';
         studentSelect.disabled = false;
         
-        // Restore manual selection if we came from Search "New Student"
         if (manualStudentInput.value !== "") {
             studentSelect.value = 'manual';
-            checkManualStudentInput();
+            // Only show manual input, avoid focusing here as user might be interacting with other elements
+            manualStudentInput.classList.remove('hidden');
         }
     }
     window.updateStudentOptions = updateStudentOptions;
@@ -969,11 +971,45 @@
             }
         });
 
-        const lessonData = { id: lessonId, studentName: studentName, licenseType: licenseType || "B", duration: durationInput.value, location: location, createdAt: createdAt, notes: "", moduloSvolto: "nessuno", quickScores: defaultQuickScores, selectedCard: 'B', isLocked: false, isArchived: false, finalScore: null };
+        const lessonData = { id: lessonId, studentName: studentName, licenseType: licenseType || "B", duration: durationInput.value, location: location, createdAt: createdAt, notes: "", moduloSvolto: "nessuno", quickScores: defaultQuickScores, selectedCard: 'B', isLocked: false, isArchived: false, finalScore: null, cloudSynced: false }; // Initial cloudSynced false
         localStorage.setItem(lessonId, JSON.stringify(lessonData));
         showCalculatorPage(lessonId);
     }
     window.startNewLesson = startNewLesson;
+    
+    // --- SINGLE LESSON SYNC ---
+    function uploadSingleLesson(id) {
+        if(!navigator.onLine) { alert("Nessuna connessione internet."); return; }
+        if(!confirm("Vuoi provare a inviare nuovamente questa lezione al cloud?")) return;
+        
+        const lesson = JSON.parse(localStorage.getItem(id));
+        
+        // Prepare single lesson export object
+        const obj = { 
+            appName: "RegistroValutazioniGuida", 
+            exportDate: new Date().toISOString(), 
+            lessons: [lesson], // Single lesson array
+            folderId: "16aVHvVSoy2J48gQKp_VCiBdRrQNf9CHl"
+        };
+        
+        // Use fetch to send
+        fetch(GOOGLE_SCRIPT_URL, { 
+            method: 'POST', 
+            mode: 'no-cors', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(obj) 
+        }).then(() => {
+             // Mark as synced on apparent success
+             lesson.cloudSynced = true;
+             localStorage.setItem(id, JSON.stringify(lesson));
+             loadSavedLessonsList(); // Refresh list to update icon
+             alert("Lezione inviata! (Nota: Verifica sempre il Drive se possibile)");
+        }).catch(err => {
+             console.error("Errore invio singolo", err);
+             alert("Errore di rete durante l'invio.");
+        });
+    }
+    window.uploadSingleLesson = uploadSingleLesson;
 
     function loadSavedLessonsList() {
         const activeList = document.getElementById('saved-lessons-list');
@@ -991,9 +1027,30 @@
                 const status = data.isLocked ? '<span class="text-green-700 font-bold text-xs border border-green-200 bg-green-50 rounded px-1">Salvata</span>' : '<span class="text-yellow-600 font-bold text-xs border border-yellow-200 bg-yellow-50 rounded px-1">Aperta</span>';
                 let scoreDisplay = ''; if (data.isLocked && data.finalScore != null && data.selectedCard === 'B') scoreDisplay = `<span class="text-sm text-indigo-700 font-bold ml-2">(${data.finalScore}/500)</span>`;
                 let actionLink = data.isLocked ? `<a href="#" class="ml-2 text-xs font-bold text-blue-600 hover:text-blue-800 underline" onclick="unlockAndOpenLesson('${key}'); return false;">✏️ Modifica</a>` : '';
+                
+                // Cloud Sync Status Logic
+                let syncStatus = '';
+                // Check if synced. If undefined (old records), assume true if archived, else false. Or better, default false.
+                // Let's assume for new feature: if cloudSynced is strictly true, show green cloud. Else show warning.
+                // For old archived lessons without the property, they might show as unsynced.
+                // We can migrate old archived lessons to true? Let's just check the prop.
+                const isSynced = data.cloudSynced === true;
+                
+                if (isSynced) {
+                    syncStatus = '<span class="ml-2 text-green-500 text-xs" title="Sincronizzato">☁️ OK</span>';
+                } else {
+                    // Only show retry button if Locked (Saved)
+                    if (data.isLocked) {
+                        syncStatus = `
+                            <span class="ml-2 text-red-500 text-xs font-bold" title="Non sincronizzato">⚠️ Cloud</span>
+                            <button onclick="uploadSingleLesson('${key}')" class="ml-1 text-[10px] bg-red-100 text-red-600 border border-red-200 px-1 rounded hover:bg-red-200">Riprova</button>
+                        `;
+                    }
+                }
+                
                 const details = `Pat. ${data.licenseType || 'B'} • ${data.duration || 60} min • ${data.location || 'Sede ?'}`;
                 const item = document.createElement('div'); item.className = 'saved-lesson-item';
-                item.innerHTML = `<div class="flex-grow min-w-0"><div class="flex items-center flex-wrap"><a href="#" class="font-bold text-lg text-blue-700 hover:underline truncate mr-2" onclick="openLesson('${key}'); return false;">${data.studentName}</a>${status}${actionLink}${scoreDisplay}</div><div class="text-xs text-gray-500 mt-1"><span class="font-medium text-gray-700">${details}</span> | ${new Date(data.createdAt).toLocaleDateString()}</div></div><button class="delete-btn ml-2" onclick="deleteLesson('${key}')">&times;</button>`;
+                item.innerHTML = `<div class="flex-grow min-w-0"><div class="flex items-center flex-wrap"><a href="#" class="font-bold text-lg text-blue-700 hover:underline truncate mr-2" onclick="openLesson('${key}'); return false;">${data.studentName}</a>${status}${actionLink}${scoreDisplay}${syncStatus}</div><div class="text-xs text-gray-500 mt-1"><span class="font-medium text-gray-700">${details}</span> | ${new Date(data.createdAt).toLocaleDateString()}</div></div><button class="delete-btn ml-2" onclick="deleteLesson('${key}')">&times;</button>`;
                 container.appendChild(item);
             });
         };
@@ -1013,6 +1070,11 @@
         if(confirm("Vuoi riaprire questa valutazione?")) {
             const data = JSON.parse(localStorage.getItem(id));
             data.isLocked = false;
+            // Note: We don't change cloudSynced here. If it was synced, it remains synced until saved again?
+            // Actually if we edit, we probably want to re-sync.
+            // Let's set cloudSynced = false on unlock to force re-upload of changes.
+            data.cloudSynced = false; 
+            
             localStorage.setItem(id, JSON.stringify(data));
             showCalculatorPage(id);
         }
@@ -1029,6 +1091,13 @@
         document.getElementById('lesson-notes').value = data.notes || "";
         document.getElementById('edit-license-type').value = data.licenseType || "B";
         document.getElementById('edit-duration').value = data.duration || "60";
+        
+        // Populate Date in Header
+        const dateInput = document.getElementById('edit-lesson-date');
+        if (data.createdAt) {
+            // Extract YYYY-MM-DD from ISO string
+            dateInput.value = data.createdAt.split('T')[0];
+        }
         
         const locSelect = document.getElementById('edit-location-select');
         const manualLoc = document.getElementById('edit-location-manual');
@@ -1055,7 +1124,12 @@
         data.notes = document.getElementById('lesson-notes').value;
         data.quickScores = quickScores;
         data.selectedCard = currentCardFilter;
-        data.moduloSvolto = document.querySelector('input[name="modulo_obbligatorio"]:checked')?.value || "nessuno";
+        
+        // SAFE ACCESS TO RADIO BUTTON
+        const checkedRadio = document.querySelector('input[name="modulo_obbligatorio"]:checked');
+        data.moduloSvolto = checkedRadio ? checkedRadio.value : "nessuno";
+        
+        // Note: we don't save header details here, they are saved via their own onchange events (updateLessonDetails)
         
         localStorage.setItem(currentLessonId, JSON.stringify(data));
     }
@@ -1067,18 +1141,18 @@
             saveLessonData(true); 
             try {
                 const data = JSON.parse(localStorage.getItem(currentLessonId));
-                // SAFE CALCULATION WRAPPER
                 let finalScore = 0;
                 try {
                     const result = calculateScores(data.quickScores, currentCardFilter);
                     finalScore = result.totalScore_0_500;
                 } catch(err) {
-                    console.warn("Calcolo punteggio non riuscito (forse scheda non supportata), impostato a 0.", err);
+                    console.warn("Calcolo punteggio non riuscito, impostato a 0.", err);
                     finalScore = 0;
                 }
                 
                 data.finalScore = finalScore;
                 data.isLocked = true;
+                // Don't set cloudSynced true here, only after export!
                 localStorage.setItem(currentLessonId, JSON.stringify(data));
                 
                 const toast = document.getElementById('toast-notification');
@@ -1097,8 +1171,14 @@
         if(confirm("Riaprire modifica?")) {
             const data = JSON.parse(localStorage.getItem(currentLessonId));
             data.isLocked = false;
+            // Mark as unsynced so we know it changed
+            data.cloudSynced = false;
             localStorage.setItem(currentLessonId, JSON.stringify(data));
             unlockPage();
+            
+            // Hide master slider when modifying existing
+            const masterContainer = document.getElementById('master-slider-container');
+            if(masterContainer) masterContainer.classList.add('hidden');
         }
     }
     window.unlockLesson = unlockLesson;
@@ -1109,6 +1189,7 @@
         document.getElementById('unlock-lesson-btn').classList.remove('hidden');
         document.getElementById('lesson-notes').disabled = true;
         document.getElementById('student-name-edit').disabled = true;
+        document.getElementById('edit-lesson-date').disabled = true;
         document.getElementById('edit-license-type').disabled = true;
         document.getElementById('edit-duration').disabled = true;
         document.getElementById('edit-location-select').disabled = true;
@@ -1119,7 +1200,7 @@
         document.querySelectorAll('input[type="text"][data-time]').forEach(i => i.disabled = true);
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(r => r.disabled = true);
         document.querySelectorAll('.radio-filter').forEach(r => r.disabled = true);
-        document.querySelectorAll('select.score-select').forEach(s => s.disabled = true); // Lock Selects for Superiori
+        document.querySelectorAll('select.score-select').forEach(s => s.disabled = true); 
     }
 
     function unlockPage() {
@@ -1128,6 +1209,7 @@
         document.getElementById('unlock-lesson-btn').classList.add('hidden');
         document.getElementById('lesson-notes').disabled = false;
         document.getElementById('student-name-edit').disabled = false;
+        document.getElementById('edit-lesson-date').disabled = false;
         document.getElementById('edit-license-type').disabled = false;
         document.getElementById('edit-duration').disabled = false;
         document.getElementById('edit-location-select').disabled = false;
@@ -1138,17 +1220,39 @@
         document.querySelectorAll('input[type="text"][data-time]').forEach(i => i.disabled = false);
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(r => r.disabled = false);
         document.querySelectorAll('.radio-filter').forEach(r => r.disabled = false);
-        document.querySelectorAll('select.score-select').forEach(s => s.disabled = false); // Unlock Selects
+        document.querySelectorAll('select.score-select').forEach(s => s.disabled = false); 
     }
     
     // UPDATE LESSON DETAILS (Header Edit)
     function updateLessonDetails() {
         if(!currentLessonId) return;
         const data = JSON.parse(localStorage.getItem(currentLessonId));
+        
         data.licenseType = document.getElementById('edit-license-type').value.toUpperCase();
         data.duration = document.getElementById('edit-duration').value;
         const locSelect = document.getElementById('edit-location-select');
         data.location = (locSelect.value === 'other') ? document.getElementById('edit-location-manual').value : locSelect.value;
+        
+        // Date update logic
+        const newDateVal = document.getElementById('edit-lesson-date').value;
+        if (newDateVal) {
+            // Keep the time from original createdAt if possible, or just default T00:00:00
+            // Here we just construct a new ISO string from the date input.
+            // Note: input type date returns YYYY-MM-DD. 
+            // We'll append current time to keep it sortable somewhat correctly or just use T12:00:00
+            // Better: parse original, set year/month/date
+            try {
+                const originalDate = new Date(data.createdAt);
+                const [y, m, d] = newDateVal.split('-').map(Number);
+                originalDate.setFullYear(y);
+                originalDate.setMonth(m - 1);
+                originalDate.setDate(d);
+                data.createdAt = originalDate.toISOString();
+            } catch(e) {
+                data.createdAt = new Date(newDateVal).toISOString();
+            }
+        }
+
         localStorage.setItem(currentLessonId, JSON.stringify(data));
     }
     window.updateLessonDetails = updateLessonDetails;
@@ -1216,8 +1320,6 @@
         
         // Toggle Master Slider & Emoji Button Visibility for Superiori
         const isSuperiori = (filter === 'Superiori');
-        // Fix: Use direct DOM query instead of ID if ID was not added to the container in previous iterations
-        // But in this file I added id="master-slider-container"
         const masterContainer = document.getElementById('master-slider-container');
         const emojiBtn = document.getElementById('emoji-toggle-btn');
         
@@ -1430,7 +1532,12 @@
         
         // ARCHIVIAZIONE
         setTimeout(() => {
-            toArchive.forEach(l => { l.isArchived = true; localStorage.setItem(l.id, JSON.stringify(l)); });
+            toArchive.forEach(l => { 
+                l.isArchived = true; 
+                // Assumed synced if exported online
+                l.cloudSynced = true; 
+                localStorage.setItem(l.id, JSON.stringify(l)); 
+            });
             loadSavedLessonsList();
             status.textContent = `Esportate ${obj.lessons.length} lezioni.`;
             status.className = "text-sm mt-3 text-green-600 font-bold";
@@ -1483,11 +1590,4 @@
     initPage();
 </script>
 </body>
-
 </html>
-
-
-
-
-
-
