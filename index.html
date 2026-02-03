@@ -230,7 +230,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipo Patente</label>
                     <!-- FIX: Inverted order to ensure focus happens AFTER update options -->
-                    <select id="license-type-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="toggleLicenseInput(true); updateStudentOptions();" disabled>
+                    <select id="license-type-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="updateStudentOptions(); toggleLicenseInput(true);" disabled>
                         <option value="">Prima seleziona Sede</option>
                     </select>
                     <input type="text" id="license-input-manual" placeholder="Scrivi patente..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mt-2 hidden">
@@ -449,7 +449,7 @@
 <script type="module">
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkHbvXDiVAdRhNGVKIksKRpbBKRbnStac4keAUW39AqQ4nj_WaSR5WoK2AfMXuYoTg/exec";
 
-// --- DATABASE AGGIORNATO ---
+    // --- DATABASE AGGIORNATO ---
     const DB_ALLIEVI = {
         "Colleferro": {
             "B": [
@@ -458,12 +458,12 @@
                 "Aurora Sozzi", "Beatrice Uras", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", 
                 "Chiara Grieco", "Chima Samuele", "Collacchi Valerio", "Coluzzi Elena", "Cristal Turri", 
                 "Cristian Dragutinovic", "Daniele Mazzocchi", "De Felice Lonardo", "Denise Gabrielli", 
-                "Eleonora Santigli", "Fabrizio Ravelli", "Frattaroli Valeria", "Gagliarducci Valerio", 
-                "Galesso Tommaso", "Gallo Noemi", "Giacomo Marcozzi", "Giada Vari", "Giorgia Mastrogiacomo", 
-                "Grazia Greco Maria", "Gregory Pezzella", "Greta Turco", "Iadarola Pietro", "Ilaria Ippoliti", 
-                "Ilaria Loreti", "Lavinia Proia", "Leo Veronica", "Lorenza Necci", "Lorenzo Stella", 
-                "Marchetti Valentina", "Maria Martina Priori", "Momodu Odidi", "Ricci Valerio", "Sara Tantari", 
-                "Selene Sortoluzzi"
+                "Eleonora Santigli", "Fabrizio Ravelli", "Ferrante Martina", "Frattaroli Valeria", 
+                "Gagliarducci Valerio", "Galesso Tommaso", "Gallo Noemi", "Giacomo Marcozzi", "Giada Vari", 
+                "Giorgia Mastrogiacomo", "Grazia Greco Maria", "Gregory Pezzella", "Greta Turco", 
+                "Iadarola Pietro", "Ilaria Ippoliti", "Ilaria Loreti", "Lavinia Proia", "Leo Veronica", 
+                "Lorenza Necci", "Lorenzo Stella", "Marchetti Valentina", "Maria Martina Priori", 
+                "Momodu Odidi", "Ricci Valerio", "Sara Tantari", "Selene Sortoluzzi"
             ],
             "B1": ["Damiano Falcone", "Greta Testa", "Syria Testa"],
             "BS": ["Carrubino Erica"],
@@ -504,7 +504,7 @@
     let quickScores = {}; 
     let currentCardFilter = 'B'; 
     let showEmojis = true;
-    let isEditingExistingLesson = false; // FLAG IMPORTANTE PER GESTIONE MODIFICHE
+    let isEditingExistingLesson = false; 
 
     const tooltip = document.getElementById('custom-tooltip');
     const EMOJI_INTERPRETATION = { 0: "😶", 1: "😱", 2: "😨", 3: "😣", 4: "🤔", 5: "🧐", 6: "🙂", 7: "😊", 8: "😄", 9: "🤩", 10: "😎" };
@@ -543,14 +543,14 @@
         "Esercizi", // 41 (Nuovo)
         "Retro L", // 42 (Nuovo)
         "Manovra L", // 43 (Nuovo)
-        "Combinazione Freno Frizione" // 44 (Nuovo)
-        // Removed duplicate Punto Morto
+        "Combinazione Freno Frizione", // 44 (Nuovo)
+        "Controllo Punto Morto" // 45 (Nuovo)
     ];
     
     // Configurazione Indici (0-based)
     const CARD_CONFIGS = {
         'B': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-        'Moto': [26, 27, 28, 29, 39, 9, 10, 40, 11], 
+        'Moto': [26, 27, 28, 29, 39, 9, 10, 40, 11], // 11 = Punto morto existing
         'AmCiclo': [41, 36, 39, 9, 10, 40, 11], 
         'AmQuad': [41, 42, 39, 9, 10, 40, 11], 
         'Superiori': [43, 13, 31, 44, 4, 7, 10] 
@@ -1002,22 +1002,25 @@
         
         const lesson = JSON.parse(localStorage.getItem(id));
         
+        // Prepare single lesson export object
         const obj = { 
             appName: "RegistroValutazioniGuida", 
             exportDate: new Date().toISOString(), 
-            lessons: [lesson], 
+            lessons: [lesson], // Single lesson array
             folderId: "16aVHvVSoy2J48gQKp_VCiBdRrQNf9CHl"
         };
         
+        // Use fetch to send
         fetch(GOOGLE_SCRIPT_URL, { 
             method: 'POST', 
             mode: 'no-cors', 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(obj) 
         }).then(() => {
+             // Mark as synced on apparent success
              lesson.cloudSynced = true;
              localStorage.setItem(id, JSON.stringify(lesson));
-             loadSavedLessonsList(); 
+             loadSavedLessonsList(); // Refresh list to update icon
              alert("Lezione inviata! (Nota: Verifica sempre il Drive se possibile)");
         }).catch(err => {
              console.error("Errore invio singolo", err);
@@ -1140,6 +1143,8 @@
         // SAFE ACCESS TO RADIO BUTTON
         const checkedRadio = document.querySelector('input[name="modulo_obbligatorio"]:checked');
         data.moduloSvolto = checkedRadio ? checkedRadio.value : "nessuno";
+        
+        // Note: we don't save header details here, they are saved via their own onchange events (updateLessonDetails)
         
         localStorage.setItem(currentLessonId, JSON.stringify(data));
     }
@@ -1601,5 +1606,3 @@
 </script>
 </body>
 </html>
-
-
