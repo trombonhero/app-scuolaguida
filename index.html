@@ -230,7 +230,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipo Patente</label>
                     <!-- FIX: Inverted order to ensure focus happens AFTER update options -->
-                    <select id="license-type-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="updateStudentOptions(); toggleLicenseInput(true);" disabled>
+                    <select id="license-type-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="toggleLicenseInput(true); updateStudentOptions();" disabled>
                         <option value="">Prima seleziona Sede</option>
                     </select>
                     <input type="text" id="license-input-manual" placeholder="Scrivi patente..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mt-2 hidden">
@@ -489,6 +489,7 @@
     let quickScores = {}; 
     let currentCardFilter = 'B'; 
     let showEmojis = true;
+    let isEditingExistingLesson = false; // FLAG IMPORTANTE PER GESTIONE MODIFICHE
 
     const tooltip = document.getElementById('custom-tooltip');
     const EMOJI_INTERPRETATION = { 0: "😶", 1: "😱", 2: "😨", 3: "😣", 4: "🤔", 5: "🧐", 6: "🙂", 7: "😊", 8: "😄", 9: "🤩", 10: "😎" };
@@ -527,14 +528,14 @@
         "Esercizi", // 41 (Nuovo)
         "Retro L", // 42 (Nuovo)
         "Manovra L", // 43 (Nuovo)
-        "Combinazione Freno Frizione", // 44 (Nuovo)
-        "Controllo Punto Morto" // 45 (Nuovo)
+        "Combinazione Freno Frizione" // 44 (Nuovo)
+        // Removed duplicate Punto Morto
     ];
     
     // Configurazione Indici (0-based)
     const CARD_CONFIGS = {
         'B': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-        'Moto': [26, 27, 28, 29, 39, 9, 10, 40, 11], // 11 = Punto morto existing
+        'Moto': [26, 27, 28, 29, 39, 9, 10, 40, 11], 
         'AmCiclo': [41, 36, 39, 9, 10, 40, 11], 
         'AmQuad': [41, 42, 39, 9, 10, 40, 11], 
         'Superiori': [43, 13, 31, 44, 4, 7, 10] 
@@ -754,7 +755,8 @@
              studentSelect.innerHTML = '<option value="manual">Inserimento Manuale</option>';
              studentSelect.disabled = false;
              studentSelect.value = 'manual';
-             checkManualStudentInput();
+             // Don't call checkManualStudentInput here as it steals focus
+             // checkManualStudentInput();
              return;
         }
 
@@ -950,6 +952,9 @@
         if (!location) { errorEl.textContent = "Seleziona una sede."; errorEl.classList.remove('hidden'); return; }
         errorEl.classList.add('hidden');
 
+        // Reset editing flag
+        isEditingExistingLesson = false;
+        
         const lessonId = `lesson_${new Date().getTime()}`;
         const defaultQuickScores = {};
         
@@ -969,7 +974,7 @@
             }
         });
 
-        const lessonData = { id: lessonId, studentName: studentName, licenseType: licenseType || "B", duration: durationInput.value, location: location, createdAt: createdAt, notes: "", moduloSvolto: "nessuno", quickScores: defaultQuickScores, selectedCard: 'B', isLocked: false, isArchived: false, finalScore: null, cloudSynced: false }; // Initial cloudSynced false
+        const lessonData = { id: lessonId, studentName: studentName, licenseType: licenseType || "B", duration: durationInput.value, location: location, createdAt: createdAt, notes: "", moduloSvolto: "nessuno", quickScores: defaultQuickScores, selectedCard: 'B', isLocked: false, isArchived: false, finalScore: null, cloudSynced: false }; 
         localStorage.setItem(lessonId, JSON.stringify(lessonData));
         showCalculatorPage(lessonId);
     }
@@ -982,25 +987,22 @@
         
         const lesson = JSON.parse(localStorage.getItem(id));
         
-        // Prepare single lesson export object
         const obj = { 
             appName: "RegistroValutazioniGuida", 
             exportDate: new Date().toISOString(), 
-            lessons: [lesson], // Single lesson array
+            lessons: [lesson], 
             folderId: "16aVHvVSoy2J48gQKp_VCiBdRrQNf9CHl"
         };
         
-        // Use fetch to send
         fetch(GOOGLE_SCRIPT_URL, { 
             method: 'POST', 
             mode: 'no-cors', 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(obj) 
         }).then(() => {
-             // Mark as synced on apparent success
              lesson.cloudSynced = true;
              localStorage.setItem(id, JSON.stringify(lesson));
-             loadSavedLessonsList(); // Refresh list to update icon
+             loadSavedLessonsList(); 
              alert("Lezione inviata! (Nota: Verifica sempre il Drive se possibile)");
         }).catch(err => {
              console.error("Errore invio singolo", err);
@@ -1017,7 +1019,7 @@
         for (let i = 0; i < localStorage.length; i++) { if (localStorage.key(i).startsWith('lesson_')) try { lessons.push(JSON.parse(localStorage.getItem(localStorage.key(i)))); } catch (e) {} }
         
         if (lessons.length === 0) { activeList.innerHTML = '<p class="text-gray-500">Nessuna valutazione salvata.</p>'; return; }
-        const renderGroup = (list, container) => {
+        const renderGroup = (list, container, isArchived) => {
             if (list.length === 0) { container.innerHTML = '<p class="text-gray-400 italic text-sm">Nessuna valutazione qui.</p>'; return; }
             list.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
             list.forEach(data => {
@@ -1026,19 +1028,13 @@
                 let scoreDisplay = ''; if (data.isLocked && data.finalScore != null && data.selectedCard === 'B') scoreDisplay = `<span class="text-sm text-indigo-700 font-bold ml-2">(${data.finalScore}/500)</span>`;
                 let actionLink = data.isLocked ? `<a href="#" class="ml-2 text-xs font-bold text-blue-600 hover:text-blue-800 underline" onclick="unlockAndOpenLesson('${key}'); return false;">✏️ Modifica</a>` : '';
                 
-                // Cloud Sync Status Logic
+                // Cloud Sync Status Logic - Only for Archived items
                 let syncStatus = '';
-                // Check if synced. If undefined (old records), assume true if archived, else false. Or better, default false.
-                // Let's assume for new feature: if cloudSynced is strictly true, show green cloud. Else show warning.
-                // For old archived lessons without the property, they might show as unsynced.
-                // We can migrate old archived lessons to true? Let's just check the prop.
-                const isSynced = data.cloudSynced === true;
-                
-                if (isSynced) {
-                    syncStatus = '<span class="ml-2 text-green-500 text-xs" title="Sincronizzato">☁️ OK</span>';
-                } else {
-                    // Only show retry button if Locked (Saved)
-                    if (data.isLocked) {
+                if (isArchived) {
+                    const isSynced = data.cloudSynced === true;
+                    if (isSynced) {
+                        syncStatus = '<span class="ml-2 text-green-500 text-xs" title="Sincronizzato">☁️ OK</span>';
+                    } else {
                         syncStatus = `
                             <span class="ml-2 text-red-500 text-xs font-bold" title="Non sincronizzato">⚠️ Cloud</span>
                             <button onclick="uploadSingleLesson('${key}')" class="ml-1 text-[10px] bg-red-100 text-red-600 border border-red-200 px-1 rounded hover:bg-red-200">Riprova</button>
@@ -1052,8 +1048,8 @@
                 container.appendChild(item);
             });
         };
-        renderGroup(lessons.filter(l => !l.isArchived), activeList);
-        renderGroup(lessons.filter(l => l.isArchived), archivedList);
+        renderGroup(lessons.filter(l => !l.isArchived), activeList, false); // False for active list
+        renderGroup(lessons.filter(l => l.isArchived), archivedList, true);   // True for archived list
     }
 
     function deleteLesson(id) { if(confirm("Eliminare?")) { localStorage.removeItem(id); loadSavedLessonsList(); } }
@@ -1065,12 +1061,18 @@
     window.openLesson = openLesson;
     
     function unlockAndOpenLesson(id) {
-        if(confirm("Vuoi riaprire questa valutazione?")) {
+        if(confirm("Vuoi riaprire questa valutazione salvata per modificarla?")) {
             const data = JSON.parse(localStorage.getItem(id));
             data.isLocked = false;
-            // Mark as unsynced so we know it changed
+            // Mark as unsynced so we know it changed (and move to pending export)
             data.cloudSynced = false;
+            // If it was archived, bring it back to active list to force re-export
+            data.isArchived = false;
             localStorage.setItem(id, JSON.stringify(data));
+            
+            // Set flag for editing
+            isEditingExistingLesson = true;
+            
             showCalculatorPage(id);
         }
     }
@@ -1124,8 +1126,6 @@
         const checkedRadio = document.querySelector('input[name="modulo_obbligatorio"]:checked');
         data.moduloSvolto = checkedRadio ? checkedRadio.value : "nessuno";
         
-        // Note: we don't save header details here, they are saved via their own onchange events (updateLessonDetails)
-        
         localStorage.setItem(currentLessonId, JSON.stringify(data));
     }
     window.saveLessonData = saveLessonData;
@@ -1168,7 +1168,12 @@
             data.isLocked = false;
             // Mark as unsynced so we know it changed
             data.cloudSynced = false;
+            // If it was archived, bring back to active
+            data.isArchived = false;
             localStorage.setItem(currentLessonId, JSON.stringify(data));
+            
+            isEditingExistingLesson = true;
+            
             unlockPage();
             
             // Hide master slider when modifying existing
@@ -1195,7 +1200,7 @@
         document.querySelectorAll('input[type="text"][data-time]').forEach(i => i.disabled = true);
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(r => r.disabled = true);
         document.querySelectorAll('.radio-filter').forEach(r => r.disabled = true);
-        document.querySelectorAll('select.score-select').forEach(s => s.disabled = true); // Lock Selects for Superiori
+        document.querySelectorAll('select.score-select').forEach(s => s.disabled = true); 
     }
 
     function unlockPage() {
@@ -1215,7 +1220,7 @@
         document.querySelectorAll('input[type="text"][data-time]').forEach(i => i.disabled = false);
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(r => r.disabled = false);
         document.querySelectorAll('.radio-filter').forEach(r => r.disabled = false);
-        document.querySelectorAll('select.score-select').forEach(s => s.disabled = false); // Unlock Selects
+        document.querySelectorAll('select.score-select').forEach(s => s.disabled = false); 
     }
     
     // UPDATE LESSON DETAILS (Header Edit)
@@ -1313,13 +1318,13 @@
             saveLessonData(false);
         }
         
-        // Toggle Master Slider & Emoji Button Visibility for Superiori
+        // Toggle Master Slider & Emoji Button Visibility for Superiori AND Edit Mode
         const isSuperiori = (filter === 'Superiori');
         const masterContainer = document.getElementById('master-slider-container');
         const emojiBtn = document.getElementById('emoji-toggle-btn');
         
         if(masterContainer) {
-            if(isSuperiori) masterContainer.classList.add('hidden');
+            if(isSuperiori || isEditingExistingLesson) masterContainer.classList.add('hidden');
             else masterContainer.classList.remove('hidden');
         }
         
