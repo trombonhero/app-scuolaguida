@@ -221,7 +221,8 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sede</label>
-                    <select id="location-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="updateLicenseOptions()">
+                    <!-- FIX: toggleEditLocationInput(true) per focus esplicito utente -->
+                    <select id="location-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="updateLicenseOptions(); toggleLocationInput(true)">
                         <option value="">Seleziona Sede...</option>
                         <!-- Options filled by JS -->
                     </select>
@@ -770,8 +771,7 @@
              studentSelect.innerHTML = '<option value="manual">Inserimento Manuale</option>';
              studentSelect.disabled = false;
              studentSelect.value = 'manual';
-             // Don't call checkManualStudentInput here as it steals focus
-             // checkManualStudentInput();
+             checkManualStudentInput();
              return;
         }
 
