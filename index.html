@@ -367,7 +367,7 @@
             </button>
         </div>
         
-        <!-- Master Slider nascosto per Superiori e Modifica -->
+        <!-- Master Slider nascosto per Superiori -->
         <div id="master-slider-container" class="mb-8 p-4 bg-indigo-50 border border-indigo-200 rounded-lg shadow-sm">
             <label for="master-slider" class="block text-sm font-bold text-indigo-900 mb-2">⚡ Valutazione Rapida Totale (Imposta tutti)</label>
             <div class="flex items-center space-x-3">
@@ -449,7 +449,7 @@
 <script type="module">
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkHbvXDiVAdRhNGVKIksKRpbBKRbnStac4keAUW39AqQ4nj_WaSR5WoK2AfMXuYoTg/exec";
 
-// --- DATABASE AGGIORNATO ---
+    // --- DATABASE AGGIORNATO ---
     const DB_ALLIEVI = {
         "Colleferro": {
             "A1": ["Daniel Esposti", "Nicolo Pratini"],
@@ -771,7 +771,7 @@
              studentSelect.innerHTML = '<option value="manual">Inserimento Manuale</option>';
              studentSelect.disabled = false;
              studentSelect.value = 'manual';
-             checkManualStudentInput();
+             checkManualStudentInput(); // MUST BE CALLED TO SHOW INPUT IF MANUAL IS PRE-SELECTED
              return;
         }
 
@@ -994,40 +994,6 @@
         showCalculatorPage(lessonId);
     }
     window.startNewLesson = startNewLesson;
-    
-    // --- SINGLE LESSON SYNC ---
-    function uploadSingleLesson(id) {
-        if(!navigator.onLine) { alert("Nessuna connessione internet."); return; }
-        if(!confirm("Vuoi provare a inviare nuovamente questa lezione al cloud?")) return;
-        
-        const lesson = JSON.parse(localStorage.getItem(id));
-        
-        // Prepare single lesson export object
-        const obj = { 
-            appName: "RegistroValutazioniGuida", 
-            exportDate: new Date().toISOString(), 
-            lessons: [lesson], // Single lesson array
-            folderId: "16aVHvVSoy2J48gQKp_VCiBdRrQNf9CHl"
-        };
-        
-        // Use fetch to send
-        fetch(GOOGLE_SCRIPT_URL, { 
-            method: 'POST', 
-            mode: 'no-cors', 
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(obj) 
-        }).then(() => {
-             // Mark as synced on apparent success
-             lesson.cloudSynced = true;
-             localStorage.setItem(id, JSON.stringify(lesson));
-             loadSavedLessonsList(); // Refresh list to update icon
-             alert("Lezione inviata! (Nota: Verifica sempre il Drive se possibile)");
-        }).catch(err => {
-             console.error("Errore invio singolo", err);
-             alert("Errore di rete durante l'invio.");
-        });
-    }
-    window.uploadSingleLesson = uploadSingleLesson;
 
     function loadSavedLessonsList() {
         const activeList = document.getElementById('saved-lessons-list');
@@ -1046,19 +1012,10 @@
                 let scoreDisplay = ''; if (data.isLocked && data.finalScore != null && data.selectedCard === 'B') scoreDisplay = `<span class="text-sm text-indigo-700 font-bold ml-2">(${data.finalScore}/500)</span>`;
                 let actionLink = data.isLocked ? `<a href="#" class="ml-2 text-xs font-bold text-blue-600 hover:text-blue-800 underline" onclick="unlockAndOpenLesson('${key}'); return false;">✏️ Modifica</a>` : '';
                 
-                // Cloud Sync Status Logic - Only for Archived items
+                // Cloud Sync Status Logic - REMOVED VISUAL CLUTTER FOR ARCHIVED ITEMS
                 let syncStatus = '';
-                if (isArchived) {
-                    const isSynced = data.cloudSynced === true;
-                    if (isSynced) {
-                        syncStatus = '<span class="ml-2 text-green-500 text-xs" title="Sincronizzato">☁️ OK</span>';
-                    } else {
-                        syncStatus = `
-                            <span class="ml-2 text-red-500 text-xs font-bold" title="Non sincronizzato">⚠️ Cloud</span>
-                            <button onclick="uploadSingleLesson('${key}')" class="ml-1 text-[10px] bg-red-100 text-red-600 border border-red-200 px-1 rounded hover:bg-red-200">Riprova</button>
-                        `;
-                    }
-                }
+                // Only show status in Active list if needed, or keep it clean. 
+                // User requested clean archive. We keep it empty string for archived items.
                 
                 const details = `Pat. ${data.licenseType || 'B'} • ${data.duration || 60} min • ${data.location || 'Sede ?'}`;
                 const item = document.createElement('div'); item.className = 'saved-lesson-item';
@@ -1066,8 +1023,8 @@
                 container.appendChild(item);
             });
         };
-        renderGroup(lessons.filter(l => !l.isArchived), activeList, false); // False for active list
-        renderGroup(lessons.filter(l => l.isArchived), archivedList, true);   // True for archived list
+        renderGroup(lessons.filter(l => !l.isArchived), activeList, false); 
+        renderGroup(lessons.filter(l => l.isArchived), archivedList, true);   
     }
 
     function deleteLesson(id) { if(confirm("Eliminare?")) { localStorage.removeItem(id); loadSavedLessonsList(); } }
@@ -1144,8 +1101,6 @@
         const checkedRadio = document.querySelector('input[name="modulo_obbligatorio"]:checked');
         data.moduloSvolto = checkedRadio ? checkedRadio.value : "nessuno";
         
-        // Note: we don't save header details here, they are saved via their own onchange events (updateLessonDetails)
-        
         localStorage.setItem(currentLessonId, JSON.stringify(data));
     }
     window.saveLessonData = saveLessonData;
@@ -1220,7 +1175,7 @@
         document.querySelectorAll('input[type="text"][data-time]').forEach(i => i.disabled = true);
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(r => r.disabled = true);
         document.querySelectorAll('.radio-filter').forEach(r => r.disabled = true);
-        document.querySelectorAll('select.score-select').forEach(s => s.disabled = true); // Lock Selects for Superiori
+        document.querySelectorAll('select.score-select').forEach(s => s.disabled = true); 
     }
 
     function unlockPage() {
@@ -1240,7 +1195,7 @@
         document.querySelectorAll('input[type="text"][data-time]').forEach(i => i.disabled = false);
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(r => r.disabled = false);
         document.querySelectorAll('.radio-filter').forEach(r => r.disabled = false);
-        document.querySelectorAll('select.score-select').forEach(s => s.disabled = false); // Unlock Selects
+        document.querySelectorAll('select.score-select').forEach(s => s.disabled = false); 
     }
     
     // UPDATE LESSON DETAILS (Header Edit)
