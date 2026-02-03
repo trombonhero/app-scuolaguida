@@ -221,8 +221,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sede</label>
-                    <!-- FIX: toggleEditLocationInput(true) per focus esplicito utente -->
-                    <select id="location-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="updateLicenseOptions(); toggleLocationInput(true)">
+                    <select id="location-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="updateLicenseOptions()">
                         <option value="">Seleziona Sede...</option>
                         <!-- Options filled by JS -->
                     </select>
@@ -286,7 +285,7 @@
     
     <div class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Export e Dati</h2>
-        <p class="text-sm text-gray-600 mb-4">Esporta i dati attuali. <strong>Nota:</strong> Le valutazioni verranno spostate in "Archivio" SOLO se sei online.</p>
+        <p class="text-sm text-gray-600 mb-4">Esporta i dati attuali. <strong>Nota:</strong> Le valutazioni verranno spostate in "Archivio" SOLO se sei online e l'invio ha successo.</p>
         <div class="grid grid-cols-2 gap-4">
             <button id="export-btn" class="btn btn-primary">Esporta Dati</button>
             <input type="file" id="import-file-input" accept=".json" onchange="importData(event)">
@@ -368,7 +367,7 @@
             </button>
         </div>
         
-        <!-- Master Slider nascosto per Superiori -->
+        <!-- Master Slider nascosto per Superiori e Modifica -->
         <div id="master-slider-container" class="mb-8 p-4 bg-indigo-50 border border-indigo-200 rounded-lg shadow-sm">
             <label for="master-slider" class="block text-sm font-bold text-indigo-900 mb-2">⚡ Valutazione Rapida Totale (Imposta tutti)</label>
             <div class="flex items-center space-x-3">
@@ -450,28 +449,30 @@
 <script type="module">
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkHbvXDiVAdRhNGVKIksKRpbBKRbnStac4keAUW39AqQ4nj_WaSR5WoK2AfMXuYoTg/exec";
 
-    // --- DATABASE AGGIORNATO ---
+// --- DATABASE AGGIORNATO ---
     const DB_ALLIEVI = {
         "Colleferro": {
+            "A1": ["Daniel Esposti", "Nicolo Pratini"],
+            "AM": ["Federici Manuel"],
             "B": [
                 "Alice Crecco", "Alisia Pelacci", "Andrea Russo", "Angelica Gabrieli", "Angelica Matturro", 
                 "Angelica Mescia", "Anna Belli", "Arduini Edoardo", "Aurora Consilia Pecchi", "Aurora Gizzi", 
-                "Aurora Sozzi", "Beatrice Uras", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", 
+                "Aurora Sozzi", "Battisti Daria", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", 
                 "Chiara Grieco", "Chima Samuele", "Collacchi Valerio", "Coluzzi Elena", "Cristal Turri", 
                 "Cristian Dragutinovic", "Daniele Mazzocchi", "De Felice Lonardo", "Denise Gabrielli", 
-                "Eleonora Santigli", "Fabrizio Ravelli", "Ferrante Martina", "Frattaroli Valeria", 
-                "Gagliarducci Valerio", "Galesso Tommaso", "Gallo Noemi", "Giacomo Marcozzi", "Giada Vari", 
-                "Giorgia Mastrogiacomo", "Grazia Greco Maria", "Gregory Pezzella", "Greta Turco", 
-                "Iadarola Pietro", "Ilaria Ippoliti", "Ilaria Loreti", "Lavinia Proia", "Leo Veronica", 
-                "Lorenza Necci", "Lorenzo Stella", "Marchetti Valentina", "Maria Martina Priori", 
-                "Momodu Odidi", "Ricci Valerio", "Sara Tantari", "Selene Sortoluzzi"
+                "Eleonora Santigli", "Fabrizio Ravelli", "Frattaroli Valeria", "Gagliarducci Valerio", 
+                "Galesso Tommaso", "Gallo Noemi", "Giacomo Marcozzi", "Giorgia Mastrogiacomo", 
+                "Grazia Greco Maria", "Gregory Pezzella", "Iadarola Pietro", "Leo Veronica", "Lorenza Necci", 
+                "Marchetti Valentina", "Maria Martina Priori", "Momodu Odidi", "Ricci Valerio", "Sara Tantari", 
+                "Selene Sortoluzzi"
             ],
             "B1": ["Damiano Falcone", "Greta Testa", "Syria Testa"],
             "BS": ["Carrubino Erica"],
             "GA": ["Francesco Padovani"]
         },
         "Di Castro": {
-            "Am": ["Luca Silvestri"]
+            "Am": ["Luca Silvestri"],
+            "B1": ["Alicia Cupini"]
         },
         "Genazzano": {
             "B": [
@@ -492,8 +493,7 @@
         },
         "Paliano": {
             "B": [
-                "Alexander Porfilio", "Antonio Terenzi", "Aurora Sportoletti", "Clara Tiroli", 
-                "Francesca Marucci", "Ippoliti Leonardo", "Lorenzo Verani", "Pacciani Virginia"
+                "Clara Tiroli", "Francesca Marucci", "Lorenzo Verani"
             ]
         },
         "Roma": {
@@ -1220,7 +1220,7 @@
         document.querySelectorAll('input[type="text"][data-time]').forEach(i => i.disabled = true);
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(r => r.disabled = true);
         document.querySelectorAll('.radio-filter').forEach(r => r.disabled = true);
-        document.querySelectorAll('select.score-select').forEach(s => s.disabled = true); 
+        document.querySelectorAll('select.score-select').forEach(s => s.disabled = true); // Lock Selects for Superiori
     }
 
     function unlockPage() {
@@ -1240,7 +1240,7 @@
         document.querySelectorAll('input[type="text"][data-time]').forEach(i => i.disabled = false);
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(r => r.disabled = false);
         document.querySelectorAll('.radio-filter').forEach(r => r.disabled = false);
-        document.querySelectorAll('select.score-select').forEach(s => s.disabled = false); 
+        document.querySelectorAll('select.score-select').forEach(s => s.disabled = false); // Unlock Selects
     }
     
     // UPDATE LESSON DETAILS (Header Edit)
