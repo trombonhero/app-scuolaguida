@@ -305,22 +305,12 @@
                 <label class="text-xs text-gray-500 font-bold uppercase">Nome Allievo</label>
                 <input type="text" id="student-name-edit" class="text-xl sm:text-2xl font-bold text-blue-600 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none w-full mb-3" oninput="updateStudentName(this.value)">
                 
-                <div class="grid grid-cols-2 gap-2 text-sm text-gray-700 bg-gray-50 p-2 rounded-lg border border-gray-100 mb-2">
-                     <!-- NUOVO: DATA EDITABILE -->
+                <div class="grid grid-cols-3 gap-2 text-sm text-gray-700 bg-gray-50 p-2 rounded-lg border border-gray-100">
                     <div class="flex flex-col">
-                        <label class="text-[10px] uppercase font-bold text-gray-400">Data</label>
-                        <input type="date" id="edit-lesson-date" class="bg-transparent font-semibold focus:outline-none w-full" onchange="updateLessonDetails()">
-                    </div>
-                    <!-- Patente -->
-                    <div class="flex flex-col border-l border-gray-200 pl-2">
                         <label class="text-[10px] uppercase font-bold text-gray-400">Patente</label>
                         <input type="text" id="edit-license-type" class="bg-transparent font-semibold focus:outline-none border-b border-transparent focus:border-blue-400 w-full" oninput="updateLessonDetails()">
                     </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-2 text-sm text-gray-700 bg-gray-50 p-2 rounded-lg border border-gray-100">
-                    <!-- Durata -->
-                    <div class="flex flex-col">
+                    <div class="flex flex-col border-l border-gray-200 pl-2">
                         <label class="text-[10px] uppercase font-bold text-gray-400">Durata</label>
                         <select id="edit-duration" class="bg-transparent font-semibold focus:outline-none w-full" onchange="updateLessonDetails()">
                             <option value="30">30 min</option>
@@ -328,7 +318,6 @@
                             <option value="120">120 min</option>
                         </select>
                     </div>
-                    <!-- Sede -->
                     <div class="flex flex-col border-l border-gray-200 pl-2 relative">
                         <label class="text-[10px] uppercase font-bold text-gray-400">Sede</label>
                         <select id="edit-location-select" class="bg-transparent font-semibold focus:outline-none w-full" onchange="toggleEditLocationInput(); updateLessonDetails()">
@@ -480,7 +469,7 @@
             ]
         },
         "Paliano": {
-            "B": ["Marucci Francesca", "Tiroli Clara", "Verani Lorenzo"]
+            "B": ["Ippoliti Leonardo", "Marucci Francesca", "Pacciani Virginia", "Tiroli Clara", "Verani Lorenzo"]
         }, 
         "Roma": {}     
     };
@@ -527,11 +516,11 @@
         "Esercizi", // 41 (Nuovo)
         "Retro L", // 42 (Nuovo)
         "Manovra L", // 43 (Nuovo)
-        "Combinazione Freno Frizione" // 44 (Nuovo)
-        // Removed duplicate Punto Morto
+        "Combinazione Freno Frizione", // 44 (Nuovo)
+        "Controllo Punto Morto" // 45 (Nuovo)
     ];
     
-    // FIX: Moto and AM cards now use Index 11 (Punto morto) instead of 45
+    // Configurazione Indici (0-based)
     const CARD_CONFIGS = {
         'B': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
         'Moto': [26, 27, 28, 29, 39, 9, 10, 40, 11], 
