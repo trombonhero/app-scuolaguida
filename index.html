@@ -449,40 +449,55 @@
 <script type="module">
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkHbvXDiVAdRhNGVKIksKRpbBKRbnStac4keAUW39AqQ4nj_WaSR5WoK2AfMXuYoTg/exec";
 
-    // --- DATABASE AGGIORNATO ---
+// --- DATABASE AGGIORNATO ---
     const DB_ALLIEVI = {
         "Colleferro": {
             "B": [
-                "Arduini Edoardo", "Belli Anna", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", 
-                "Chima Samuele", "Collacchi Valerio", "Coluzzi Elena", "Crecco Alice", "De Felice Lonardo", 
-                "Dragutinovic Cristian", "Frattaroli Valeria", "Gabrieli Angelica", "Gabrielli Denise", 
-                "Gagliarducci Valerio", "Gallo Noemi", "Gizzi Aurora", "Greco Maria Grazia", "Grieco Chiara", 
-                "Iadarola Pietro", "Ippoliti Ilaria", "Leo veronica", "Loreti Ilaria", "Marchetti Valentina", 
-                "Marcozzi Giacomo", "Mastrogiacomo Giorgia", "Matturro Angelica", "Mazzocchi Daniele", 
-                "Mescia Angelica", "Momodu Odidi", "Necci Lorenza", "Pecchi Aurora Consilia", "Pelacci Alisia", 
-                "Pezzella Gregory", "Priori Maria Martina", "Proia Lavinia", "Ravelli Fabrizio", "Ricci Valerio", 
-                "Russo Andrea", "Santigli Eleonora", "Sortoluzzi Selene", "Sozzi Aurora", "Stella Lorenzo", 
-                "Turco Greta", "Turri Cristal", "Uras Beatrice", "Vari Giada"
+                "Alice Crecco", "Alisia Pelacci", "Andrea Russo", "Angelica Gabrieli", "Angelica Matturro", 
+                "Angelica Mescia", "Anna Belli", "Arduini Edoardo", "Aurora Consilia Pecchi", "Aurora Gizzi", 
+                "Aurora Sozzi", "Beatrice Uras", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", 
+                "Chiara Grieco", "Chima Samuele", "Collacchi Valerio", "Coluzzi Elena", "Cristal Turri", 
+                "Cristian Dragutinovic", "Daniele Mazzocchi", "De Felice Lonardo", "Denise Gabrielli", 
+                "Eleonora Santigli", "Fabrizio Ravelli", "Ferrante Martina", "Frattaroli Valeria", 
+                "Gagliarducci Valerio", "Galesso Tommaso", "Gallo Noemi", "Giacomo Marcozzi", "Giada Vari", 
+                "Giorgia Mastrogiacomo", "Grazia Greco Maria", "Gregory Pezzella", "Greta Turco", 
+                "Iadarola Pietro", "Ilaria Ippoliti", "Ilaria Loreti", "Lavinia Proia", "Leo Veronica", 
+                "Lorenza Necci", "Lorenzo Stella", "Marchetti Valentina", "Maria Martina Priori", 
+                "Momodu Odidi", "Ricci Valerio", "Sara Tantari", "Selene Sortoluzzi"
             ],
+            "B1": ["Damiano Falcone", "Greta Testa", "Syria Testa"],
             "BS": ["Carrubino Erica"],
-            "B1": ["Falcone damiano", "Testa greta", "Testa siria"]
+            "GA": ["Francesco Padovani"]
+        },
+        "Di Castro": {
+            "Am": ["Luca Silvestri"]
         },
         "Genazzano": {
             "B": [
-                "Agnetelli Asia", "Angelucci Lara", "Bangrazi Kevin", "Bianchi Daniele", 
-                "Canini Beatrice", "Carp Alexandru", "Escalona Laura Piedra", "Gentili Evelin", 
-                "Lazzara Martina", "Luberti Alessio", "Maggi Asia", "Mataj Amarilda", "Nita Gabriel", "Rocca Massimiliano"
+                "Agnetelli Asia", "Alessio Luberti", "Alexandru Carp", "Amarilda Mataj", "Angelucci Lara", 
+                "Asia Maggi", "Bangrazi Kevin", "Beatrice Canini", "Bianchi Daniele", "Chiara Ronci", 
+                "Eleonora Poeta", "Escalona Laura Piedra", "Evelin Gentili", "Gabriel Nita", "Lazzara Martina", 
+                "Massimiliano Rocca"
             ]
+        },
+        "La Maxima": {
+            "A": ["Carlo Crescenzi", "Chiara Nicolia"]
         },
         "Palestrina": {
             "B": [
-                "Bernardini Giulia", "Boscaini Elena", "Dell'Orco Simone", "Romano Sara", "Verrelli Ruggero"
+                "Bernardini Giulia", "Boscaini Elena", "Chiara Trentini", "Dell'Orco Simone", 
+                "Romano Sara", "Ruggero Verrelli"
             ]
         },
         "Paliano": {
-            "B": ["Ippoliti Leonardo", "Marucci Francesca", "Pacciani Virginia", "Tiroli Clara", "Verani Lorenzo"]
-        }, 
-        "Roma": {}     
+            "B": [
+                "Alexander Porfilio", "Antonio Terenzi", "Aurora Sportoletti", "Clara Tiroli", 
+                "Francesca Marucci", "Ippoliti Leonardo", "Lorenzo Verani", "Pacciani Virginia"
+            ]
+        },
+        "Roma": {
+            "B": ["Bokiniec Karol Piotr", "Ionelia Lazar"]
+        }
     };
 
     let currentLessonId = null;
@@ -1586,3 +1601,4 @@
 </script>
 </body>
 </html>
+
