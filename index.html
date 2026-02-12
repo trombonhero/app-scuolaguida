@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Valutazioni Guida</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome per le icone della ricevuta -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2canvas per salvare l'immagine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
@@ -54,7 +58,7 @@
         }
         
         /* FIX TABLET */
-        input[type="text"], textarea, select, input[type="date"] {
+        input[type="text"], textarea, select, input[type="date"], input[type="number"] {
              touch-action: manipulation;
         }
         
@@ -182,13 +186,30 @@
         }
 
         /* --- NUOVI COLORI PUNTEGGI --- */
-        .bg-score-0 { background-color: #9E9E9E; color: white; } /* Grigio */
-        .bg-score-1 { background-color: #EA3D33; color: white; } /* Rosso */
-        .bg-score-2 { background-color: #FE9F10; color: white; } /* Arancione */
-        .bg-score-3 { background-color: #94C655; color: white; } /* Verde Chiaro (Lime) */
-        .bg-score-4 { background-color: #49A04B; color: white; } /* Verde Medio */
-        .bg-score-5 { background-color: #38843D; color: white; } /* Verde Scuro */
+        .bg-score-0 { background-color: #9E9E9E; color: white; } 
+        .bg-score-1 { background-color: #EA3D33; color: white; } 
+        .bg-score-2 { background-color: #FE9F10; color: white; } 
+        .bg-score-3 { background-color: #94C655; color: white; } 
+        .bg-score-4 { background-color: #49A04B; color: white; } 
+        .bg-score-5 { background-color: #38843D; color: white; } 
 
+        /* --- CSS AGGIUNTIVO PER RICEVUTA FIRMA --- */
+        #signature-pad {
+            touch-action: none;
+            cursor: crosshair;
+        }
+        .receipt-edge {
+            background-image: linear-gradient(135deg, #ffffff 50%, transparent 50%), linear-gradient(225deg, #ffffff 50%, transparent 50%);
+            background-position: bottom;
+            background-size: 20px 20px;
+            background-repeat: repeat-x;
+            height: 20px;
+            width: 100%;
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
@@ -348,55 +369,133 @@
         </div>
     </div>
 
-    <!-- VALUTAZIONE RAPIDA -->
+    <!-- 1. FIRMA E RICEVUTA (SPOSTATO QUI) -->
+    <div id="receipt-section-wrapper" class="card">
+        <details id="receipt-details" ontoggle="handleReceiptToggle(event)">
+            <summary>1. Firma e Ricevuta Guida</summary>
+            
+            <div class="pt-4 flex flex-col items-center mt-2">
+                <p class="text-sm text-gray-500 mb-4 text-center">Fai firmare l'allievo/a per generare la ricevuta di presenza. I dati vengono presi in automatico dalla valutazione.</p>
+                
+                <!-- Area principale (Il "Foglio" che verrà salvato) -->
+                <main id="capture-area" class="w-full max-w-md bg-white shadow-xl rounded-t-lg relative pb-8 mb-4 border border-gray-200">
+                    
+                    <!-- Intestazione Modulo -->
+                    <div class="bg-blue-600 p-4 rounded-t-lg text-white flex justify-between items-center">
+                        <div>
+                            <h2 class="font-bold text-lg tracking-wide uppercase">Modulo Presenza</h2>
+                            <p class="text-blue-100 text-sm mt-1 font-medium" id="receipt-date">--/--/----</p>
+                        </div>
+                        <i class="fa-solid fa-clipboard-check text-3xl opacity-80"></i>
+                    </div>
+
+                    <div class="p-6 space-y-4">
+                        <!-- Dati Allievo (Testo statico, non input) -->
+                        <div class="border-b-2 border-gray-200 pb-2">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">ALLIEVO/A</label>
+                            <div id="receipt-student-name" class="text-xl font-extrabold text-black">Nome Allievo</div>
+                            <div id="receipt-info" class="text-xs text-gray-500 uppercase tracking-wide mt-1">Sede - Pat. B</div>
+                        </div>
+
+                        <!-- Sezione Pagamento -->
+                        <div class="bg-yellow-50 rounded-lg p-4 border-2 border-yellow-200 space-y-3">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="receipt-paymentReceived" class="w-6 h-6 text-blue-600 rounded border-gray-400 focus:ring-blue-500 cursor-pointer" onchange="toggleReceiptPayment(this)">
+                                <label for="receipt-paymentReceived" class="ml-3 text-gray-900 font-bold cursor-pointer select-none flex items-center uppercase text-sm tracking-wide">
+                                    <i class="fa-solid fa-hand-holding-dollar mr-2 text-yellow-600 text-lg"></i>
+                                    Pagamento Ricevuto
+                                </label>
+                            </div>
+                            
+                            <div id="receipt-paymentAmountContainer" class="pt-2 hidden">
+                                <label class="block text-xs font-extrabold text-gray-600 uppercase mb-1">Importo (€)</label>
+                                <input type="number" id="receipt-paymentAmount" placeholder="0.00" step="0.50"
+                                    class="w-full bg-white border-2 border-gray-300 rounded px-3 py-3 text-lg focus:border-blue-500 outline-none font-bold text-black shadow-sm placeholder-gray-300">
+                            </div>
+                        </div>
+
+                        <!-- Area Firma -->
+                        <div class="mt-6">
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="text-xs font-bold text-gray-500 uppercase">Firma Allievo</label>
+                                <button type="button" onclick="clearSignatureCanvas()" class="text-xs text-red-500 hover:text-red-700 font-bold bg-red-50 px-2 py-1 rounded">
+                                    <i class="fa-solid fa-eraser"></i> Pulisci
+                                </button>
+                            </div>
+                            <div class="relative border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 h-48 w-full overflow-hidden" id="signature-canvas-container" style="touch-action: none;">
+                                <canvas id="signature-pad" class="w-full h-full block touch-none"></canvas>
+                                <div class="absolute bottom-2 right-2 text-gray-300 text-xs pointer-events-none select-none">Firma qui</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Decorazione bordo "scontrino" -->
+                    <div class="receipt-edge"></div>
+                </main>
+
+                <!-- Pulsanti Azione Ricevuta -->
+                <div class="w-full max-w-md space-y-3 mb-2">
+                    <button onclick="saveAndShareReceipt()" id="receipt-saveBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg shadow-lg flex items-center justify-center transition-all active:scale-95 text-lg">
+                        <span id="receipt-btnText"><i class="fa-brands fa-whatsapp mr-2 text-xl"></i> Salva e Condividi Ricevuta</span>
+                        <span id="receipt-btnLoader" class="hidden"><i class="fa-solid fa-circle-notch fa-spin"></i> Elaborazione...</span>
+                    </button>
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <!-- 2. VALUTAZIONE RAPIDA (Rinumerato e reso collassabile) -->
     <div id="valuation-section" class="card">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">1. Valutazione Guida</h2>
-        
-        <div class="mb-6 overflow-x-auto">
-            <label class="block text-sm font-bold text-gray-700 mb-2">Seleziona Tipo Scheda:</label>
-            <div class="flex space-x-2 min-w-max pb-2">
-                <div><input type="radio" id="filter-b" name="card-filter" value="B" class="radio-filter hidden" onchange="updateCardFilter('B')"><label for="filter-b" class="cursor-pointer px-3 py-2 border rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-50 border-gray-200 transition-colors">Scheda B</label></div>
-                <div><input type="radio" id="filter-moto" name="card-filter" value="Moto" class="radio-filter hidden" onchange="updateCardFilter('Moto')"><label for="filter-moto" class="cursor-pointer px-3 py-2 border rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-50 border-gray-200 transition-colors">Moto A1/A2/A</label></div>
-                <div><input type="radio" id="filter-amquad" name="card-filter" value="AmQuad" class="radio-filter hidden" onchange="updateCardFilter('AmQuad')"><label for="filter-amquad" class="cursor-pointer px-3 py-2 border rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-50 border-gray-200 transition-colors">AM Quad, B1</label></div>
-                <div><input type="radio" id="filter-amciclo" name="card-filter" value="AmCiclo" class="radio-filter hidden" onchange="updateCardFilter('AmCiclo')"><label for="filter-amciclo" class="cursor-pointer px-3 py-2 border rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-50 border-gray-200 transition-colors">AM Ciclo</label></div>
-                <div><input type="radio" id="filter-superiori" name="card-filter" value="Superiori" class="radio-filter hidden" onchange="updateCardFilter('Superiori')"><label for="filter-superiori" class="cursor-pointer px-3 py-2 border rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-50 border-gray-200 transition-colors">Superiori BE/C/D</label></div>
-            </div>
-        </div>
+        <details>
+            <summary>2. Valutazione Guida</summary>
+            
+            <div class="pt-4">
+                <div class="mb-6 overflow-x-auto">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Seleziona Tipo Scheda:</label>
+                    <div class="flex space-x-2 min-w-max pb-2">
+                        <div><input type="radio" id="filter-b" name="card-filter" value="B" class="radio-filter hidden" onchange="updateCardFilter('B')"><label for="filter-b" class="cursor-pointer px-3 py-2 border rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-50 border-gray-200 transition-colors">Scheda B</label></div>
+                        <div><input type="radio" id="filter-moto" name="card-filter" value="Moto" class="radio-filter hidden" onchange="updateCardFilter('Moto')"><label for="filter-moto" class="cursor-pointer px-3 py-2 border rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-50 border-gray-200 transition-colors">Moto A1/A2/A</label></div>
+                        <div><input type="radio" id="filter-amquad" name="card-filter" value="AmQuad" class="radio-filter hidden" onchange="updateCardFilter('AmQuad')"><label for="filter-amquad" class="cursor-pointer px-3 py-2 border rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-50 border-gray-200 transition-colors">AM Quad, B1</label></div>
+                        <div><input type="radio" id="filter-amciclo" name="card-filter" value="AmCiclo" class="radio-filter hidden" onchange="updateCardFilter('AmCiclo')"><label for="filter-amciclo" class="cursor-pointer px-3 py-2 border rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-50 border-gray-200 transition-colors">AM Ciclo</label></div>
+                        <div><input type="radio" id="filter-superiori" name="card-filter" value="Superiori" class="radio-filter hidden" onchange="updateCardFilter('Superiori')"><label for="filter-superiori" class="cursor-pointer px-3 py-2 border rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-50 border-gray-200 transition-colors">Superiori BE/C/D</label></div>
+                    </div>
+                </div>
 
-        <div class="flex justify-between items-center mb-4">
-            <p class="text-sm text-gray-600">Assegna una valutazione. La descrizione di supporto appare tenendo premuta l'emoticon.</p>
-            <!-- Pulsante toggle emoji visibile SOLO se non siamo in Superiori -->
-            <button id="emoji-toggle-btn" onclick="toggleEmojiMode()" class="text-xs bg-white border border-gray-300 px-3 py-1 rounded-full shadow-sm hover:bg-gray-50 font-semibold text-blue-600 transition-colors">
-                Cambia stile: <span id="toggle-icon-display">🔢</span>
-            </button>
-        </div>
-        
-        <!-- Master Slider nascosto per Superiori -->
-        <div id="master-slider-container" class="mb-8 p-4 bg-indigo-50 border border-indigo-200 rounded-lg shadow-sm">
-            <label for="master-slider" class="block text-sm font-bold text-indigo-900 mb-2">⚡ Valutazione Rapida Totale (Imposta tutti)</label>
-            <div class="flex items-center space-x-3">
-                <span id="master-value-display" class="text-2xl w-10 text-center font-bold">🧐</span>
-                <input type="range" min="0" max="10" value="5" id="master-slider" class="score-slider flex-grow cursor-pointer" oninput="updateMasterScore(event)">
-            </div>
-        </div>
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-sm text-gray-600">Assegna una valutazione. La descrizione di supporto appare tenendo premuta l'emoticon.</p>
+                    <button id="emoji-toggle-btn" onclick="toggleEmojiMode()" class="text-xs bg-white border border-gray-300 px-3 py-1 rounded-full shadow-sm hover:bg-gray-50 font-semibold text-blue-600 transition-colors">
+                        Cambia stile: <span id="toggle-icon-display">🔢</span>
+                    </button>
+                </div>
+                
+                <!-- Master Slider nascosto per Superiori -->
+                <div id="master-slider-container" class="mb-8 p-4 bg-indigo-50 border border-indigo-200 rounded-lg shadow-sm">
+                    <label for="master-slider" class="block text-sm font-bold text-indigo-900 mb-2">⚡ Valutazione Rapida Totale (Imposta tutti)</label>
+                    <div class="flex items-center space-x-3">
+                        <span id="master-value-display" class="text-2xl w-10 text-center font-bold">🧐</span>
+                        <input type="range" min="0" max="10" value="5" id="master-slider" class="score-slider flex-grow cursor-pointer" oninput="updateMasterScore(event)">
+                    </div>
+                </div>
 
-        <div id="quick-criteria-container" class="grid lg:grid-cols-3 md:grid-cols-2 gap-x-8 gap-y-6"></div>
+                <div id="quick-criteria-container" class="grid lg:grid-cols-3 md:grid-cols-2 gap-x-8 gap-y-6"></div>
 
-        <!-- MODULI OBBLIGATORI (HIDDEN ON NON-B) -->
-        <div id="mandatory-modules-section" class="mt-8">
-            <label class="block text-sm font-medium text-gray-700 mb-3">Moduli Obbligatori Svolti:</label>
-            <div id="moduli-container" class="space-y-3">
-                <div><input type="radio" id="modulo_nessuno" name="modulo_obbligatorio" value="nessuno" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)" checked><label for="modulo_nessuno" class="ml-2 text-sm font-medium text-gray-900">Nessuno</label></div>
-                <div><input type="radio" id="modulo_a" name="modulo_obbligatorio" value="A" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_a" class="ml-2 text-sm font-medium text-gray-900">Modulo A - La guida in condizioni di visione notturna, Circolazione su strade urbane strette e larghe, con veicoli parcheggiati ai lati e non, affrontando incroci regolati da segnaletica verticale e da impianti semaforici.</label></div>
-                <div><input type="radio" id="modulo_b" name="modulo_obbligatorio" value="B" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_b" class="ml-2 text-sm font-medium text-gray-900">Modulo B - Guida su strade extraurbane, Circolazione su strade urbane di scorrimento, o su strade extraurbane secondarie, utilizzando il veicolo ed il motore a regime di copia massima consumando e inquinando il minimo possibile.</label></div>
-                <div><input type="radio" id="modulo_c" name="modulo_obbligatorio" value="C" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_c" class="ml-2 text-sm font-medium text-gray-900">Modulo C - Guida su autostrade o su strade extraurbane, Circolazione su autostrade o su strade extraurbane principali o su strade extraurbane secondarie superando la velocità di 50 Km/h, utilizzando la 5^ marcia e adeguando le marce alla velocità.</label></div>
+                <!-- MODULI OBBLIGATORI (HIDDEN ON NON-B) -->
+                <div id="mandatory-modules-section" class="mt-8">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Moduli Obbligatori Svolti:</label>
+                    <div id="moduli-container" class="space-y-3">
+                        <div><input type="radio" id="modulo_nessuno" name="modulo_obbligatorio" value="nessuno" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)" checked><label for="modulo_nessuno" class="ml-2 text-sm font-medium text-gray-900">Nessuno</label></div>
+                        <div><input type="radio" id="modulo_a" name="modulo_obbligatorio" value="A" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_a" class="ml-2 text-sm font-medium text-gray-900">Modulo A - La guida in condizioni di visione notturna, Circolazione su strade urbane strette e larghe, con veicoli parcheggiati ai lati e non, affrontando incroci regolati da segnaletica verticale e da impianti semaforici.</label></div>
+                        <div><input type="radio" id="modulo_b" name="modulo_obbligatorio" value="B" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_b" class="ml-2 text-sm font-medium text-gray-900">Modulo B - Guida su strade extraurbane, Circolazione su strade urbane di scorrimento, o su strade extraurbane secondarie, utilizzando il veicolo ed il motore a regime di copia massima consumando e inquinando il minimo possibile.</label></div>
+                        <div><input type="radio" id="modulo_c" name="modulo_obbligatorio" value="C" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" onchange="saveLessonData(false)"><label for="modulo_c" class="ml-2 text-sm font-medium text-gray-900">Modulo C - Guida su autostrade o su strade extraurbane, Circolazione su autostrade o su strade extraurbane principali o su strade extraurbane secondarie superando la velocità di 50 Km/h, utilizzando la 5^ marcia e adeguando le marce alla velocità.</label></div>
+                    </div>
+                </div>
+                
+                <div class="mt-8">
+                    <label for="lesson-notes" class="block text-sm font-medium text-gray-700 mb-2">Note della Lezione (Opzionale):</label>
+                    <textarea id="lesson-notes" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" oninput="saveLessonData(false)"></textarea>
+                </div>
             </div>
-        </div>
-        
-        <div class="mt-8">
-            <label for="lesson-notes" class="block text-sm font-medium text-gray-700 mb-2">Note della Lezione (Opzionale):</label>
-            <textarea id="lesson-notes" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" oninput="saveLessonData(false)"></textarea>
-        </div>
+        </details>
     </div>
 
     <!-- PUNTEGGIO TOTALE -->
@@ -437,15 +536,15 @@
         </details>
     </div>
 
-    <!-- SALVA -->
+    <!-- SALVA E COMPLETA -->
     <div id="save-section" class="card">
-        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">6. Salva e Completa</h2>
-        <div id="confirmation-container"><p class="text-sm text-gray-600 mb-4">Clicca "Salva" per archiviare la valutazione.</p></div>
+        <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">6. Salva Valutazione</h2>
+        <div id="confirmation-container"><p class="text-sm text-gray-600 mb-4">Clicca "Salva" per archiviare la valutazione dell'allievo/a.</p></div>
         <div id="confirmation-display" class="hidden"></div>
         <div class="flex flex-col sm:flex-row gap-4 mt-6">
-            <button id="lock-lesson-btn" onclick="saveAndLockLesson()" class="btn btn-danger flex-1">Salva</button>
+            <button id="lock-lesson-btn" onclick="saveAndLockLesson()" class="btn btn-danger flex-1">Salva Valutazione</button>
             <button id="unlock-lesson-btn" onclick="unlockLesson()" class="btn btn-warning flex-1 hidden">Sblocca e Modifica</button>
-            <button onclick="goBackToList()" class="btn btn-secondary flex-1">Indietro</button>
+            <button onclick="goBackToList()" class="btn btn-secondary flex-1">Torna alla Home</button>
         </div>
     </div>
 </div>
@@ -561,19 +660,18 @@
         "Otto", 
         "Passaggio stretto", 
         "Accelerazione e frenata",
-        "Circolazione", // 39 (Nuovo)
-        "Rotatorie", // 40 (Nuovo)
-        "Esercizi", // 41 (Nuovo)
-        "Retro L", // 42 (Nuovo)
-        "Manovra L", // 43 (Nuovo)
-        "Combinazione Freno Frizione", // 44 (Nuovo)
-        "Controllo Punto Morto" // 45 (Nuovo)
+        "Circolazione", // 39
+        "Rotatorie", // 40
+        "Esercizi", // 41
+        "Retro L", // 42
+        "Manovra L", // 43
+        "Combinazione Freno Frizione", // 44
+        "Controllo Punto Morto" // 45
     ];
     
-    // Configurazione Indici (0-based)
     const CARD_CONFIGS = {
         'B': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-        'Moto': [26, 27, 28, 29, 39, 9, 10, 40, 11], // 11 = Punto morto existing
+        'Moto': [26, 27, 28, 29, 39, 9, 10, 40, 11],
         'AmCiclo': [41, 36, 39, 9, 10, 40, 11], 
         'AmQuad': [41, 42, 39, 9, 10, 40, 11], 
         'Superiori': [43, 13, 31, 44, 4, 7, 10] 
@@ -728,7 +826,6 @@
             manualLocInput.classList.remove('hidden');
             licenseSelect.innerHTML = '<option value="other_license">Altro (inserisci manualmente)</option>';
             licenseSelect.disabled = false;
-            // FIX: Quando la sede è "other", forziamo la chiamata per mostrare il box manuale della patente
             toggleLicenseInput(); 
             updateStudentOptions();
             return;
@@ -736,7 +833,6 @@
             manualLocInput.classList.add('hidden');
         }
 
-        // Se la sede esiste nel DB (anche se vuota come Paliano)
         if (location && DB_ALLIEVI[location]) {
             const licenses = Object.keys(DB_ALLIEVI[location]);
             if (licenses.length > 0) {
@@ -744,7 +840,6 @@
                     licenseSelect.innerHTML += `<option value="${lic}">${lic}</option>`;
                 });
             }
-            // SEMPRE AGGIUNGI OPZIONE MANUALE
             licenseSelect.innerHTML += '<option value="other_license">Altro (inserisci manualmente)</option>';
             licenseSelect.disabled = false;
         }
@@ -756,13 +851,10 @@
         const licenseSelect = document.getElementById('license-type-select');
         const manualLicenseInput = document.getElementById('license-input-manual');
         
-        // Se la sede è "other", il box patente manuale deve apparire SEMPRE
         if(locationSelect.value === 'other') {
-             licenseSelect.value = 'other_license'; // Forza selezione
+             licenseSelect.value = 'other_license'; 
              manualLicenseInput.classList.remove('hidden');
-             // Non facciamo focus qui per non saltare se l'utente sta scrivendo la sede
         } else {
-             // Comportamento standard
              if(licenseSelect.value === 'other_license') {
                 manualLicenseInput.classList.remove('hidden');
                 if(shouldFocus) manualLicenseInput.focus();
@@ -782,18 +874,15 @@
         studentSelect.innerHTML = '<option value="">Seleziona Allievo...</option>';
         studentSelect.disabled = true;
         
-        // IMPORTANT: Only hide if NOT using "New Student" feature from search
-        // Check if value is set and we are in init phase
         if (manualStudentInput.value === "") {
              manualStudentInput.classList.add('hidden');
         }
 
-        // Se siamo in modalità manuale
         if (location === 'other' || license === 'other_license') {
              studentSelect.innerHTML = '<option value="manual">Inserimento Manuale</option>';
              studentSelect.disabled = false;
              studentSelect.value = 'manual';
-             checkManualStudentInput(); // MUST BE CALLED TO SHOW INPUT IF MANUAL IS PRE-SELECTED
+             checkManualStudentInput();
              return;
         }
 
@@ -803,11 +892,9 @@
                 studentSelect.innerHTML += `<option value="${stud}">${stud}</option>`;
             });
         }
-        // SEMPRE AGGIUNGI OPZIONE MANUALE
         studentSelect.innerHTML += '<option value="manual">-- Nuovo / Non in lista --</option>';
         studentSelect.disabled = false;
         
-        // Restore manual selection if we came from Search "New Student"
         if (manualStudentInput.value !== "") {
             studentSelect.value = 'manual';
             checkManualStudentInput();
@@ -827,7 +914,7 @@
     }
     window.checkManualStudentInput = checkManualStudentInput;
     
-    // --- UPDATE STUDENT NAME (NO TRIM DURING TYPING) ---
+    // --- UPDATE STUDENT NAME ---
     function updateStudentName(newName) {
         if (!currentLessonId) return;
         const currentDataString = localStorage.getItem(currentLessonId);
@@ -836,6 +923,7 @@
         const lessonData = JSON.parse(currentDataString);
         lessonData.studentName = newName; 
         localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
+        syncReceiptData(); // UPDATE RECEIPT
     }
     window.updateStudentName = updateStudentName;
 
@@ -945,6 +1033,7 @@
     function showCalculatorPage(lessonId) {
         document.getElementById('home-view').classList.add('hidden');
         document.getElementById('calculator-page').classList.remove('hidden');
+        // CHIUSURA FORZATA DI TUTTI I DETTAGLI (TAB)
         document.querySelectorAll('#calculator-page details').forEach(el => el.open = false);
         document.querySelectorAll('.scratch-cover').forEach(el => { el.classList.remove('hidden'); el.style.opacity = '1'; });
         loadLesson(lessonId);
@@ -1034,10 +1123,7 @@
                 let scoreDisplay = ''; if (data.isLocked && data.finalScore != null && data.selectedCard === 'B') scoreDisplay = `<span class="text-sm text-indigo-700 font-bold ml-2">(${data.finalScore}/500)</span>`;
                 let actionLink = data.isLocked ? `<a href="#" class="ml-2 text-xs font-bold text-blue-600 hover:text-blue-800 underline" onclick="unlockAndOpenLesson('${key}'); return false;">✏️ Modifica</a>` : '';
                 
-                // Cloud Sync Status Logic - REMOVED VISUAL CLUTTER FOR ARCHIVED ITEMS
                 let syncStatus = '';
-                // Only show status in Active list if needed, or keep it clean. 
-                // User requested clean archive. We keep it empty string for archived items.
                 
                 const details = `Pat. ${data.licenseType || 'B'} • ${data.duration || 60} min • ${data.location || 'Sede ?'}`;
                 const item = document.createElement('div'); item.className = 'saved-lesson-item';
@@ -1061,15 +1147,10 @@
         if(confirm("Vuoi riaprire questa valutazione salvata per modificarla?")) {
             const data = JSON.parse(localStorage.getItem(id));
             data.isLocked = false;
-            // Mark as unsynced so we know it changed (and move to pending export)
             data.cloudSynced = false;
-            // If it was archived, bring it back to active list to force re-export
             data.isArchived = false;
             localStorage.setItem(id, JSON.stringify(data));
-            
-            // Set flag for editing
             isEditingExistingLesson = true;
-            
             showCalculatorPage(id);
         }
     }
@@ -1089,7 +1170,6 @@
         // Populate Date in Header
         const dateInput = document.getElementById('edit-lesson-date');
         if (data.createdAt) {
-            // Extract YYYY-MM-DD from ISO string
             dateInput.value = data.createdAt.split('T')[0];
         }
         
@@ -1108,6 +1188,8 @@
         if(data.isLocked) lockPage(); else unlockPage();
         
         document.querySelectorAll('input[name="card-filter"]').forEach(rb => rb.checked = (rb.value === currentCardFilter));
+        
+        syncReceiptData(); // UPDATE RECEIPT DATA WHEN LOADING
     }
 
     function saveLessonData(locking = false) {
@@ -1119,7 +1201,6 @@
         data.quickScores = quickScores;
         data.selectedCard = currentCardFilter;
         
-        // SAFE ACCESS TO RADIO BUTTON
         const checkedRadio = document.querySelector('input[name="modulo_obbligatorio"]:checked');
         data.moduloSvolto = checkedRadio ? checkedRadio.value : "nessuno";
         
@@ -1144,7 +1225,6 @@
                 
                 data.finalScore = finalScore;
                 data.isLocked = true;
-                // Don't set cloudSynced true here, only after export!
                 localStorage.setItem(currentLessonId, JSON.stringify(data));
                 
                 const toast = document.getElementById('toast-notification');
@@ -1163,9 +1243,7 @@
         if(confirm("Riaprire modifica?")) {
             const data = JSON.parse(localStorage.getItem(currentLessonId));
             data.isLocked = false;
-            // Mark as unsynced so we know it changed
             data.cloudSynced = false;
-            // If it was archived, bring back to active
             data.isArchived = false;
             localStorage.setItem(currentLessonId, JSON.stringify(data));
             
@@ -1173,7 +1251,6 @@
             
             unlockPage();
             
-            // Hide master slider when modifying existing
             const masterContainer = document.getElementById('master-slider-container');
             if(masterContainer) masterContainer.classList.add('hidden');
         }
@@ -1230,14 +1307,8 @@
         const locSelect = document.getElementById('edit-location-select');
         data.location = (locSelect.value === 'other') ? document.getElementById('edit-location-manual').value : locSelect.value;
         
-        // Date update logic
         const newDateVal = document.getElementById('edit-lesson-date').value;
         if (newDateVal) {
-            // Keep the time from original createdAt if possible, or just default T00:00:00
-            // Here we just construct a new ISO string from the date input.
-            // Note: input type date returns YYYY-MM-DD. 
-            // We'll append current time to keep it sortable somewhat correctly or just use T12:00:00
-            // Better: parse original, set year/month/date
             try {
                 const originalDate = new Date(data.createdAt);
                 const [y, m, d] = newDateVal.split('-').map(Number);
@@ -1251,6 +1322,7 @@
         }
 
         localStorage.setItem(currentLessonId, JSON.stringify(data));
+        syncReceiptData(); // UPDATE RECEIPT DATA
     }
     window.updateLessonDetails = updateLessonDetails;
     
@@ -1275,11 +1347,9 @@
         showEmojis = !showEmojis;
         document.getElementById('toggle-icon-display').textContent = showEmojis ? "🔢" : "🙂";
         
-        // Aggiorna Master Slider
         const masterVal = parseInt(document.getElementById('master-slider').value);
         document.getElementById('master-value-display').textContent = showEmojis ? EMOJI_INTERPRETATION[masterVal] : masterVal;
 
-        // Aggiorna tutti gli slider renderizzati
         const container = document.getElementById('quick-criteria-container');
         const valueSpans = container.querySelectorAll('span[id^="val-"]');
         valueSpans.forEach(span => {
@@ -1288,7 +1358,6 @@
             if(slider) {
                 const val = parseInt(slider.value);
                 span.textContent = showEmojis ? EMOJI_INTERPRETATION[val] : val;
-                // Opzionale: Aggiungi classe per rendere il numero più grande/grassetto se necessario
                 if(!showEmojis) {
                     span.classList.add('font-bold', 'text-gray-800');
                 } else {
@@ -1306,7 +1375,7 @@
             QUICK_CRITERIA.forEach((c, i) => {
                 if(allowed.includes(i)) { 
                     if(c.includes("(Tempo)")) quickScores[c] = "";
-                    else if (filter === 'Superiori') quickScores[c] = ""; // Reset for dropdowns
+                    else if (filter === 'Superiori') quickScores[c] = ""; 
                     else quickScores[c] = 5; 
                 } else { 
                     quickScores[c] = ""; 
@@ -1315,7 +1384,6 @@
             saveLessonData(false);
         }
         
-        // Toggle Master Slider & Emoji Button Visibility for Superiori AND Edit Mode
         const isSuperiori = (filter === 'Superiori');
         const masterContainer = document.getElementById('master-slider-container');
         const emojiBtn = document.getElementById('emoji-toggle-btn');
@@ -1332,7 +1400,6 @@
 
         renderQuickCriteria();
         const scores = calculateScores(quickScores, filter);
-        // Toggle sections based on 'B'
         const hide = filter !== 'B';
         ['total-score-section','competency-section-wrapper','detailed-summary-section-wrapper','exam-prediction-section', 'mandatory-modules-section'].forEach(id => {
             const el = document.getElementById(id); if(el) if(hide) el.classList.add('hidden'); else el.classList.remove('hidden');
@@ -1353,7 +1420,6 @@
             const c = QUICK_CRITERIA[idx];
             const val = quickScores[c];
             
-            // Caso SUPERIORI: Dropdown
             if (currentCardFilter === 'Superiori') {
                 return `
                 <div class="space-y-1 p-3 bg-purple-50 rounded-lg shadow-inner border border-purple-100">
@@ -1369,12 +1435,10 @@
                 </div>`;
             }
 
-            // Caso TEMPO
             if(c.includes("(Tempo)")) {
                  return `<div class="space-y-1 p-3 bg-blue-50 rounded-lg shadow-inner border border-blue-100"><label class="block text-sm font-semibold text-blue-800">${displayIdx+1}. ${c}</label><div class="flex items-center space-x-3"><input type="text" value="${val||''}" data-name="${c}" placeholder="00:00" class="w-full p-2 text-lg font-mono border border-blue-300 rounded text-center" oninput="updateQuickTime(event)"></div></div>`;
             } 
             
-            // Caso STANDARD (Slider)
             else {
                  const v = (val!=null && val!=="") ? val : 5;
                  const displayVal = showEmojis ? EMOJI_INTERPRETATION[v] : v; 
@@ -1383,7 +1447,6 @@
         }).join('');
     }
 
-    // Funzione specifica per i Dropdown (Superiori)
     function updateDropdownScore(e) {
         const name = e.target.getAttribute('data-name');
         const val = e.target.value;
@@ -1422,7 +1485,6 @@
         const indices = CARD_CONFIGS[currentCardFilter];
         indices.forEach(idx => {
             const name = QUICK_CRITERIA[idx];
-            // Skip Tempo and Superiori dropdown logic
             if(!name.includes("(Tempo)") && currentCardFilter !== 'Superiori') {
                 quickScores[name] = val;
                 const sl = document.getElementById(`slider-${idx}`);
@@ -1449,7 +1511,6 @@
             h += `<div class="mt-4 mb-3 col-span-full border-b pb-1"><h3 class="text-base font-semibold text-gray-800">${a.name}</h3></div><div class="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 col-span-full">`;
             a.criteria.forEach(i => {
                 const sc = scores[DETAILED_CRITERIA[i]] || 0;
-                // APPLICA COLORE PERSONALIZZATO
                 const colorClass = getScoreClass(sc);
                 h += `<div class="grid grid-cols-[1fr_auto] items-center gap-2 text-sm"><span class="text-gray-700 truncate" title="${DETAILED_CRITERIA[i]}">${DETAILED_CRITERIA[i]}</span><span class="flex items-center justify-center w-6 h-6 font-bold rounded-full text-xs ${colorClass}">${sc}</span></div>`;
             });
@@ -1461,7 +1522,6 @@
     function renderCompetencyAreas(sc50, sc5, total) {
         document.getElementById('competency-summary').innerHTML = COMPETENCY_AREAS.map(a => {
             const s = sc5[a.name] || 0;
-            // APPLICA COLORE PERSONALIZZATO (s è già arrotondato)
             const colorClass = getScoreClass(s);
             return `<div class="flex justify-between items-center p-2 rounded-lg border border-gray-100 bg-white shadow-sm"><span class="font-medium text-gray-700">${a.name}</span><span class="flex items-center justify-center w-8 h-8 text-sm font-bold rounded-full ${colorClass}">${s}</span></div>`;
         }).join('');
@@ -1498,7 +1558,7 @@
             appName: "RegistroValutazioniGuida", 
             exportDate: new Date().toISOString(), 
             lessons: [],
-            folderId: "16aVHvVSoy2J48gQKp_VCiBdRrQNf9CHl" // ID CARTELLA DRIVE TARGET
+            folderId: "16aVHvVSoy2J48gQKp_VCiBdRrQNf9CHl"
         };
         
         const toArchive = [];
@@ -1506,7 +1566,6 @@
             if(localStorage.key(i).startsWith('lesson_')) {
                 const l = JSON.parse(localStorage.getItem(localStorage.key(i)));
                 if(!l.isArchived) { 
-                    // Ensure calculation is consistent
                     l.finalScore = calculateScores(l.quickScores||{}, l.selectedCard||'B').totalScore_0_500;
                     if(!l.location) l.location="Sede non specificata";
                     obj.lessons.push(l); toArchive.push(l);
@@ -1524,10 +1583,8 @@
             return;
         }
 
-        // Online flow
         downloadJSON(obj, `export_registro_${new Date().toISOString().split('T')[0]}.json`);
         
-        // ARCHIVIAZIONE
         setTimeout(() => {
             toArchive.forEach(l => { l.isArchived = true; localStorage.setItem(l.id, JSON.stringify(l)); });
             loadSavedLessonsList();
@@ -1535,8 +1592,6 @@
             status.className = "text-sm mt-3 text-green-600 font-bold";
         }, 1000);
         
-        // Send to Cloud (POST Request)
-        // Note: Using fetch with no-cors is standard for simple fire-and-forget to GAS web apps
         fetch(GOOGLE_SCRIPT_URL, { 
             method: 'POST', 
             mode: 'no-cors', 
@@ -1579,14 +1634,203 @@
     }
     window.importData = importData;
 
+
+    // ==========================================
+    // --- LOGICA RICEVUTA FIRMA E CONDIVISIONE ---
+    // ==========================================
+
+    const signatureCanvas = document.getElementById('signature-pad');
+    const signatureContainer = document.getElementById('signature-canvas-container');
+    const sigCtx = signatureCanvas.getContext('2d');
+    let isDrawingSignature = false;
+
+    // Sincronizza i dati dal form di valutazione alla ricevuta
+    function syncReceiptData() {
+        if (!currentLessonId) return;
+        
+        const nameVal = document.getElementById('student-name-edit').value;
+        const dateVal = document.getElementById('edit-lesson-date').value;
+        const locSelect = document.getElementById('edit-location-select');
+        const sedeVal = (locSelect.value === 'other') ? document.getElementById('edit-location-manual').value : locSelect.value;
+        const patVal = document.getElementById('edit-license-type').value;
+
+        // Formatta data
+        let formattedDate = "--/--/----";
+        if (dateVal) {
+            const [y, m, d] = dateVal.split('-');
+            formattedDate = `${d}/${m}/${y}`;
+        }
+
+        document.getElementById('receipt-student-name').textContent = nameVal || "Nome non inserito";
+        document.getElementById('receipt-date').textContent = formattedDate;
+        document.getElementById('receipt-info').textContent = `${sedeVal || 'Sede ?'} - Pat. ${patVal || '?'}`;
+    }
+    window.syncReceiptData = syncReceiptData;
+
+    function handleReceiptToggle(event) {
+        if (event.target.open) {
+            syncReceiptData();
+            setTimeout(initSignatureCanvas, 100); // Wait for the DOM to layout to get proper width/height
+        }
+    }
+    window.handleReceiptToggle = handleReceiptToggle;
+
+    function toggleReceiptPayment(checkbox) {
+        const container = document.getElementById('receipt-paymentAmountContainer');
+        const amountInput = document.getElementById('receipt-paymentAmount');
+        if(checkbox.checked) {
+            container.classList.remove('hidden');
+            setTimeout(() => amountInput.focus(), 100);
+        } else {
+            container.classList.add('hidden');
+            amountInput.value = "";
+        }
+    }
+    window.toggleReceiptPayment = toggleReceiptPayment;
+
+    function initSignatureCanvas() {
+        if(!signatureContainer.offsetWidth) return; // Prevent init if hidden
+        
+        // Salva l'immagine esistente se stiamo solo ridimensionando
+        const savedData = signatureCanvas.width > 0 ? signatureCanvas.toDataURL() : null;
+
+        signatureCanvas.width = signatureContainer.offsetWidth;
+        signatureCanvas.height = signatureContainer.offsetHeight;
+        sigCtx.lineWidth = 2;
+        sigCtx.lineCap = 'round';
+        sigCtx.strokeStyle = '#000000';
+
+        if (savedData) {
+            const img = new Image();
+            img.src = savedData;
+            img.onload = () => sigCtx.drawImage(img, 0, 0, signatureCanvas.width, signatureCanvas.height);
+        }
+    }
+
+    function getSigPos(e) {
+        const rect = signatureCanvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    function startSigDrawing(e) {
+        isDrawingSignature = true;
+        const pos = getSigPos(e);
+        sigCtx.beginPath();
+        sigCtx.moveTo(pos.x, pos.y);
+    }
+
+    function drawSig(e) {
+        if (!isDrawingSignature) return;
+        if(e.cancelable) e.preventDefault(); 
+        const pos = getSigPos(e);
+        sigCtx.lineTo(pos.x, pos.y);
+        sigCtx.stroke();
+    }
+
+    function stopSigDrawing() {
+        isDrawingSignature = false;
+        sigCtx.beginPath();
+    }
+
+    signatureCanvas.addEventListener('mousedown', startSigDrawing);
+    signatureCanvas.addEventListener('mousemove', drawSig);
+    signatureCanvas.addEventListener('mouseup', stopSigDrawing);
+    signatureCanvas.addEventListener('mouseout', stopSigDrawing);
+    signatureCanvas.addEventListener('touchstart', startSigDrawing, { passive: false });
+    signatureCanvas.addEventListener('touchmove', drawSig, { passive: false });
+    signatureCanvas.addEventListener('touchend', stopSigDrawing);
+
+    function clearSignatureCanvas() {
+        sigCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+        sigCtx.beginPath();
+    }
+    window.clearSignatureCanvas = clearSignatureCanvas;
+
+    function saveAndShareReceipt() {
+        const studentName = document.getElementById('student-name-edit').value || "Allievo";
+        const dateVal = document.getElementById('edit-lesson-date').value || new Date().toISOString().split('T')[0];
+        
+        const btn = document.getElementById('receipt-saveBtn');
+        const btnText = document.getElementById('receipt-btnText');
+        const btnLoader = document.getElementById('receipt-btnLoader');
+
+        btn.disabled = true;
+        btnText.classList.add('hidden');
+        btnLoader.classList.remove('hidden');
+        btn.classList.add('opacity-75');
+
+        setTimeout(() => {
+            const elementToCapture = document.getElementById('capture-area');
+            
+            html2canvas(elementToCapture, {
+                scale: 3,
+                backgroundColor: null,
+                logging: false,
+                useCORS: true,
+                onclone: (clonedDoc) => {
+                    // Make input fields pure black for good contrast on screenshot
+                    const inputs = clonedDoc.querySelectorAll('input');
+                    inputs.forEach(input => {
+                        input.style.color = '#000000';
+                        input.style.fontWeight = 'bold';
+                    });
+                }
+            }).then(async canvasResult => {
+                const safeName = studentName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                const fileName = `guida_${safeName}_${dateVal}.png`;
+                const dataUrl = canvasResult.toDataURL("image/png");
+
+                // 1. Download to gallery
+                const link = document.createElement('a');
+                link.download = fileName;
+                link.href = dataUrl;
+                link.click();
+
+                // 2. Open WhatsApp / Native Share
+                try {
+                    const res = await fetch(dataUrl);
+                    const blob = await res.blob();
+                    const file = new File([blob], fileName, { type: 'image/png' });
+
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: `Ricevuta Guida - ${studentName}`,
+                            text: `Ecco la ricevuta della guida per ${studentName}`
+                        });
+                    }
+                } catch (error) {
+                    console.log("Condivisione annullata o non supportata", error);
+                }
+
+                // Reset Button
+                btn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+                btn.classList.remove('opacity-75');
+                
+            }).catch(err => {
+                console.error(err);
+                alert("Errore durante la generazione della ricevuta.");
+                btn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+            });
+        }, 100);
+    }
+    window.saveAndShareReceipt = saveAndShareReceipt;
+
+    // Window Resize per il Canvas
+    window.addEventListener('resize', () => {
+        const details = document.getElementById('receipt-details');
+        if (details && details.open) {
+             initSignatureCanvas();
+        }
+    });
+
     initPage();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
