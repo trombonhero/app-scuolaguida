@@ -282,6 +282,7 @@
                     <select id="duration-input" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                         <option value="30">30 Minuti</option>
                         <option value="60" selected>60 Minuti</option>
+                        <option value="90">90 Minuti</option>
                         <option value="120">120 Minuti</option>
                         <option value="180">180 Minuti</option>
                         <option value="240">240 Minuti</option>
@@ -348,6 +349,7 @@
                         <select id="edit-duration" class="bg-transparent font-semibold focus:outline-none w-full" onchange="updateLessonDetails()">
                             <option value="30">30 min</option>
                             <option value="60">60 min</option>
+                            <option value="90">90 min</option>
                             <option value="120">120 min</option>
                             <option value="180">180 Minuti</option>
                             <option value="240">240 Minuti</option>
@@ -394,7 +396,7 @@
                         <div class="border-b-2 border-gray-200 pb-2">
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">ALLIEVO/A</label>
                             <div id="receipt-student-name" class="text-xl font-extrabold text-black">Nome Allievo</div>
-                            <div id="receipt-info" class="text-xs text-gray-500 uppercase tracking-wide mt-1">Sede - Pat. B</div>
+                            <div id="receipt-info" class="text-xs text-gray-500 uppercase tracking-wide mt-1">Sede - Pat. B - 60 min</div>
                         </div>
 
                         <!-- Sezione Pagamento -->
@@ -568,15 +570,15 @@
             "A1": ["Daniel Esposti", "Nicolò Pratini", "Nicolò Pratini"],
             "AM": ["Edoardo Lorenzi", "Federici Manuel"],
             "B": [
-                "Alice Crecco", "Alisia Pelacci", "Alisia Pieracci", "Andrea Russo", "Angelica Gabrieli", 
-                "Angelica Mescia", "Angelica Quattrociocchi", "Arduini Edoardo", "Aurora Consilia Pecchi", 
-                "Aurora Gizzi", "Battisti Daria", "Blasio Giulia", "Bran Elisa", "Campagna Valerio", 
-                "Carrubino Erica", "Chiara Grieco", "Chima Samuele", "Christian Navarra", "Collacchi Valerio", 
-                "Coluzzi Elena", "Cristal Turri", "Cristian Dragutinovic", "Daniele Mazzocchi", 
-                "De Felice Lonardo", "Denise Gabrielli", "Fabrizio Ravelli", "Gagliarducci Valerio", 
-                "Galesso Tommaso", "Gallo Noemi", "Giacomo Marcozzi", "Giorgia Mastrogiacomo", 
-                "Grazia Greco Maria", "Leo Veronica", "Lorenza Necci", "Marchetti Valentina", 
-                "Maria Martina Priori", "Momodu Odidi", "Riccardo Serafini", "Sara Tantari", "Selene Sortoluzzi"
+                "Alice Crecco", "Alisia Pelacci", "Andrea Russo", "Angelica Gabrieli", "Angelica Mescia", 
+                "Angelica Quattrociocchi", "Arduini Edoardo", "Aurora Consilia Pecchi", "Aurora Gizzi", 
+                "Battisti Daria", "Blasio Giulia", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", 
+                "Chiara Grieco", "Chima Samuele", "Christian Navarra", "Collacchi Valerio", "Coluzzi Elena", 
+                "Cristal Turri", "Cristian Dragutinovic", "Daniele Mazzocchi", "De Felice Lonardo", 
+                "Denise Gabrielli", "Fabrizio Ravelli", "Gagliarducci Valerio", "Galesso Tommaso", 
+                "Gallo Noemi", "Giacomo Marcozzi", "Giorgia Mastrogiacomo", "Grazia Greco Maria", 
+                "Leo Veronica", "Lorenza Necci", "Marchetti Valentina", "Maria Martina Priori", 
+                "Momodu Odidi", "Riccardo Serafini", "Sara Tantari", "Selene Sortoluzzi"
             ],
             "B1": ["Bella Chiara La", "Damiano Falcone", "Greta Testa", "Syria Testa"],
             "BS": ["Carrubino Erica"],
@@ -593,9 +595,6 @@
                 "Lazzara Martina", "Massimiliano Rocca"
             ]
         },
-        "Guglielmini": {
-            "Am quad": ["Mattia Milana Oliviero"]
-        },
         "La Maxima": {
             "A": ["Carlo Crescenzi", "Chiara Nicolia"],
             "B1": ["Gaia Sanchini"],
@@ -603,8 +602,8 @@
         },
         "Palestrina": {
             "B": [
-                "Bernardini Giulia", "Boscaini Elena", "Chiara Trentini", "Coccia Diego", 
-                "Dell'Orco Simone", "Romano Sara", "Ruggero Verrelli"
+                "Bernardini Giulia", "Boscaini Elena", "Chiara Trentini", "Dell'Orco Simone", 
+                "Romano Sara", "Ruggero Verrelli"
             ]
         },
         "Paliano": {
@@ -970,7 +969,7 @@
         const q = QUICK_CRITERIA.map(name => quickScores[name] || 0);
         const getQ = (index) => { const val = q[index]; return (typeof val === 'number') ? val : 0; }; 
         const formulas = [
-            (q) => (getQ(17) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(17) * 0.5) / 2, (q) => (getQ(17) * 1) / 2, (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, (q) => (getQ(1) * 0.4 + getQ(8) * 0.3 + getQ(9) * 0.3) / 2, (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, (q) => (getQ(1) * 0.6 + getQ(8) * 0.2 + getQ(9) * 0.2) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 0.5 + getQ(8) * 0.5) / 2, (q) => (getQ(0) * 0.5 + getQ(9) * 0.5) / 2, (q) => (getQ(18) * 0.4 + getQ(10) * 0.1 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(15) * 0.1) / 2, (q) => (getQ(2) > 0 ? (getQ(2) * 0.5 + getQ(0) * 0.5) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.5) : 0) / 2, (q) => (getQ(2) > 0 ? (getQ(17) * 1) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(15) * 0.25) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(16) * 0.25) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 1) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, (q) => (getQ(6) * 1) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.3) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.2 + getQ(3) * 0.1) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.25 + getQ(7) * 0.25) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.2 + getQ(3) * 0.2 + getQ(7) * 0.1) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(1) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(3) * 0.25 + getQ(5) * 0.25) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.25 + getQ(3) * 0.25 + getQ(5) * 0.25 + getQ(1) * 0.25) : 0) / 2, (q) => (getQ(9) * 1) / 2, (q) => (getQ(9) * 1) / 2, (q) => (getQ(8) * 1) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, (q) => (getQ(0) * 0.75 + getQ(16) * 0.25) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(0) * 0.5 + getQ(16) * 0.5) / 2, (q) => (getQ(2) * 0.5 + getQ(3) * 0.5) / 2, (q) => (getQ(4) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(4) * 1) / 2, (q) => (getQ(4) * 0.5 + getQ(5) * 0.5) / 2, (q) => (getQ(3) * 0.2 + getQ(4) * 0.8) / 2, (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(7) * 0.2 + getQ(1) * 0.2 + getQ(2) * 0.2 + getQ(5) * 0.2 + getQ(11) * 0.2) / 2, (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, (q) => (getQ(1) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 1) : 0) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(9) * 0.2) : 0) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(8) * 0.2) : 0) / 2, (q) => (getQ(13) * 1) / 2, (q) => (getQ(13) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2
+            (q) => (getQ(17) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(17) * 0.5) / 2, (q) => (getQ(17) * 1) / 2, (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, (q) => (getQ(1) * 0.4 + getQ(8) * 0.3 + getQ(9) * 0.3) / 2, (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, (q) => (getQ(1) * 0.6 + getQ(8) * 0.2 + getQ(9) * 0.2) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 0.5 + getQ(8) * 0.5) / 2, (q) => (getQ(0) * 0.5 + getQ(9) * 0.5) / 2, (q) => (getQ(18) * 0.4 + getQ(10) * 0.1 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(15) * 0.1) / 2, (q) => (getQ(2) > 0 ? (getQ(2) * 0.5 + getQ(0) * 0.5) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.5) : 0) / 2, (q) => (getQ(2) > 0 ? (getQ(17) * 1) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(15) * 0.25) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(16) * 0.25) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 1) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, (q) => (getQ(6) * 1) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.3) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.2 + getQ(3) * 0.1) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.25 + getQ(7) * 0.25) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.2 + getQ(3) * 0.2 + getQ(7) * 0.1) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(1) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(3) * 0.25 + getQ(5) * 0.25) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.25 + getQ(3) * 0.25 + getQ(5) * 0.25 + getQ(1) * 0.25) : 0) / 2, (q) => (getQ(9) * 1) / 2, (q) => (getQ(9) * 1) / 2, (q) => (getQ(8) * 1) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, (q) => (getQ(0) * 0.75 + getQ(16) * 0.25) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(0) * 0.5 + getQ(16) * 0.5) / 2, (q) => (getQ(2) * 0.5 + getQ(3) * 0.5) / 2, (q) => (getQ(4) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(4) * 1) / 2, (q) => (getQ(4) * 0.5 + getQ(5) * 0.5) / 2, (q) => (getQ(3) * 0.2 + getQ(4) * 0.8) / 2, (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(7) * 0.2 + getQ(1) * 0.2 + getQ(2) * 0.2 + getQ(5) * 0.2 + getQ(11) * 0.2) / 2, (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, (q) => (getQ(1) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 1) : 0) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(9) * 0.2) : 0) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(8) * 0.2) : 0) / 2, (q) => (getQ(13) * 1) / 2, (q) => (getQ(13) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2
         ];
         
         DETAILED_CRITERIA.forEach((criterion, index) => {
@@ -1656,6 +1655,7 @@
         const locSelect = document.getElementById('edit-location-select');
         const sedeVal = (locSelect.value === 'other') ? document.getElementById('edit-location-manual').value : locSelect.value;
         const patVal = document.getElementById('edit-license-type').value;
+        const durVal = document.getElementById('edit-duration').value;
 
         // Formatta data
         let formattedDate = "--/--/----";
@@ -1666,7 +1666,7 @@
 
         document.getElementById('receipt-student-name').textContent = nameVal || "Nome non inserito";
         document.getElementById('receipt-date').textContent = formattedDate;
-        document.getElementById('receipt-info').textContent = `${sedeVal || 'Sede ?'} - Pat. ${patVal || '?'}`;
+        document.getElementById('receipt-info').textContent = `${sedeVal || 'Sede ?'} - Pat. ${patVal || '?'} - ${durVal} min`;
     }
     window.syncReceiptData = syncReceiptData;
 
@@ -1836,5 +1836,4 @@
     initPage();
 </script>
 </body>
-
 </html>
