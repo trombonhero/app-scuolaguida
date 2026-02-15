@@ -1273,46 +1273,43 @@
     function saveAndLockLesson() {
         if(!currentLessonId) return;
         
+        // 1. Get Data
+        saveLessonData(true); // Ensure current state is captured first
         const data = JSON.parse(localStorage.getItem(currentLessonId));
         const name = data.studentName;
         const cred = getCredit(name);
-        const duration = parseInt(data.duration || 60) / 60; // in hours
+        const duration = parseInt(data.duration || 60) / 60;
         
-        // CHECK CREDIT DEDUCTION
-        // Only ask if credit > 0 AND (never deducted OR is being edited and re-saved)
-        // Simplification: if not locked, ask.
+        // 2. Credit Logic (Automatic deduction with alert result)
         if(cred > 0 && !data.isLocked && (!data.creditDeducted || data.creditDeducted === 0)) {
-            if(confirm(`L'allievo ${name} ha ${cred} ore di credito.\nVuoi scalare ${duration} ore per questa guida?`)) {
-                updateCredit(-duration, name);
-                data.creditDeducted = duration; // MEMORIZZA CHE ABBIAMO SCALATO
-                alert(`Credito aggiornato. Residuo: ${getCredit(name)} ore.`);
-            }
+            updateCredit(-duration, name);
+            data.creditDeducted = duration;
+            alert(`Valutazione Completata.\n\nHai scalato ${duration}h dal pacchetto.\nCredito residuo: ${getCredit(name)} ore.`);
         }
         
-        if(confirm("Sei sicuro di voler salvare e archiviare questa valutazione?")) {
-            saveLessonData(true); 
+        // 3. Locking Logic (No confirmation)
+        try {
+            let finalScore = 0;
             try {
-                let finalScore = 0;
-                try {
-                    const result = calculateScores(data.quickScores, currentCardFilter);
-                    finalScore = result.totalScore_0_500;
-                } catch(err) {
-                    console.warn("Calcolo punteggio non riuscito, impostato a 0.", err);
-                    finalScore = 0;
-                }
-                
-                data.finalScore = finalScore;
-                data.isLocked = true;
-                localStorage.setItem(currentLessonId, JSON.stringify(data));
-                
-                const toast = document.getElementById('toast-notification');
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 3000);
-                
-                showHomeView(); 
-            } catch(e) {
-                alert("Errore durante il salvataggio: " + e.message);
+                const result = calculateScores(data.quickScores, currentCardFilter);
+                finalScore = result.totalScore_0_500;
+            } catch(err) {
+                console.warn("Calcolo punteggio non riuscito, impostato a 0.", err);
+                finalScore = 0;
             }
+            
+            data.finalScore = finalScore;
+            data.isLocked = true;
+            localStorage.setItem(currentLessonId, JSON.stringify(data));
+            
+            // 4. Feedback & Navigation
+            const toast = document.getElementById('toast-notification');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+            
+            showHomeView(); 
+        } catch(e) {
+            alert("Errore durante il salvataggio: " + e.message);
         }
     }
     window.saveAndLockLesson = saveAndLockLesson;
