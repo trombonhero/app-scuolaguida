@@ -411,7 +411,7 @@
                             
                             <div id="receipt-paymentAmountContainer" class="pt-2 hidden">
                                 <label class="block text-xs font-extrabold text-gray-600 uppercase mb-1">Importo (€)</label>
-                                <input type="number" id="receipt-paymentAmount" placeholder="0.00" step="0.50"
+                                <input type="number" id="receipt-paymentAmount" placeholder="0.00" step="0.50" oninput="saveLessonData(false)"
                                     class="w-full bg-white border-2 border-gray-300 rounded px-3 py-3 text-lg focus:border-blue-500 outline-none font-bold text-black shadow-sm placeholder-gray-300">
                             </div>
                         </div>
@@ -570,31 +570,27 @@
             "A1": ["Daniel Esposti", "Nicolò Pratini", "Nicolò Pratini"],
             "AM": ["Edoardo Lorenzi", "Federici Manuel"],
             "B": [
-                "Alice Crecco", "Alisia Pelacci", "Alisia Pieracci", "Andrea Russo", "Angelica Gabrieli", 
-                "Angelica Mescia", "Angelica Quattrociocchi", "Arduini Edoardo", "Aurora Consilia Pecchi", 
-                "Aurora Gizzi", "Battisti Daria", "Blasio Giulia", "Bran Elisa", "Campagna Valerio", 
-                "Carrubino Erica", "Chiara Grieco", "Chima Samuele", "Christian Navarra", "Collacchi Valerio", 
-                "Coluzzi Elena", "Cristal Turri", "Cristian Dragutinovic", "Daniele Mazzocchi", 
-                "De Felice Lonardo", "Denise Gabrielli", "Fabrizio Ravelli", "Gagliarducci Valerio", 
-                "Galesso Tommaso", "Gallo Noemi", "Giacomo Marcozzi", "Giorgia Mastrogiacomo", 
-                "Grazia Greco Maria", "Leo Veronica", "Lorenza Necci", "Marchetti Valentina", 
-                "Maria Martina Priori", "Momodu Odidi", "Riccardo Serafini", "Sara Tantari", "Selene Sortoluzzi"
+                "Alice Crecco", "Alisia Pelacci", "Andrea Russo", "Angelica Gabrieli", "Angelica Mescia", 
+                "Angelica Quattrociocchi", "Arduini Edoardo", "Aurora Consilia Pecchi", "Aurora Gizzi", 
+                "Battisti Daria", "Blasio Giulia", "Bran Elisa", "Campagna Valerio", "Carrubino Erica", 
+                "Chiara Grieco", "Chima Samuele", "Christian Navarra", "Collacchi Valerio", "Coluzzi Elena", 
+                "Cristal Turri", "Cristian Dragutinovic", "Daniele Mazzocchi", "De Felice Lonardo", 
+                "Denise Gabrielli", "Fabrizio Ravelli", "Gagliarducci Valerio", "Galesso Tommaso", 
+                "Gallo Noemi", "Giacomo Marcozzi", "Giorgia Mastrogiacomo", "Grazia Greco Maria", 
+                "Leo Veronica", "Lorenza Necci", "Marchetti Valentina", "Maria Martina Priori", 
+                "Momodu Odidi", "Riccardo Serafini", "Sara Tantari", "Selene Sortoluzzi"
             ],
             "B1": ["Bella Chiara La", "Damiano Falcone", "Greta Testa", "Syria Testa"],
             "BS": ["Carrubino Erica"],
             "CE": ["Davide Pinna"],
             "GA": ["Francesco Padovani"]
         },
-        "Di Castro": {
-            "A": ["Marco Truglia"],
-            "B1": ["Alicia Cupini"]
-        },
         "Genazzano": {
             "B": [
                 "Accadia Valerio", "Agnetelli Asia", "Alessio Luberti", "Alexandru Carp", "Amarilda Mataj", 
                 "Angelucci Lara", "Asia Maggi", "Bangrazi Kevin", "Beatrice Canini", "Bianchi Daniele", 
-                "Chiara Ronci", "Eleonora Poeta", "Escalona Laura Piedra", "Evelin Gentili", "Gabriel Nita", 
-                "Lazzara Martina", "Massimiliano Rocca"
+                "Chiara Ronci", "Eleonora Poeta", "Evelin Gentili", "Gabriel Nita", "Lazzara Martina", 
+                "Massimiliano Rocca"
             ]
         },
         "Guglielmini": {
@@ -614,14 +610,13 @@
         "Paliano": {
             "A1": ["Del Prete Vincenzo"],
             "B": [
-                "Clara Tiroli", "Francesca Marucci", "Lorenzo Verani"
+                "Clara Tiroli", "Francesca Marucci", "Lorenzo Verani", "Luca Suppi"
             ],
             "B78": ["Elena Insalata"]
         },
         "Roma": {
             "A2 78": ["Ottaviani Paride"],
-            "B": ["Bokiniec Karol Piotr", "Ferrante Martina", "Ionelia Lazar"],
-            "D CQC": ["Dario Moriconi", "De Fabrizio Melas", "Febbo Furio", "Moscatelli Roberto", "Roselli Salvatore"]
+            "B": ["Bokiniec Karol Piotr", "Ferrante Martina", "Ionelia Lazar"]
         },
         "Serafini": {
             "A": ["Domenico Renzetti"],
@@ -629,7 +624,7 @@
             "AM": ["Francesco Proietti"]
         }
     };
-
+    
     let currentLessonId = null;
     let quickScores = {}; 
     let currentCardFilter = 'B'; 
@@ -1108,7 +1103,24 @@
             }
         });
 
-        const lessonData = { id: lessonId, studentName: studentName, licenseType: licenseType || "B", duration: durationInput.value, location: location, createdAt: createdAt, notes: "", moduloSvolto: "nessuno", quickScores: defaultQuickScores, selectedCard: 'B', isLocked: false, isArchived: false, finalScore: null, cloudSynced: false }; 
+        const lessonData = { 
+            id: lessonId, 
+            studentName: studentName, 
+            licenseType: licenseType || "B", 
+            duration: durationInput.value, 
+            location: location, 
+            createdAt: createdAt, 
+            notes: "", 
+            moduloSvolto: "nessuno", 
+            quickScores: defaultQuickScores, 
+            selectedCard: 'B', 
+            isLocked: false, 
+            isArchived: false, 
+            finalScore: null, 
+            cloudSynced: false,
+            paymentReceived: false, // NUOVO CAMPO
+            paymentAmount: ""       // NUOVO CAMPO
+        }; 
         localStorage.setItem(lessonId, JSON.stringify(lessonData));
         showCalculatorPage(lessonId);
     }
@@ -1192,6 +1204,21 @@
         const modRadio = document.querySelector(`input[name="modulo_obbligatorio"][value="${data.moduloSvolto || 'nessuno'}"]`);
         if(modRadio) modRadio.checked = true;
 
+        // --- CARICAMENTO DATI PAGAMENTO ---
+        const payCheck = document.getElementById('receipt-paymentReceived');
+        const payInput = document.getElementById('receipt-paymentAmount');
+        const payContainer = document.getElementById('receipt-paymentAmountContainer');
+
+        payCheck.checked = data.paymentReceived || false;
+        payInput.value = data.paymentAmount || "";
+        
+        if (payCheck.checked) {
+            payContainer.classList.remove('hidden');
+        } else {
+            payContainer.classList.add('hidden');
+        }
+        // ----------------------------------
+
         updateCardFilter(currentCardFilter, false); 
         if(data.isLocked) lockPage(); else unlockPage();
         
@@ -1212,6 +1239,11 @@
         const checkedRadio = document.querySelector('input[name="modulo_obbligatorio"]:checked');
         data.moduloSvolto = checkedRadio ? checkedRadio.value : "nessuno";
         
+        // --- SALVATAGGIO DATI PAGAMENTO ---
+        data.paymentReceived = document.getElementById('receipt-paymentReceived').checked;
+        data.paymentAmount = document.getElementById('receipt-paymentAmount').value;
+        // ----------------------------------
+
         localStorage.setItem(currentLessonId, JSON.stringify(data));
     }
     window.saveLessonData = saveLessonData;
@@ -1283,6 +1315,9 @@
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(r => r.disabled = true);
         document.querySelectorAll('.radio-filter').forEach(r => r.disabled = true);
         document.querySelectorAll('select.score-select').forEach(s => s.disabled = true); 
+        // Disabilita anche campi ricevuta
+        document.getElementById('receipt-paymentReceived').disabled = true;
+        document.getElementById('receipt-paymentAmount').disabled = true;
     }
 
     function unlockPage() {
@@ -1303,6 +1338,9 @@
         document.querySelectorAll('input[name="modulo_obbligatorio"]').forEach(r => r.disabled = false);
         document.querySelectorAll('.radio-filter').forEach(r => r.disabled = false);
         document.querySelectorAll('select.score-select').forEach(s => s.disabled = false); 
+        // Abilita campi ricevuta
+        document.getElementById('receipt-paymentReceived').disabled = false;
+        document.getElementById('receipt-paymentAmount').disabled = false;
     }
     
     // UPDATE LESSON DETAILS (Header Edit)
@@ -1694,6 +1732,7 @@
             container.classList.add('hidden');
             amountInput.value = "";
         }
+        saveLessonData(false); // Salva stato quando si cambia la checkbox
     }
     window.toggleReceiptPayment = toggleReceiptPayment;
 
@@ -1843,4 +1882,3 @@
 </script>
 </body>
 </html>
-
