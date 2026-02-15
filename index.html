@@ -5,226 +5,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Valutazioni Guida</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome per le icone della ricevuta -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- html2canvas per salvare l'immagine -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f7ff; 
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-        }
-        .card {
-            background-color: white;
-            padding: 1.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-            margin-bottom: 1.5rem;
-        }
-        .score-slider {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%;
-            height: 10px;
-            background: #e5e7eb; 
-            outline: none;
-            opacity: 0.9;
-            transition: opacity .2s;
-            border-radius: 5px;
-            touch-action: none;
-        }
-        .score-slider:hover { opacity: 1; }
-        .score-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            background: #007bff;
-            cursor: pointer;
-            border-radius: 50%;
-        }
-        .score-slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: #007bff;
-            cursor: pointer;
-            border-radius: 50%;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f7f7ff; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+        .card { background-color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07); margin-bottom: 1.5rem; }
+        .score-slider { -webkit-appearance: none; width: 100%; height: 10px; background: #e5e7eb; border-radius: 5px; outline: none; }
+        .score-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: #007bff; border-radius: 50%; cursor: pointer; }
         
-        /* FIX TABLET */
-        input[type="text"], textarea, select, input[type="date"], input[type="number"] {
-             touch-action: manipulation;
-        }
-        
-        /* Stili Pulsanti */
-        .btn {
-            font-weight: 600;
-            padding: 0.75rem 1.5rem; 
-            border-radius: 0.75rem; 
-            transition: all 0.2s;
-            text-align: center;
-        }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-primary:hover { background-color: #0069d9; }
-        
+        /* Utility */
+        input, select, textarea { touch-action: manipulation; }
+        .btn { font-weight: 600; padding: 0.75rem 1.5rem; border-radius: 0.75rem; transition: all 0.2s; text-align: center; }
+        .btn-primary { background-color: #007bff; color: white; } .btn-primary:hover { background-color: #0069d9; }
         .btn-secondary { background-color: #6c757d; color: white; }
-        .btn-secondary:hover { background-color: #5a6268; }
-
         .btn-danger { background-color: #dc3545; color: white; }
-        .btn-danger:hover { background-color: #c82333; }
-        
         .btn-warning { background-color: #ffc107; color: #212529; }
-        .btn-warning:hover { background-color: #e0a800; }
-
         .btn-outline { background-color: #f8f9fa; color: #495057; border: 1px solid #dee2e6; }
-        .btn-outline:hover { background-color: #e9ecef; }
-
-        .btn:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; opacity: 0.7; }
         
-        /* Stili Liste */
-        .saved-lesson-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 0.5rem;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .saved-lesson-item:last-child { border-bottom: none; }
+        .saved-lesson-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0.5rem; border-bottom: 1px solid #e5e7eb; }
+        .delete-btn { background: #fef2f2; color: #ef4444; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 1px solid #fecaca; }
         
-        .date-group-header {
-            font-size: 1.125rem; font-weight: 600; color: #1f2937;
-            margin-top: 1.25rem; margin-bottom: 0.5rem; padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e5e7eb; display: flex;
-            justify-content: space-between; align-items: center;
-        }
-        .date-group-header:first-child { margin-top: 0; }
+        /* Accordion & Search */
+        details summary { cursor: pointer; font-size: 1.25rem; font-weight: 700; color: #374151; padding-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; }
+        .suggestion-item { padding: 0.75rem; cursor: pointer; border-bottom: 1px solid #f3f4f6; }
+        .suggestion-item:hover { background-color: #eff6ff; }
+
+        /* Credits Badge */
+        .credit-badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 999px; font-size: 0.7rem; font-weight: bold; }
+        .credit-positive { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .credit-zero { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+        /* Signature & Receipt */
+        #signature-pad { touch-action: none; cursor: crosshair; }
+        .receipt-edge { background-image: linear-gradient(135deg, #ffffff 50%, transparent 50%), linear-gradient(225deg, #ffffff 50%, transparent 50%); background-position: bottom; background-size: 20px 20px; background-repeat: repeat-x; height: 20px; width: 100%; position: absolute; bottom: -10px; left: 0; z-index: 10; }
         
-        .delete-btn {
-            background-color: #fef2f2; color: #ef4444; font-weight: bold;
-            border-radius: 50%; width: 28px; height: 28px;
-            display: flex; align-items: center; justify-content: center;
-            border: 1px solid #fecaca; line-height: 1; flex-shrink: 0;
-        }
-        .delete-btn:hover { background-color: #fee2e2; }
-
-        .delete-group-btn {
-            background-color: #fef2f2; color: #ef4444; font-size: 0.75rem;
-            font-weight: 600; border-radius: 0.5rem; padding: 0.25rem 0.75rem;
-            border: 1px solid #fecaca;
-        }
-        .delete-group-btn:hover { background-color: #fee2e2; }
-        
-        #import-file-input { display: none; }
-
-        /* Accordion */
-        details summary {
-            list-style: none; cursor: pointer; font-size: 1.25rem; font-weight: 700;
-            color: #374151; padding-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        details summary::after { content: '▼'; font-size: 0.7rem; transition: transform 0.2s; }
-        details[open] summary::after { transform: rotate(180deg); }
-        details summary::-webkit-details-marker { display: none; }
-        details > div { padding-top: 1.5rem; }
-
         /* Gratta e Vinci */
-        .scratch-container {
-            position: relative; width: 80px; height: 40px;
-            border-radius: 0.5rem; overflow: hidden; border: 1px solid #d1d5db;
-        }
-        .scratch-result {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 1.125rem;
-        }
-        .scratch-result.si { color: #16a34a; }
-        .scratch-result.no { color: #dc2626; }
+        .scratch-container { position: relative; width: 80px; height: 40px; border-radius: 0.5rem; overflow: hidden; border: 1px solid #d1d5db; }
+        .scratch-result { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.125rem; }
+        .scratch-cover { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #c0c0c0; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
         
-        .scratch-cover {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #c0c0c0;
-            background-image: linear-gradient(45deg, #d1d5db 25%, transparent 25%, transparent 75%, #d1d5db 75%, #d1d5db), 
-                              linear-gradient(-45deg, #d1d5db 25%, transparent 25%, transparent 75%, #d1d5db 75%, #d1d5db);
-            background-size: 6px 6px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.75rem; font-weight: 600; color: #4b5563;
-            cursor: pointer; transition: opacity 0.3s;
-        }
-        
-        .radio-filter:checked + label {
-            background-color: #eff6ff; border-color: #3b82f6; color: #1d4ed8; font-weight: 700;
-        }
-        
-        /* Toast Notification */
-        #toast-notification {
-            position: fixed; top: 1rem; left: 50%; transform: translateX(-50%);
-            background-color: #10b981; color: white; padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 1000; font-weight: 600; transition: opacity 0.3s, transform 0.3s;
-            opacity: 0; pointer-events: none;
-        }
-        #toast-notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        
-        /* Search Suggestions */
-        .suggestion-item {
-            padding: 0.75rem;
-            cursor: pointer;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        .suggestion-item:hover {
-            background-color: #eff6ff;
-        }
-        .suggestion-highlight {
-            font-weight: bold;
-            color: #2563eb;
-        }
-
-        /* --- NUOVI COLORI PUNTEGGI --- */
+        /* Colors */
         .bg-score-0 { background-color: #9E9E9E; color: white; } 
         .bg-score-1 { background-color: #EA3D33; color: white; } 
         .bg-score-2 { background-color: #FE9F10; color: white; } 
         .bg-score-3 { background-color: #94C655; color: white; } 
         .bg-score-4 { background-color: #49A04B; color: white; } 
         .bg-score-5 { background-color: #38843D; color: white; } 
-
-        /* --- CSS AGGIUNTIVO PER RICEVUTA FIRMA --- */
-        #signature-pad {
-            touch-action: none;
-            cursor: crosshair;
-        }
-        .receipt-edge {
-            background-image: linear-gradient(135deg, #ffffff 50%, transparent 50%), linear-gradient(225deg, #ffffff 50%, transparent 50%);
-            background-position: bottom;
-            background-size: 20px 20px;
-            background-repeat: repeat-x;
-            height: 20px;
-            width: 100%;
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            z-index: 10;
-        }
+        
+        #import-file-input { display: none; } /* Backup CSS hiding */
     </style>
 </head>
 <body>
 
-<!-- Notifica Toast -->
-<div id="toast-notification">Valutazione Salvata con successo!</div>
+<div id="toast-notification" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-xl z-50 transition-opacity duration-300 opacity-0 pointer-events-none font-bold">Salvataggio completato!</div>
+<div id="custom-tooltip" class="hidden absolute z-50 p-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg max-w-xs pointer-events-none"></div>
 
-<div id="custom-tooltip" class="hidden absolute z-50 p-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg max-w-xs" style="pointer-events: none; transition: opacity 0.1s ease;"></div>
+<!-- MODALE GESTIONE PACCHETTI -->
+<div id="package-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+        <button onclick="closePackageModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+        <h3 class="text-xl font-bold text-gray-800 mb-4"><i class="fa-solid fa-box-open mr-2 text-blue-600"></i>Gestione Pacchetti</h3>
+        
+        <div class="mb-4">
+            <label class="block text-sm font-bold text-gray-700 mb-1">Cerca Allievo da ricaricare:</label>
+            <input type="text" id="package-student-search" placeholder="Nome allievo..." class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" oninput="handlePackageSearch(this.value)">
+            <div id="package-search-results" class="hidden border border-gray-200 mt-1 rounded max-h-40 overflow-y-auto bg-gray-50"></div>
+        </div>
+
+        <div id="package-action-area" class="hidden bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <h4 id="pkg-student-name" class="font-bold text-lg text-blue-900 mb-2">Nome Allievo</h4>
+            <p class="text-sm text-gray-600 mb-3">Credito attuale: <span id="pkg-current-credit" class="font-bold text-black text-lg">0</span> ore</p>
+            
+            <div class="flex gap-2 mb-2">
+                <button onclick="updateCredit(1)" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded font-bold">+1h</button>
+                <button onclick="updateCredit(4)" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-bold">+4h</button>
+                <button onclick="updateCredit(6)" class="flex-1 bg-green-700 hover:bg-green-800 text-white py-2 rounded font-bold">+6h</button>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="updateCredit(-1)" class="flex-1 bg-red-100 hover:bg-red-200 text-red-600 py-1 rounded font-bold border border-red-200">-1h</button>
+                <button onclick="updateCredit(-0.5)" class="flex-1 bg-red-100 hover:bg-red-200 text-red-600 py-1 rounded font-bold border border-red-200">-30m</button>
+            </div>
+        </div>
+        
+        <!-- Pulsante pericoloso per reset crediti, nascosto in fondo -->
+        <div class="mt-8 pt-4 border-t border-gray-100 text-center">
+            <button onclick="resetAllCredits()" class="text-xs text-gray-400 hover:text-red-500 underline">Azzera Database Pacchetti (Attenzione!)</button>
+        </div>
+    </div>
+</div>
 
 <!-- PAGINA AVVIO -->
 <div id="home-view" class="container">
     <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-6 text-center">Registro Valutazioni Guida</h1>
     
     <div class="card relative">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Crea Nuova Valutazione</h2>
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">Crea Nuova Valutazione</h2>
+            <!-- PULSANTE GESTIONE PACCHETTI DISCRETO -->
+            <button onclick="openPackageModal()" class="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-semibold border border-blue-100 hover:bg-blue-100 transition-colors">
+                📦 Gestione Pacchetti
+            </button>
+        </div>
         
         <!-- GLOBAL SEARCH -->
         <div class="mb-6 relative">
@@ -250,7 +133,6 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipo Patente</label>
-                    <!-- FIX: Inverted order to ensure focus happens AFTER update options -->
                     <select id="license-type-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="updateStudentOptions(); toggleLicenseInput(true);" disabled>
                         <option value="">Prima seleziona Sede</option>
                     </select>
@@ -262,12 +144,10 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nome Allievo/a</label>
                 <div class="relative">
-                    <!-- FIX: checkManualStudentInput(true) per focus esplicito utente -->
                     <select id="student-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onchange="checkManualStudentInput(true)" disabled>
                         <option value="">Prima seleziona Patente</option>
                     </select>
                 </div>
-                <!-- FIX: Visible manually if set programmatically via search -->
                 <input type="text" id="student-name-manual" placeholder="Scrivi nome manualmente..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mt-2 hidden">
             </div>
 
@@ -309,12 +189,12 @@
     
     <div class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Export e Dati</h2>
-        <p class="text-sm text-gray-600 mb-4">Esporta i dati attuali. <strong>Nota:</strong> Le valutazioni verranno spostate in "Archivio" SOLO se sei online e l'invio ha successo.</p>
+        <p class="text-sm text-gray-600 mb-4">Esporta i dati attuali (incluse le ore prepagate). <strong>Nota:</strong> Le valutazioni verranno spostate in "Archivio" SOLO se sei online e l'invio ha successo.</p>
         <div class="grid grid-cols-2 gap-4">
-            <button id="export-btn" class="btn btn-primary">Esporta Dati</button>
-            <input type="file" id="import-file-input" accept=".json" onchange="importData(event)">
-            <button id="import-btn" class="btn btn-outline">Importa Dati</button>
-            <button id="reset-all-btn" onclick="deleteAllData()" class="btn btn-danger col-span-2">Resetta Tutti i Dati (App)</button>
+            <button id="export-btn" class="btn btn-primary" onclick="exportData()">Esporta Dati</button>
+            <input type="file" id="import-file-input" accept=".json" onchange="importData(event)" class="hidden">
+            <button id="import-btn" class="btn btn-outline" onclick="document.getElementById('import-file-input').click()">Importa Dati</button>
+            <button id="reset-all-btn" onclick="deleteAllData()" class="btn btn-danger col-span-2">Resetta Lista Lezioni (Mantiene Crediti)</button>
         </div>
         <p id="import-status" class="text-sm mt-3"></p>
     </div>
@@ -326,7 +206,11 @@
     <div id="management-section" class="card">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="w-full">
-                <label class="text-xs text-gray-500 font-bold uppercase">Nome Allievo</label>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs text-gray-500 font-bold uppercase">Nome Allievo</label>
+                    <!-- BADGE CREDITO IN SCHEDA -->
+                    <span id="active-student-credit" class="credit-badge credit-zero">...</span>
+                </div>
                 <input type="text" id="student-name-edit" class="text-xl sm:text-2xl font-bold text-blue-600 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none w-full mb-3" oninput="updateStudentName(this.value)">
                 
                 <div class="grid grid-cols-2 gap-2 text-sm text-gray-700 bg-gray-50 p-2 rounded-lg border border-gray-100 mb-2">
@@ -541,8 +425,7 @@
     <!-- SALVA E COMPLETA -->
     <div id="save-section" class="card">
         <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">6. Salva Valutazione</h2>
-        <div id="confirmation-container"><p class="text-sm text-gray-600 mb-4">Clicca "Salva" per archiviare la valutazione dell'allievo/a.</p></div>
-        <div id="confirmation-display" class="hidden"></div>
+        <div id="confirmation-container"><p class="text-sm text-gray-600 mb-4">Clicca "Salva" per archiviare la valutazione (e scalare ore dal pacchetto se presente).</p></div>
         <div class="flex flex-col sm:flex-row gap-4 mt-6">
             <button id="lock-lesson-btn" onclick="saveAndLockLesson()" class="btn btn-danger flex-1">Salva Valutazione</button>
             <button id="unlock-lesson-btn" onclick="unlockLesson()" class="btn btn-warning flex-1 hidden">Sblocca e Modifica</button>
@@ -624,7 +507,86 @@
             "AM": ["Francesco Proietti"]
         }
     };
+
+    // ==========================================
+    // --- GESTIONE CREDITI / PACCHETTI (INVISIBILE MA PRESENTE) ---
+    // ==========================================
+    let studentCredits = JSON.parse(localStorage.getItem('student_credits') || '{}');
+
+    function saveCredits() {
+        localStorage.setItem('student_credits', JSON.stringify(studentCredits));
+    }
+
+    function getCredit(name) {
+        return studentCredits[name] || 0;
+    }
+
+    function updateCredit(amount, targetName = null) {
+        const name = targetName || document.getElementById('pkg-student-name').textContent;
+        if(name === 'Nome Allievo') return;
+        
+        if(!studentCredits[name]) studentCredits[name] = 0;
+        studentCredits[name] = parseFloat((studentCredits[name] + amount).toFixed(1));
+        
+        if(studentCredits[name] < 0) studentCredits[name] = 0;
+        
+        saveCredits();
+        
+        // Update UI se il modale è aperto
+        if(document.getElementById('package-modal').classList.contains('hidden') === false) {
+            document.getElementById('pkg-current-credit').textContent = studentCredits[name];
+        }
+        
+        // Update UI se siamo nella scheda valutazione
+        const activeName = document.getElementById('student-name-edit').value;
+        if(activeName === name) {
+            updateActiveCreditBadge(name);
+        }
+    }
+    window.updateCredit = updateCredit; // Export to global scope
     
+    // Funzione per cancellare DAVVERO tutto se serve (es. fine anno)
+    window.resetAllCredits = () => {
+        if(confirm("ATTENZIONE ESTREMA!\nQuesta operazione cancellerà PER SEMPRE tutti i saldi dei pacchetti.\n\nSei sicuro di voler azzerare il database dei crediti?")) {
+            studentCredits = {};
+            saveCredits();
+            alert("Database pacchetti azzerato.");
+            closePackageModal();
+        }
+    };
+
+    // --- LOGICA MODALE PACCHETTI ---
+    window.openPackageModal = () => document.getElementById('package-modal').classList.remove('hidden');
+    window.closePackageModal = () => document.getElementById('package-modal').classList.add('hidden');
+    
+    window.handlePackageSearch = (query) => {
+        const results = document.getElementById('package-search-results');
+        const actionArea = document.getElementById('package-action-area');
+        
+        if(query.length < 2) { results.classList.add('hidden'); return; }
+        
+        const all = getAllStudentsFlat();
+        const filtered = all.filter(s => s.name.toLowerCase().includes(query.toLowerCase()));
+        
+        results.innerHTML = filtered.map(s => `
+            <div class="p-3 hover:bg-blue-100 cursor-pointer border-b flex justify-between items-center" onclick="selectPackageStudent('${s.name.replace(/'/g, "\\'")}')">
+                <span class="font-bold text-gray-800">${s.name}</span>
+                <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded font-bold">Cred: ${getCredit(s.name)}h</span>
+            </div>
+        `).join('');
+        results.classList.remove('hidden');
+        actionArea.classList.add('hidden');
+    }
+
+    window.selectPackageStudent = (name) => {
+        document.getElementById('package-search-results').classList.add('hidden');
+        document.getElementById('package-student-search').value = '';
+        
+        document.getElementById('pkg-student-name').textContent = name;
+        document.getElementById('pkg-current-credit').textContent = getCredit(name);
+        document.getElementById('package-action-area').classList.remove('hidden');
+    }
+
     let currentLessonId = null;
     let quickScores = {}; 
     let currentCardFilter = 'B'; 
@@ -727,12 +689,20 @@
         
         let html = '';
         if (filtered.length > 0) {
-            html = filtered.map(s => `
-                <div class="suggestion-item" onclick="selectGlobalStudent('${s.loc}', '${s.lic}', '${s.name.replace(/'/g, "\\'")}')">
-                    <span class="font-bold text-gray-800">${s.name}</span>
-                    <span class="text-xs text-gray-500 ml-2">${s.loc} - ${s.lic}</span>
+            html = filtered.map(s => {
+                // MOSTRA BADGE CREDITO NEI RISULTATI DI RICERCA
+                const cred = getCredit(s.name);
+                const badge = cred > 0 ? `<span class="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-bold">Cred: ${cred}h</span>` : '';
+                
+                return `
+                <div class="suggestion-item flex justify-between items-center" onclick="selectGlobalStudent('${s.loc}', '${s.lic}', '${s.name.replace(/'/g, "\\'")}')">
+                    <div>
+                        <span class="font-bold text-gray-800">${s.name}</span>
+                        <span class="text-xs text-gray-500 ml-2">${s.loc} - ${s.lic}</span>
+                    </div>
+                    ${badge}
                 </div>
-            `).join('');
+            `}).join('');
         }
         
         html += `
@@ -927,6 +897,9 @@
         lessonData.studentName = newName; 
         localStorage.setItem(currentLessonId, JSON.stringify(lessonData));
         syncReceiptData(); // UPDATE RECEIPT
+        
+        // Update Credit Badge
+        updateActiveCreditBadge(newName);
     }
     window.updateStudentName = updateStudentName;
 
@@ -970,7 +943,7 @@
         const q = QUICK_CRITERIA.map(name => quickScores[name] || 0);
         const getQ = (index) => { const val = q[index]; return (typeof val === 'number') ? val : 0; }; 
         const formulas = [
-            (q) => (getQ(17) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(17) * 0.5) / 2, (q) => (getQ(17) * 1) / 2, (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, (q) => (getQ(1) * 0.4 + getQ(8) * 0.3 + getQ(9) * 0.3) / 2, (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, (q) => (getQ(1) * 0.6 + getQ(8) * 0.2 + getQ(9) * 0.2) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 0.5 + getQ(8) * 0.5) / 2, (q) => (getQ(0) * 0.5 + getQ(9) * 0.5) / 2, (q) => (getQ(18) * 0.4 + getQ(10) * 0.1 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(15) * 0.1) / 2, (q) => (getQ(2) > 0 ? (getQ(2) * 0.5 + getQ(0) * 0.5) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.5) : 0) / 2, (q) => (getQ(2) > 0 ? (getQ(17) * 1) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(15) * 0.25) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(16) * 0.25) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 1) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, (q) => (getQ(6) * 1) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.3) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.2 + getQ(3) * 0.1) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.25 + getQ(7) * 0.25) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.2 + getQ(3) * 0.2 + getQ(7) * 0.1) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(1) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(3) * 0.25 + getQ(5) * 0.25) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.25 + getQ(3) * 0.25 + getQ(5) * 0.25 + getQ(1) * 0.25) : 0) / 2, (q) => (getQ(9) * 1) / 2, (q) => (getQ(9) * 1) / 2, (q) => (getQ(8) * 1) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, (q) => (getQ(0) * 0.75 + getQ(16) * 0.25) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(0) * 0.5 + getQ(16) * 0.5) / 2, (q) => (getQ(2) * 0.5 + getQ(3) * 0.5) / 2, (q) => (getQ(4) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(4) * 1) / 2, (q) => (getQ(4) * 0.5 + getQ(5) * 0.5) / 2, (q) => (getQ(3) * 0.2 + getQ(4) * 0.8) / 2, (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(7) * 0.2 + getQ(1) * 0.2 + getQ(2) * 0.2 + getQ(5) * 0.2 + getQ(11) * 0.2) / 2, (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, (q) => (getQ(1) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 1) : 0) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(9) * 0.2) : 0) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(8) * 0.2) : 0) / 2, (q) => (getQ(13) * 1) / 2, (q) => (getQ(13) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2
+            (q) => (getQ(17) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(17) * 0.5) / 2, (q) => (getQ(17) * 1) / 2, (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, (q) => (getQ(1) * 0.4 + getQ(8) * 0.3 + getQ(9) * 0.3) / 2, (q) => (getQ(1) * 0.5 + getQ(8) * 0.25 + getQ(9) * 0.25) / 2, (q) => (getQ(1) * 0.6 + getQ(8) * 0.2 + getQ(9) * 0.2) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 1) / 2, (q) => (getQ(0) * 0.5 + getQ(8) * 0.5) / 2, (q) => (getQ(0) * 0.5 + getQ(9) * 0.5) / 2, (q) => (getQ(18) * 0.4 + getQ(10) * 0.1 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(15) * 0.1) / 2, (q) => (getQ(2) > 0 ? (getQ(2) * 0.5 + getQ(0) * 0.5) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.5) : 0) / 2, (q) => (getQ(2) > 0 ? (getQ(17) * 1) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(15) * 0.25) : 0) / 2, (q) => (getQ(3) > 0 ? (getQ(3) * 0.5 + getQ(0) * 0.25 + getQ(16) * 0.25) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 1) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, (q) => (getQ(5) > 0 ? (getQ(5) * 0.5 + getQ(2) * 0.5) : 0) / 2, (q) => (getQ(6) * 1) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.3) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.7 + getQ(5) * 0.2 + getQ(3) * 0.1) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.25 + getQ(7) * 0.25) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(5) * 0.2 + getQ(3) * 0.2 + getQ(7) * 0.1) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(17) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(1) * 0.5) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.5 + getQ(3) * 0.25 + getQ(5) * 0.25) : 0) / 2, (q) => (getQ(4) > 0 ? (getQ(4) * 0.25 + getQ(3) * 0.25 + getQ(5) * 0.25 + getQ(1) * 0.25) : 0) / 2, (q) => (getQ(9) * 1) / 2, (q) => (getQ(9) * 1) / 2, (q) => (getQ(8) * 1) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, (q) => (getQ(10) * 0.8 + getQ(0) * 0.1 + getQ(16) * 0.1) / 2, (q) => (getQ(0) * 0.75 + getQ(16) * 0.25) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(10) * 0.5 + getQ(0) * 0.3 + getQ(7) * 0.1 + getQ(19) * 0.1) / 2, (q) => (getQ(0) * 0.5 + getQ(16) * 0.5) / 2, (q) => (getQ(2) * 0.5 + getQ(3) * 0.5) / 2, (q) => (getQ(4) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(4) * 1) / 2, (q) => (getQ(4) * 0.5 + getQ(5) * 0.5) / 2, (q) => (getQ(3) * 0.2 + getQ(4) * 0.8) / 2, (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(7) * 0.2 + getQ(1) * 0.2 + getQ(2) * 0.2 + getQ(5) * 0.2 + getQ(11) * 0.2) / 2, (q) => (getQ(0) * 0.5 + getQ(7) * 0.5) / 2, (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, (q) => (getQ(1) * 1) / 2, (q) => (getQ(18) * 0.5 + getQ(19) * 0.5) / 2, (q) => (getQ(10) * 1) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 1) : 0) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(9) * 0.2) : 0) / 2, (q) => (getQ(12) > 0 ? (getQ(12) * 0.8 + getQ(8) * 0.2) : 0) / 2, (q) => (getQ(13) * 1) / 2, (q) => (getQ(13) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(14) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2, (q) => (getQ(19) * 1) / 2
         ];
         
         DETAILED_CRITERIA.forEach((criterion, index) => {
@@ -1118,8 +1091,9 @@
             isArchived: false, 
             finalScore: null, 
             cloudSynced: false,
-            paymentReceived: false, // NUOVO CAMPO
-            paymentAmount: ""       // NUOVO CAMPO
+            paymentReceived: false, 
+            paymentAmount: "",
+            creditDeducted: 0 // Track credit used
         }; 
         localStorage.setItem(lessonId, JSON.stringify(lessonData));
         showCalculatorPage(lessonId);
@@ -1155,9 +1129,47 @@
         renderGroup(lessons.filter(l => l.isArchived), archivedList, true);   
     }
 
-    function deleteLesson(id) { if(confirm("Eliminare?")) { localStorage.removeItem(id); loadSavedLessonsList(); } }
+    // --- CANCELLAZIONE SICURA LEZIONE ---
+    function deleteLesson(id) { 
+        // Recupera dati per controllo crediti
+        const data = JSON.parse(localStorage.getItem(id));
+        let confirmMsg = "Sei sicuro di voler eliminare questa valutazione?";
+        
+        if (data && data.creditDeducted && data.creditDeducted > 0) {
+            confirmMsg = `ATTENZIONE: Questa lezione ha scalato ${data.creditDeducted} ore dal pacchetto di ${data.studentName}.\n\nEliminandola, le ore verranno RIMBORSATE nel portafoglio dell'allievo.\n\nProcedere con l'eliminazione e il rimborso?`;
+        }
+
+        if(confirm(confirmMsg)) { 
+            // Rimborso credito se necessario
+            if (data && data.creditDeducted && data.creditDeducted > 0) {
+                updateCredit(data.creditDeducted, data.studentName);
+                alert(`Rimborso effettuato: +${data.creditDeducted} ore riaccreditate a ${data.studentName}.`);
+            }
+            
+            localStorage.removeItem(id); 
+            loadSavedLessonsList(); 
+        } 
+    }
     window.deleteLesson = deleteLesson;
-    function deleteAllData() { if(confirm("Cancellare TUTTO?")) { localStorage.clear(); loadSavedLessonsList(); } }
+
+    // --- RESET INTELLIGENTE ---
+    function deleteAllData() { 
+        if(confirm("ATTENZIONE: Vuoi cancellare TUTTE le lezioni registrate?\n\nI SALDI DEI PACCHETTI (CREDITI) NON VERRANNO CANCELLATI.\n\nProcedere con il reset giornaliero delle lezioni?")) { 
+            // Rimuove solo le chiavi che iniziano con lesson_
+            const keysToRemove = [];
+            for(let i=0; i<localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key.startsWith('lesson_')) {
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+            
+            loadSavedLessonsList();
+            alert("Lezioni cancellate. I crediti degli allievi sono stati mantenuti.");
+            location.reload(); 
+        } 
+    }
     window.deleteAllData = deleteAllData;
 
     function openLesson(id) { showCalculatorPage(id); }
@@ -1217,14 +1229,24 @@
         } else {
             payContainer.classList.add('hidden');
         }
-        // ----------------------------------
+        
+        // --- CREDIT BADGE UPDATE ---
+        updateActiveCreditBadge(data.studentName);
 
         updateCardFilter(currentCardFilter, false); 
         if(data.isLocked) lockPage(); else unlockPage();
         
         document.querySelectorAll('input[name="card-filter"]').forEach(rb => rb.checked = (rb.value === currentCardFilter));
         
-        syncReceiptData(); // UPDATE RECEIPT DATA WHEN LOADING
+        syncReceiptData(); 
+    }
+    
+    function updateActiveCreditBadge(name) {
+        const badge = document.getElementById('active-student-credit');
+        const cred = getCredit(name);
+        badge.textContent = cred > 0 ? `Credito: ${cred}h` : ``;
+        badge.className = cred > 0 ? 'credit-badge credit-positive' : 'credit-badge credit-zero hidden';
+        if(cred === 0) badge.textContent = ""; // Hide if zero to be less invasive
     }
 
     function saveLessonData(locking = false) {
@@ -1242,7 +1264,7 @@
         // --- SALVATAGGIO DATI PAGAMENTO ---
         data.paymentReceived = document.getElementById('receipt-paymentReceived').checked;
         data.paymentAmount = document.getElementById('receipt-paymentAmount').value;
-        // ----------------------------------
+        data.studentName = document.getElementById('student-name-edit').value;
 
         localStorage.setItem(currentLessonId, JSON.stringify(data));
     }
@@ -1250,10 +1272,26 @@
 
     function saveAndLockLesson() {
         if(!currentLessonId) return;
+        
+        const data = JSON.parse(localStorage.getItem(currentLessonId));
+        const name = data.studentName;
+        const cred = getCredit(name);
+        const duration = parseInt(data.duration || 60) / 60; // in hours
+        
+        // CHECK CREDIT DEDUCTION
+        // Only ask if credit > 0 AND (never deducted OR is being edited and re-saved)
+        // Simplification: if not locked, ask.
+        if(cred > 0 && !data.isLocked && (!data.creditDeducted || data.creditDeducted === 0)) {
+            if(confirm(`L'allievo ${name} ha ${cred} ore di credito.\nVuoi scalare ${duration} ore per questa guida?`)) {
+                updateCredit(-duration, name);
+                data.creditDeducted = duration; // MEMORIZZA CHE ABBIAMO SCALATO
+                alert(`Credito aggiornato. Residuo: ${getCredit(name)} ore.`);
+            }
+        }
+        
         if(confirm("Sei sicuro di voler salvare e archiviare questa valutazione?")) {
             saveLessonData(true); 
             try {
-                const data = JSON.parse(localStorage.getItem(currentLessonId));
                 let finalScore = 0;
                 try {
                     const result = calculateScores(data.quickScores, currentCardFilter);
@@ -1598,11 +1636,13 @@
     window.showTooltip = showTooltip;
     window.hideTooltip = () => tooltip.classList.add('hidden');
 
+    // --- AGGIORNATO: EXPORT CON CREDITI ---
     function exportData() {
         const status = document.getElementById('import-status');
         const obj = { 
             appName: "RegistroValutazioniGuida", 
             exportDate: new Date().toISOString(), 
+            credits: studentCredits, // AGGIUNTO: Esporta i crediti
             lessons: [],
             folderId: "16aVHvVSoy2J48gQKp_VCiBdRrQNf9CHl"
         };
@@ -1660,14 +1700,21 @@
         setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 100);
     }
 
+    // --- AGGIORNATO: IMPORT CON CREDITI ---
     function importData(e) {
         const file = e.target.files[0]; if(!file) return;
         const reader = new FileReader();
         reader.onload = (ev) => {
             try {
                 const d = JSON.parse(ev.target.result);
+                // IMPORTA CREDITI SE PRESENTI
+                if(d.credits) {
+                    studentCredits = d.credits;
+                    saveCredits();
+                }
+                
                 if(d.appName === "RegistroValutazioniGuida" && Array.isArray(d.lessons)) {
-                    if(confirm(`Importare ${d.lessons.length} lezioni?`)) {
+                    if(confirm(`Importare ${d.lessons.length} lezioni e aggiornare i crediti?`)) {
                         d.lessons.forEach(l => localStorage.setItem(l.id, JSON.stringify(l)));
                         loadSavedLessonsList();
                         document.getElementById('import-status').textContent = "Importazione completata.";
